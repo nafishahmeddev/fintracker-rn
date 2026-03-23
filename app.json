@@ -38,11 +38,19 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "deddd0be-f3be-4539-8e10-1b3c5959f9e9"
+      }
+    },
+    "owner": "nafish.ahmed.dev"
   }
 }
