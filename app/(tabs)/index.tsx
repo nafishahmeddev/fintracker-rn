@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   title: {
     color: colors.text,
     fontSize: typography.sizes.xxxl,
-    fontWeight: typography.weights.bold as any,
+    fontWeight: typography.weights.bold,
     marginTop: 4,
   },
   balanceCard: {
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   balanceAmount: {
     color: '#FFF',
     fontSize: 40,
-    fontWeight: typography.weights.bold as any,
+    fontWeight: typography.weights.bold,
     marginVertical: 8,
   },
   addButton: {
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#FFF',
     marginLeft: 8,
-    fontWeight: typography.weights.semibold as any,
+    fontWeight: typography.weights.semibold,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -146,11 +146,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: colors.text,
     fontSize: typography.sizes.xl,
-    fontWeight: typography.weights.bold as any,
+    fontWeight: typography.weights.bold,
   },
   seeAll: {
     color: colors.primaryLight,
-    fontWeight: typography.weights.medium as any,
+    fontWeight: typography.weights.medium,
   },
   txCard: {
     marginBottom: 12,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   txTitle: {
     color: colors.text,
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.medium as any,
+    fontWeight: typography.weights.medium,
   },
   txCategory: {
     color: colors.textMuted,
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
   txAmount: {
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.bold as any,
+    fontWeight: typography.weights.bold,
   },
   emptyText: {
     color: colors.textMuted,

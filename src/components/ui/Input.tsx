@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.sm,
     color: colors.textMuted,
     marginBottom: 8,
-    fontWeight: typography.weights.medium as any,
+    fontWeight: typography.weights.medium,
   },
   inputContainer: {
     backgroundColor: colors.surface,

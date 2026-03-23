@@ -28,15 +28,29 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
+          title: 'Home',
           tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="transactions/index"
+        name="accounts"
         options={{
-          title: 'Transactions',
-          tabBarIcon: ({ color }) => <Ionicons name="list" size={24} color={color} />,
+          title: 'Accounts',
+          tabBarIcon: ({ color }) => <Ionicons name="wallet" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="categories"
+        options={{
+          title: 'Categories',
+          tabBarIcon: ({ color }) => <Ionicons name="grid" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color }) => <Ionicons name="settings" size={24} color={color} />,
         }}
       />
     </Tabs>

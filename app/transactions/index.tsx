@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, SafeAreaView, ActivityIndicator } from 'react-native';
-import { colors } from '../../../src/theme/colors';
-import { typography } from '../../../src/theme/typography';
-import { useTransactions } from '../../../src/features/transactions/hooks';
-import { Card } from '../../../src/components/ui/Card';
+import { colors } from '../../src/theme/colors';
+import { typography } from '../../src/theme/typography';
+import { useTransactions } from '../../src/features/transactions/hooks';
+import { Card } from '../../src/components/ui/Card';
 
 export default function TransactionsScreen() {
   const { data: transactions, isLoading } = useTransactions();
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   title: {
     color: colors.text,
     fontSize: typography.sizes.xxl,
-    fontWeight: typography.weights.bold as any,
+    fontWeight: typography.weights.bold,
   },
   listContent: {
     padding: 20,
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   txTitle: {
     color: colors.text,
     fontSize: typography.sizes.md,
-    fontWeight: typography.weights.medium as any,
+    fontWeight: typography.weights.medium,
   },
   txSubtitle: {
     color: colors.textMuted,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   },
   txAmount: {
     fontSize: typography.sizes.lg,
-    fontWeight: typography.weights.bold as any,
+    fontWeight: typography.weights.bold,
   },
   emptyText: {
     color: colors.textMuted,

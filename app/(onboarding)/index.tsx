@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: typography.sizes.xxl,
-    fontWeight: typography.weights.bold as any,
+    fontWeight: typography.weights.bold,
     color: colors.text,
     textAlign: 'center',
     marginBottom: 16,
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
   formTitle: {
     fontSize: typography.sizes.lg,
-    fontWeight: typography.weights.bold as any,
+    fontWeight: typography.weights.bold,
     color: colors.text,
     marginBottom: 16,
   },
