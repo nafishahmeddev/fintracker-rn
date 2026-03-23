@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { DatabaseProvider } from '@/src/providers/DatabaseProvider';
 import { QueryProvider } from '@/src/providers/QueryProvider';
+import { OnboardingProvider } from '@/src/providers/OnboardingProvider';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -17,12 +18,15 @@ export default function RootLayout() {
   return (
     <QueryProvider>
       <DatabaseProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
+        <OnboardingProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+            </Stack>
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </OnboardingProvider>
       </DatabaseProvider>
     </QueryProvider>
   );

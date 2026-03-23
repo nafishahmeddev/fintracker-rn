@@ -1,9 +1,16 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../src/theme/colors';
+import { useOnboarding } from '../../src/providers/OnboardingProvider';
 
 export default function TabLayout() {
+  const { hasOnboarded } = useOnboarding();
+
+  if (!hasOnboarded) {
+    return <Redirect href="/(onboarding)" />;
+  }
+
   return (
     <Tabs
       screenOptions={{

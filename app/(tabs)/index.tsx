@@ -46,7 +46,7 @@ export default function DashboardScreen() {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recent Transactions</Text>
-          <TouchableOpacity onPress={() => router.push('/(tabs)/transactions/')}>
+          <TouchableOpacity onPress={() => router.push('/transactions')}>
             <Text style={styles.seeAll}>See All</Text>
           </TouchableOpacity>
         </View>

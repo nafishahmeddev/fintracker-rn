@@ -46,7 +46,7 @@ export default function AddTransactionScreen() {
         datetime: new Date().toISOString(),
       });
       router.back();
-    } catch (e) {
+    } catch {
       alert("Error saving transaction");
     }
   };
