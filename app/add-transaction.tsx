@@ -1,18 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
   Alert,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurBackground } from '../src/components/ui/BlurBackground';
 import { accounts as accountsTable, categories as categoriesTable } from '../src/db/schema';
 import { useAccounts } from '../src/features/accounts/hooks/accounts';
 import { useCategories } from '../src/features/categories/hooks/categories';
@@ -42,7 +41,7 @@ const parseAmount = (raw: string): number => {
 
 export default function AddTransactionScreen() {
   const router = useRouter();
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const { profile } = useSettings();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
 
@@ -136,44 +135,7 @@ export default function AddTransactionScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-        <View
-          style={[
-            styles.bgCircle,
-            {
-              top: -80,
-              left: -60,
-              width: 320,
-              height: 320,
-              backgroundColor: colors.primary + '2A',
-            },
-          ]}
-        />
-        <View
-          style={[
-            styles.bgCircle,
-            {
-              top: 250,
-              right: -130,
-              width: 420,
-              height: 420,
-              backgroundColor: colors.text + '12',
-            },
-          ]}
-        />
-      </View>
-
-      <BlurView
-        blurAmount={Platform.OS === 'ios' ? 80 : 96}
-        blurType={isDark ? 'dark' : 'light'}
-        style={StyleSheet.absoluteFillObject}
-      />
-      {Platform.OS === 'android' ? (
-        <View
-          style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background + '60' }]}
-          pointerEvents="none"
-        />
-      ) : null}
+      <BlurBackground />
 
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerButton} onPress={() => router.back()} activeOpacity={0.9}>

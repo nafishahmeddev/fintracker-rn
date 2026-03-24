@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
@@ -7,12 +6,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurBackground } from '../../src/components/ui/BlurBackground';
 import { Button } from '../../src/components/ui/Button';
 import { useCreateAccount } from '../../src/features/accounts/hooks/accounts';
 import { useCreateCategory } from '../../src/features/categories/hooks/categories';
@@ -34,7 +33,7 @@ import { useTheme } from '../../src/providers/ThemeProvider';
 
 export default function OnboardingScreen() {
   const router = useRouter();
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const styles = React.useMemo(() => createOnboardingStyles(colors), [colors]);
   const { completeOnboarding } = useOnboarding();
   const { updateProfile } = useSettings();
@@ -181,20 +180,7 @@ export default function OnboardingScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-        <View style={[styles.bgCircle, { top: -70, left: -70, width: 280, height: 280, backgroundColor: colors.primary + '26' }]} />
-        <View style={[styles.bgCircle, { top: 240, right: -120, width: 360, height: 360, backgroundColor: colors.primary + '18' }]} />
-        <View style={[styles.bgCircle, { bottom: -110, left: 30, width: 320, height: 320, backgroundColor: colors.secondary + '10' }]} />
-      </View>
-
-      <BlurView
-        blurAmount={Platform.OS === 'ios' ? 70 : 92}
-        blurType={isDark ? 'dark' : 'light'}
-        style={StyleSheet.absoluteFillObject}
-      />
-      {Platform.OS === 'android' ? (
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background + '76' }]} pointerEvents="none" />
-      ) : null}
+      <BlurBackground androidOverlayOpacity="76" />
 
       <KeyboardAvoidingView style={styles.keyboardWrap} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.header}>

@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from '@sbaiahmed1/react-native-blur';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurBackground } from '../../src/components/ui/BlurBackground';
 import { Header } from '../../src/components/ui/Header';
 import { MoneyText } from '../../src/components/ui/MoneyText';
 import { Category } from '../../src/features/categories/api/categories';
@@ -14,7 +14,7 @@ import { typography } from '../../src/theme/typography';
 
 
 export default function CategoriesScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const { data: categories, isLoading } = useCategories();
   const { mutateAsync: deleteCategory } = useDeleteCategory();
@@ -132,18 +132,7 @@ export default function CategoriesScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-        <View style={[styles.bgCircle, { top: -70, left: -70, width: 330, height: 330, backgroundColor: colors.primary + '2E' }]} />
-        <View style={[styles.bgCircle, { top: 260, right: -140, width: 480, height: 480, backgroundColor: colors.text + '0E' }]} />
-        <View style={[styles.bgCircle, { bottom: -90, left: 40, width: 320, height: 320, backgroundColor: colors.primary + '1C' }]} />
-      </View>
-
-      <BlurView
-        blurAmount={Platform.OS === 'ios' ? 80 : 96}
-        blurType={isDark ? 'dark' : 'light'}
-        style={StyleSheet.absoluteFillObject}
-      />
-      {Platform.OS === 'android' && <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background + '60' }]} pointerEvents="none" />}
+      <BlurBackground />
 
       <Header title="Categories" showBack />
 

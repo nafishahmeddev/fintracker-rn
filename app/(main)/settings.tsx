@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Alert, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurBackground } from '../../src/components/ui/BlurBackground';
 import { Button } from '../../src/components/ui/Button';
 import { db } from '../../src/db/client';
 import { accounts, categories, payments } from '../../src/db/schema';
@@ -14,7 +14,7 @@ import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 
 export default function SettingsScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const { profile, updateProfile } = useSettings();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const router = useRouter();
@@ -88,17 +88,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-        <View style={[styles.bgCircle, { top: -70, left: -70, width: 330, height: 330, backgroundColor: colors.primary + '2E' }]} />
-        <View style={[styles.bgCircle, { top: 260, right: -140, width: 480, height: 480, backgroundColor: colors.text + '0E' }]} />
-        <View style={[styles.bgCircle, { bottom: -90, left: 40, width: 320, height: 320, backgroundColor: colors.primary + '1C' }]} />
-      </View>
-
-      <BlurView blurAmount={Platform.OS === 'ios' ? 80 : 96}
-        blurType={isDark ? 'dark' : 'light'}
-        style={StyleSheet.absoluteFillObject}
-      />
-      {Platform.OS === 'android' && <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background + '60' }]} pointerEvents="none" />}
+      <BlurBackground />
 
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerBtn} onPress={() => router.back()}>
