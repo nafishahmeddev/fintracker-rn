@@ -6,6 +6,7 @@ export type UserProfile = {
   email: string;
   phone: string;
   defaultCurrency: string;
+  theme: 'system' | 'light' | 'dark';
 };
 
 type SettingsContextType = {
@@ -27,6 +28,7 @@ const DEFAULT_PROFILE: UserProfile = {
   email: '',
   phone: '',
   defaultCurrency: 'USD',
+  theme: 'dark',
 };
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
@@ -38,7 +40,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       try {
         const storedProfile = await AsyncStorage.getItem('@fintracker_profile');
         if (storedProfile) {
-          setProfile(JSON.parse(storedProfile));
+          const parsed = JSON.parse(storedProfile);
+          setProfile(prev => ({ ...prev, ...parsed }));
         }
       } catch (e) {
         console.error('Failed to load profile settings', e);

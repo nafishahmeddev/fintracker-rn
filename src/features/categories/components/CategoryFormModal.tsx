@@ -99,10 +99,22 @@ export function CategoryFormModal({ visible, onClose, category }: CategoryFormMo
           <Input label="Category Name" value={name} onChangeText={setName} placeholder="e.g. Groceries, Rent" />
           <Input label="Monthly Budget (Optional)" value={budget} onChangeText={setBudget} placeholder="0.00" keyboardType="decimal-pad" />
           
-          <Text style={styles.sectionLabel}>Category Type</Text>
-          <View style={styles.typeRow}>
-            <Button title="Expense (DR)" variant={type === 'DR' ? 'danger' : 'outline'} onPress={() => setType('DR')} style={styles.typeBtn} />
-            <Button title="Income (CR)" variant={type === 'CR' ? 'success' : 'outline'} onPress={() => setType('CR')} style={styles.typeBtn} />
+          <Text style={styles.sectionLabel}>Category Type {isEditing && "(Locked)"}</Text>
+          <View style={[styles.typeRow, isEditing && { opacity: 0.6 }]}>
+            <Button 
+              title="Expense (DR)" 
+              variant={type === 'DR' ? 'danger' : 'outline'} 
+              onPress={() => !isEditing && setType('DR')} 
+              style={styles.typeBtn} 
+              disabled={isEditing && type !== 'DR'}
+            />
+            <Button 
+              title="Income (CR)" 
+              variant={type === 'CR' ? 'success' : 'outline'} 
+              onPress={() => !isEditing && setType('CR')} 
+              style={styles.typeBtn} 
+              disabled={isEditing && type !== 'CR'}
+            />
           </View>
 
           <Text style={styles.sectionLabel}>Select Icon</Text>

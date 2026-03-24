@@ -10,40 +10,76 @@ import { typography } from '../../src/theme/typography';
 import { Header } from '../../src/components/ui/Header';
 import { db } from '../../src/db/client';
 import { payments, accounts, categories } from '../../src/db/schema';
+import { useSettings } from '../../src/providers/SettingsProvider';
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
+  const { profile, updateProfile } = useSettings();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const router = useRouter();
 
   const handleResetData = () => {
-    Alert.alert("Factory Reset", "Warning: This will permanently delete ALL data (accounts, categories, transactions) and restart the application.", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Delete Everything", style: "destructive", onPress: async () => {
-        try {
-          await db.delete(payments);
-          await db.delete(categories);
-          await db.delete(accounts);
-          await AsyncStorage.clear();
-          alert("Data wiped successfully. Please hard restart the App.");
-        } catch {
-          alert("Critical failure wiping device storage.");
+    Alert.alert(
+      "FACTORY RESET", 
+      "THIS WILL PERMANENTLY WIPE ALL DATA. ACCOUNTS, CATEGORIES, AND PAYMENTS WILL BE DESTROYED.", 
+      [
+        { text: "CANCEL", style: "cancel" },
+        { 
+          text: "WIPE EVERYTHING", 
+          style: "destructive", 
+          onPress: async () => {
+            try {
+              await db.delete(payments);
+              await db.delete(categories);
+              await db.delete(accounts);
+              await AsyncStorage.clear();
+              Alert.alert("Wipe Complete", "Application state has been purged. Please restart the app.");
+              router.replace('/(onboarding)');
+            } catch {
+              Alert.alert("Critical Error", "Failed to clear physical storage.");
+            }
+          } 
         }
-      }}
+      ]
+    );
+  };
+
+  const handleThemeChange = () => {
+    Alert.alert("Appearance", "Select your preferred theme", [
+      { text: "Light Mode", onPress: () => updateProfile({ theme: 'light' }) },
+      { text: "Dark Mode", onPress: () => updateProfile({ theme: 'dark' }) },
+      { text: "Follow System", onPress: () => updateProfile({ theme: 'system' }) },
+      { text: "Cancel", style: "cancel" }
     ]);
   };
 
-  type OptionRowProps = { icon: any; title: string; subtitle?: string; onPress: () => void; color?: string; };
-  const OptionRow = ({ icon, title, subtitle, onPress, color = colors.text }: OptionRowProps) => (
+  const handleCurrencyChange = () => {
+    const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'INR', 'AED', 'BTC'];
+    Alert.alert("Default Currency", "Set application-wide standard", 
+      currencies.map(c => ({ text: c, onPress: () => updateProfile({ defaultCurrency: c }) })),
+      { cancelable: true }
+    );
+  };
+
+  type PreferenceRowProps = { 
+    icon: any; 
+    title: string; 
+    value?: string; 
+    onPress: () => void; 
+    destructive?: boolean;
+    color?: string;
+  };
+
+  const PreferenceRow = ({ icon, title, value, onPress, destructive, color }: PreferenceRowProps) => (
     <TouchableOpacity style={styles.row} onPress={onPress}>
-      <View style={[styles.iconBox, { backgroundColor: color + '15' }]}>
-        <Ionicons name={icon} size={20} color={color} />
+      <View style={[styles.iconBox, { backgroundColor: (color || (destructive ? colors.danger : colors.text)) + '15' }]}>
+        <Ionicons name={icon} size={20} color={color || (destructive ? colors.danger : colors.text)} />
       </View>
-      <View style={styles.textContainer}>
-        <Text style={[styles.rowTitle, { color }]}>{title}</Text>
-        {subtitle && <Text style={styles.rowSubtitle}>{subtitle}</Text>}
+      <View style={styles.textDetails}>
+        <Text style={[styles.rowTitle, destructive && { color: colors.danger }]}>{title}</Text>
+        {value && <Text style={styles.rowValue}>{value}</Text>}
       </View>
-      <Ionicons name="arrow-forward" size={18} color={colors.textMuted} />
+      <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
     </TouchableOpacity>
   );
 
@@ -51,34 +87,52 @@ export default function SettingsScreen() {
     <SafeAreaView style={styles.container}>
       <Header title="Preferences" showBack />
       
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>CONFIGURATION</Text>
-          <View style={styles.card}>
-            <OptionRow 
-              icon="grid" 
-              title="Manage Categories" 
-              subtitle="Add or modify transaction tags" 
-              color={colors.primary}
-              onPress={() => router.push('/categories')} 
-            />
-            <View style={styles.divider} />
-            <OptionRow icon="color-palette" title="Appearance" subtitle="Following System Theme" onPress={() => {}} />
-            <View style={styles.divider} />
-            <OptionRow icon="globe" title="Default Currency" subtitle="USD ($)" onPress={() => {}} />
-          </View>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.heroSection}>
+          <Text style={styles.heroBrand}>FINTRACKER</Text>
+          <Text style={styles.heroSub}>EDGLESS STACK V1.0</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>SYSTEM OPERATIONS</Text>
-          <View style={styles.card}>
-            <OptionRow icon="cloud-download" title="Export Ledger" subtitle="Extract to CSV/JSON format" color={colors.success} onPress={() => {}} />
-            <View style={styles.divider} />
-            <OptionRow icon="warning" title="Factory Reset" subtitle="Purge all local SQLite records permanently" color={colors.danger} onPress={handleResetData} />
-          </View>
+          <Text style={styles.sectionLabel}>TAXONOMY</Text>
+          <PreferenceRow 
+            icon="grid-outline" 
+            title="Categories" 
+            value="Manage your tags" 
+            onPress={() => router.push('/categories')} 
+          />
         </View>
 
-        <Text style={styles.version}>v1.0.0 — Edgeless Stack Architecture</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>VISUALS & LOCALES</Text>
+          <PreferenceRow 
+            icon="contrast-outline" 
+            title="Appearance" 
+            value={(profile.theme || 'system').toUpperCase()} 
+            onPress={handleThemeChange} 
+          />
+          <PreferenceRow 
+            icon="cash-outline" 
+            title="Primary Currency" 
+            value={profile.defaultCurrency} 
+            onPress={handleCurrencyChange} 
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>DANGER ZONE</Text>
+          <PreferenceRow 
+            icon="trash-bin-outline" 
+            title="Factory Reset" 
+            destructive
+            value="Wipe local SQLite database" 
+            onPress={handleResetData} 
+          />
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>BUILT FOR PERFORMANCE — 2024</Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -89,70 +143,78 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  content: {
-    padding: 24,
-    paddingBottom: 40,
+  scrollContent: {
+    paddingBottom: 60,
+  },
+  heroSection: {
+    paddingHorizontal: 24,
+    paddingVertical: 40,
+  },
+  heroBrand: {
+    fontFamily: typography.fonts.heading,
+    fontSize: 48,
+    color: colors.text,
+    letterSpacing: -2,
+    lineHeight: 48,
+  },
+  heroSub: {
+    fontFamily: typography.fonts.mono,
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 8,
+    letterSpacing: 2,
   },
   section: {
-    marginBottom: 32,
+    marginTop: 24,
+    paddingHorizontal: 24,
   },
-  sectionTitle: {
-    fontFamily: typography.fonts.mono,
-    fontSize: typography.sizes.xs,
+  sectionLabel: {
+    fontFamily: typography.fonts.monoBold,
+    fontSize: 10,
     color: colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-    marginBottom: 12,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
+    letterSpacing: 1.5,
+    marginBottom: 8,
+    opacity: 0.6,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: 'transparent',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderColor: colors.border,
   },
   iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
   },
-  textContainer: {
+  textDetails: {
     flex: 1,
   },
   rowTitle: {
-    // @ts-ignore
     fontFamily: typography.fonts.headingRegular,
-    fontSize: typography.sizes.md,
-    letterSpacing: -0.2,
+    fontSize: typography.sizes.md + 2,
+    color: colors.text,
+    letterSpacing: -0.5,
   },
-  rowSubtitle: {
-    fontFamily: typography.fonts.regular,
-    fontSize: typography.sizes.sm,
-    color: colors.textMuted,
-    marginTop: 4,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginLeft: 80,
-    opacity: 0.5,
-  },
-  version: {
+  rowValue: {
     fontFamily: typography.fonts.mono,
-    textAlign: 'center',
+    fontSize: 12,
     color: colors.textMuted,
-    fontSize: typography.sizes.xs,
-    marginTop: 24,
-    textTransform: 'uppercase',
+    marginTop: 2,
+  },
+  footer: {
+    marginTop: 60,
+    alignItems: 'center',
+  },
+  footerText: {
+    fontFamily: typography.fonts.mono,
+    fontSize: 9,
+    color: colors.textMuted,
     letterSpacing: 1,
+    opacity: 0.4,
   }
 });

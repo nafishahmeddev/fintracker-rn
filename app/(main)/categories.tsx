@@ -53,37 +53,34 @@ export default function CategoriesScreen() {
 
     return (
       <TouchableOpacity
-        style={styles.categoryRow}
-        onLongPress={() => handleEdit(item)}
-        delayLongPress={200}
+        style={styles.categoryCard}
+        onPress={() => handleEdit(item)}
+        onLongPress={() => {
+          Alert.alert("Manage category", item.name, [
+            { text: "Cancel", style: "cancel" },
+            { text: "Edit", onPress: () => handleEdit(item) },
+            { text: "Delete", style: "destructive", onPress: () => handleDelete(item.id) },
+          ]);
+        }}
+        delayLongPress={500}
       >
-        <View style={styles.categoryRowTop}>
+        <View style={styles.cardHeader}>
           <View style={[styles.categoryIconBox, { backgroundColor: catColor + '15' }]}>
-            <Ionicons name={item.icon as any || "grid-outline"} size={22} color={catColor} />
+            <Ionicons name={item.icon as any || "grid-outline"} size={20} color={catColor} />
           </View>
+          <Ionicons name="ellipsis-vertical" size={14} color={colors.textMuted} />
+        </View>
 
-          <View style={styles.categoryInfo}>
-            <Text style={styles.categoryName}>{item.name}</Text>
-            <View style={styles.categoryStats}>
-              <MoneyText amount={item.expense} style={styles.categoryValue} weight="medium" />
-              {item.budget > 0 && (
-                <>
-                  <Text style={styles.categorySeparator}> / </Text>
-                  <MoneyText amount={item.budget} style={styles.categoryValueMuted} />
-                </>
-              )}
+        <View style={styles.cardInfo}>
+          <Text style={styles.categoryName} numberOfLines={1}>{item.name}</Text>
+          <MoneyText amount={item.expense} style={styles.categoryValue} weight="bold" />
+          
+          {item.budget > 0 && (
+            <View style={styles.budgetRow}>
+              <Text style={styles.categoryValueMuted}>of </Text>
+              <MoneyText amount={item.budget} style={styles.categoryValueMuted} />
             </View>
-          </View>
-
-          <TouchableOpacity style={styles.optionsButton} onPress={() => {
-            Alert.alert("Manage category", item.name, [
-              { text: "Cancel", style: "cancel" },
-              { text: "Edit", onPress: () => handleEdit(item) },
-              { text: "Delete", style: "destructive", onPress: () => handleDelete(item.id) },
-            ]);
-          }}>
-            <Ionicons name="ellipsis-horizontal" size={20} color={colors.textMuted} />
-          </TouchableOpacity>
+          )}
         </View>
 
         {item.budget > 0 && (
@@ -132,8 +129,11 @@ export default function CategoriesScreen() {
             data={filteredCategories}
             keyExtractor={(item) => item.id.toString()}
             renderItem={renderItem}
+            numColumns={2}
+            columnWrapperStyle={styles.columnWrapper}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
+            key={`${activeType}-grid`} // Re-render when numColumns would change or content shifts
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>No {activeType === 'DR' ? 'expense' : 'income'} categories found.</Text>
@@ -159,14 +159,18 @@ export default function CategoriesScreen() {
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   listContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 100,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
 
   segmentedControl: {
     flexDirection: 'row',
-    marginHorizontal: 24,
+    marginHorizontal: 20,
     marginTop: 16,
     marginBottom: 8,
     height: 48,
@@ -197,61 +201,60 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     color: colors.background,
   },
 
-  categoryRow: {
-    paddingVertical: 20,
-    borderBottomWidth: 1,
+  categoryCard: {
+    width: '48%',
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
     borderColor: colors.border,
+    minHeight: 140,
+    justifyContent: 'space-between',
   },
-  categoryRowTop: {
+  cardHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
   },
   categoryIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
   },
-  categoryInfo: {
+  cardInfo: {
     flex: 1,
+    justifyContent: 'center',
   },
   categoryName: {
     fontFamily: typography.fonts.headingRegular,
     color: colors.text,
-    fontSize: typography.sizes.md + 2,
+    fontSize: typography.sizes.md,
     letterSpacing: -0.2,
-    marginBottom: 6,
-  },
-  categoryStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: 4,
   },
   categoryValue: {
     fontFamily: typography.fonts.monoBold,
     color: colors.text,
-    fontSize: typography.sizes.sm,
+    fontSize: typography.sizes.sm + 2,
+  },
+  budgetRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
   },
   categoryValueMuted: {
     fontFamily: typography.fonts.mono,
     color: colors.textMuted,
-    fontSize: typography.sizes.sm,
+    fontSize: 10,
   },
-  categorySeparator: {
-    fontFamily: typography.fonts.mono,
-    color: colors.textMuted,
-    fontSize: typography.sizes.sm,
-  },
-  optionsButton: {
-    padding: 8,
-  },
-
   progressContainer: {
-    height: 3,
-    backgroundColor: colors.surface,
-    borderRadius: 2,
-    marginTop: 16,
+    height: 2,
+    backgroundColor: colors.border,
+    borderRadius: 1,
+    marginTop: 12,
     overflow: 'hidden',
   },
   progressBar: {
@@ -261,6 +264,8 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   emptyContainer: {
     paddingVertical: 40,
     alignItems: 'center',
+    width: '200%', // Adjust for numColumns={2}
+    position: 'absolute',
   },
   emptyText: {
     fontFamily: typography.fonts.regular,

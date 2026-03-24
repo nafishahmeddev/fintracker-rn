@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, TextInput, Text, StyleSheet, TextInputProps } from 'react-native';
 import { BlurView } from 'expo-blur';
+import React from 'react';
+import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -21,7 +21,7 @@ export function Input({ label, error, style, ...props }: InputProps) {
         <BlurView intensity={15} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFillObject} />
         <TextInput
           style={[
-            styles.input, 
+            styles.input,
             (props.keyboardType === 'decimal-pad' || props.keyboardType === 'numeric') ? { fontFamily: typography.fonts.monoBold } : {},
             style
           ]}

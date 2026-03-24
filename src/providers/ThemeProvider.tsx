@@ -1,6 +1,7 @@
 import React, { createContext, useContext } from 'react';
 import { useColorScheme } from 'react-native';
 import { lightTheme, darkTheme, ThemeColors } from '../theme/colors';
+import { useSettings } from './SettingsProvider';
 
 type ThemeContextType = {
   colors: ThemeColors;
@@ -15,8 +16,13 @@ const ThemeContext = createContext<ThemeContextType>({
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+  const { profile } = useSettings();
   const systemColorScheme = useColorScheme();
-  const isDark = systemColorScheme === 'dark';
+  
+  const isDark = profile.theme === 'system' 
+    ? systemColorScheme === 'dark' 
+    : profile.theme === 'dark';
+    
   const colors = isDark ? darkTheme : lightTheme;
 
   return (

@@ -1,6 +1,6 @@
+import { BlurView } from 'expo-blur';
 import React from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
 
