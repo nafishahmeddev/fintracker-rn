@@ -6,6 +6,7 @@ import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 import { useTransactions } from '../../src/features/transactions/hooks/transactions';
 import { Card } from '../../src/components/ui/Card';
+import { MoneyText } from '../../src/components/ui/MoneyText';
 
 export default function TransactionsScreen() {
   const { colors } = useTheme();
@@ -42,14 +43,11 @@ export default function TransactionsScreen() {
                   {tx.category.name} • {new Date(tx.datetime).toLocaleDateString()}
                 </Text>
               </View>
-              <Text 
-                style={[
-                  styles.txAmount, 
-                  { color: tx.type === 'CR' ? colors.success : colors.danger }
-                ]}
-              >
-                {tx.type === 'CR' ? '+' : '-'}${tx.amount.toFixed(2)}
-              </Text>
+              <MoneyText 
+                amount={tx.amount} 
+                type={tx.type} 
+                style={styles.txAmount} 
+              />
             </View>
           </Card>
         )}
@@ -101,6 +99,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginTop: 4,
   },
   txAmount: {
+    fontFamily: typography.fonts.monoBold,
     fontSize: typography.sizes.lg,
     fontWeight: typography.weights.bold,
   },

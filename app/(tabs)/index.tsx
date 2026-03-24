@@ -9,6 +9,7 @@ import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 import { useTransactions } from '../../src/features/transactions/hooks/transactions';
 import { useAccounts } from '../../src/features/accounts/hooks/accounts';
+import { MoneyText } from '../../src/components/ui/MoneyText';
 
 export default function DashboardScreen() {
   const { colors, isDark } = useTheme();
@@ -36,7 +37,7 @@ export default function DashboardScreen() {
         {/* Header / Hero */}
         <View style={styles.heroSection}>
           <Text style={styles.greeting}>TOTAL BALANCE</Text>
-          <Text style={styles.balanceAmount}>${totalBalance.toFixed(2)}</Text>
+          <MoneyText amount={totalBalance} style={styles.balanceAmount} />
           
           <View style={styles.quickStatsRow}>
             <View style={styles.statBox}>
@@ -45,7 +46,7 @@ export default function DashboardScreen() {
               </View>
               <View>
                 <Text style={styles.statLabel}>INCOME</Text>
-                <Text style={styles.statValue}>${totalIncome.toFixed(2)}</Text>
+                <MoneyText amount={totalIncome} style={styles.statValue} />
               </View>
             </View>
             <View style={styles.statDivider} />
@@ -55,7 +56,7 @@ export default function DashboardScreen() {
               </View>
               <View>
                 <Text style={styles.statLabel}>EXPENSE</Text>
-                <Text style={styles.statValue}>${totalExpense.toFixed(2)}</Text>
+                <MoneyText amount={totalExpense} style={styles.statValue} />
               </View>
             </View>
           </View>
@@ -90,14 +91,7 @@ export default function DashboardScreen() {
                 </View>
               </View>
               <View style={styles.txRight}>
-                <Text 
-                  style={[
-                    styles.txAmount, 
-                    { color: tx.type === 'CR' ? colors.success : colors.text }
-                  ]}
-                >
-                  {tx.type === 'CR' ? '+' : '-'}${tx.amount.toFixed(2)}
-                </Text>
+                <MoneyText amount={tx.amount} type={tx.type} style={styles.txAmount} />
                 <Text style={styles.txDate}>{new Date(tx.datetime).toLocaleDateString()}</Text>
               </View>
             </BlurView>
@@ -143,6 +137,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginBottom: 8,
   },
   balanceAmount: {
+    fontFamily: typography.fonts.monoBold,
     color: colors.text,
     fontSize: 56,
     fontWeight: typography.weights.bold,
@@ -186,6 +181,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginBottom: 2,
   },
   statValue: {
+    fontFamily: typography.fonts.monoBold,
     color: colors.text,
     fontSize: typography.sizes.md,
     fontWeight: typography.weights.bold,
@@ -262,11 +258,13 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     alignItems: 'flex-end',
   },
   txAmount: {
+    fontFamily: typography.fonts.monoBold,
     fontSize: typography.sizes.md,
     fontWeight: typography.weights.bold,
     marginBottom: 4,
   },
   txDate: {
+    fontFamily: typography.fonts.mono,
     color: colors.textMuted,
     fontSize: typography.sizes.xs,
   },

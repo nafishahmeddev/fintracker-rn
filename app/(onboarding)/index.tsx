@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, useWindowDimensions, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, useWindowDimensions, KeyboardAvoidingView, Platform, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,9 +14,9 @@ import { useCreateAccount } from '../../src/features/accounts/hooks/accounts';
 import { useCreateCategory } from '../../src/features/categories/hooks/categories';
 
 const ONBOARDING_SLIDES = [
-  { id: '1', type: 'info', title: 'Track Your Finances', subtitle: 'Premium tools to manage your wealth and expenses seamlessly.', emoji: '📈' },
-  { id: '2', type: 'info', title: 'Smart Categories', subtitle: 'Organize your income and expenses precisely with intelligent budgeting.', emoji: '🗂' },
-  { id: '3', type: 'info', title: 'Multi-Currency', subtitle: 'Travel the world without losing track of your global portfolio.', emoji: '🌍' },
+  { id: '1', type: 'info', title: 'Track Your Finances', subtitle: 'Premium tools to manage your wealth and expenses seamlessly.', image: require('../../assets/images/onboarding/finance.png') },
+  { id: '2', type: 'info', title: 'Smart Categories', subtitle: 'Organize your income and expenses precisely with intelligent budgeting.', image: require('../../assets/images/onboarding/categories.png') },
+  { id: '3', type: 'info', title: 'Multi-Currency', subtitle: 'Travel the world without losing track of your global portfolio.', image: require('../../assets/images/onboarding/currency.png') },
   { id: '4', type: 'profile', title: 'Who are you?', subtitle: 'Let us personalize your dashboard.' },
   { id: '5', type: 'currency', title: 'Default Currency', subtitle: 'What is your primary operating currency?' },
   { id: '6', type: 'account', title: 'First Account', subtitle: 'Set up your primary wallet to get started.' },
@@ -120,8 +120,8 @@ export default function OnboardingScreen() {
       <View style={[styles.slide, { width }]}>
         {item.type === 'info' && (
           <View style={styles.centerContent}>
-            <View style={styles.iconPlaceholder}>
-              <Text style={styles.emoji}>{item.emoji}</Text>
+            <View style={styles.imageWrapper}>
+              <Image source={item.image} style={styles.heroImage} resizeMode="contain" />
             </View>
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.subtitle}>{item.subtitle}</Text>
@@ -281,18 +281,14 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 32,
   },
-  iconPlaceholder: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
+  imageWrapper: {
+    width: '100%',
     alignItems: 'center',
     marginBottom: 40,
-    borderWidth: 0,
   },
-  emoji: {
-    fontSize: 60,
+  heroImage: {
+    width: 280,
+    height: 280,
   },
   title: {
     fontSize: typography.sizes.xxl,

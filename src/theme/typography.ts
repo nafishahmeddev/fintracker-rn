@@ -10,14 +10,16 @@ export const typography = {
   },
   weights: {
     regular: '400' as const,
-    medium: '500' as const,
-    semibold: '600' as const,
-    bold: '700' as const,
+    medium: '400' as const,
+    semibold: '500' as const,
+    bold: '500' as const,
   },
   fonts: {
-    regular: 'Inter_400Regular',
-    medium: 'Inter_500Medium',
-    semibold: 'Inter_600SemiBold',
-    bold: 'Inter_700Bold',
+    regular: 'RedHatText_400Regular',
+    medium: 'RedHatText_400Regular',
+    semibold: 'RedHatText_500Medium',
+    bold: 'RedHatText_500Medium',
+    mono: 'JetBrainsMono_700Bold',
+    monoBold: 'JetBrainsMono_700Bold',
   }
 };

@@ -5,10 +5,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
-import { useAccounts, useDeleteAccount } from '../../src/features/accounts/hooks/accounts';
+import { useDeleteAccount, useAccounts } from '../../src/features/accounts/hooks/accounts';
 import { Account } from '../../src/features/accounts/api/accounts';
 import { AccountFormModal } from '../../src/features/accounts/components/AccountFormModal';
 import { Header } from '../../src/components/ui/Header';
+import { MoneyText } from '../../src/components/ui/MoneyText';
 
 export default function AccountsScreen() {
   const { colors } = useTheme();
@@ -60,16 +61,16 @@ export default function AccountsScreen() {
       </View>
 
       <Text style={styles.balanceLabel}>Total Balance</Text>
-      <Text style={styles.balanceValue}>${item.balance.toFixed(2)}</Text>
+      <MoneyText amount={item.balance} currency={item.currency} style={styles.balanceValue} />
 
       <View style={styles.statsRow}>
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>Income</Text>
-          <Text style={[styles.statValue, { color: colors.success }]}>+${item.income.toFixed(2)}</Text>
+          <MoneyText amount={item.income} currency={item.currency} type="CR" style={styles.statValue} />
         </View>
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>Expense</Text>
-          <Text style={[styles.statValue, { color: colors.danger }]}>-${item.expense.toFixed(2)}</Text>
+          <MoneyText amount={item.expense} currency={item.currency} type="DR" style={styles.statValue} />
         </View>
       </View>
       
@@ -125,11 +126,11 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   accountNumber: { color: colors.textMuted, fontSize: typography.sizes.sm, opacity: 0.7, marginTop: 2 },
   optionsButton: { padding: 4, zIndex: 20 },
   balanceLabel: { color: colors.text, fontSize: typography.sizes.xs, fontWeight: typography.weights.bold, textTransform: 'uppercase', marginBottom: 4 },
-  balanceValue: { color: colors.text, fontSize: typography.sizes.xxl, fontWeight: typography.weights.bold, marginBottom: 16 },
+  balanceValue: { fontFamily: typography.fonts.monoBold, color: colors.text, fontSize: typography.sizes.xxl, fontWeight: typography.weights.bold, marginBottom: 16 },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between' },
   statBox: { flex: 1 },
   statLabel: { color: colors.textMuted, fontSize: typography.sizes.xs, fontWeight: typography.weights.bold, textTransform: 'uppercase' },
-  statValue: { fontSize: typography.sizes.md, fontWeight: typography.weights.bold, marginTop: 4 },
+  statValue: { fontFamily: typography.fonts.monoBold, fontSize: typography.sizes.md, fontWeight: typography.weights.bold, marginTop: 4 },
   bgIcon: { position: 'absolute', bottom: 20, right: 20, opacity: 0.1, fontSize: 80 },
   fab: {
     position: 'absolute',

@@ -9,6 +9,7 @@ import { useCategories, useDeleteCategory } from '../../src/features/categories/
 import { Category } from '../../src/features/categories/api/categories';
 import { CategoryFormModal } from '../../src/features/categories/components/CategoryFormModal';
 import { Header } from '../../src/components/ui/Header';
+import { MoneyText } from '../../src/components/ui/MoneyText';
 
 export default function CategoriesScreen() {
   const { colors } = useTheme();
@@ -53,10 +54,10 @@ export default function CategoriesScreen() {
             <Text style={styles.name}>{item.name}</Text>
             {item.budget > 0 ? (
               <Text style={styles.budget}>
-                ${item.expense.toFixed(2)} / ${item.budget.toFixed(2)}
+                <MoneyText amount={item.expense} style={styles.budget} /> / <MoneyText amount={item.budget} style={styles.budget} />
               </Text>
             ) : (
-              <Text style={styles.expense}>Total Exp: ${item.expense.toFixed(2)}</Text>
+              <Text style={styles.expense}>Total Exp: <MoneyText amount={item.expense} style={styles.expense} /></Text>
             )}
           </View>
           
@@ -144,10 +145,12 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginBottom: 4,
   },
   budget: {
+    fontFamily: typography.fonts.mono,
     color: colors.textMuted,
     fontSize: typography.sizes.sm,
   },
   expense: {
+    fontFamily: typography.fonts.mono,
     color: colors.textMuted,
     fontSize: typography.sizes.sm,
   },

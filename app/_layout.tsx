@@ -9,7 +9,31 @@ import { QueryProvider } from '@/src/providers/QueryProvider';
 import { OnboardingProvider } from '@/src/providers/OnboardingProvider';
 import { SettingsProvider } from '@/src/providers/SettingsProvider';
 import { ThemeProvider as CustomThemeProvider } from '@/src/providers/ThemeProvider';
-import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
+import { 
+  useFonts, 
+  RedHatText_400Regular, 
+  RedHatText_500Medium, 
+  RedHatText_600SemiBold, 
+  RedHatText_700Bold 
+} from '@expo-google-fonts/red-hat-text';
+
+import { 
+  JetBrainsMono_400Regular, 
+  JetBrainsMono_700Bold 
+} from '@expo-google-fonts/jetbrains-mono';
+import { Text, TextInput } from 'react-native';
+
+const customizeText = () => {
+  const customTextProps = {
+    style: {
+      fontFamily: 'RedHatText_400Regular',
+    }
+  };
+  // @ts-ignore
+  if (Text.defaultProps) { Text.defaultProps.style = customTextProps.style; } else { Text.defaultProps = customTextProps; }
+  // @ts-ignore
+  if (TextInput.defaultProps) { TextInput.defaultProps.style = customTextProps.style; } else { TextInput.defaultProps = customTextProps; }
+};
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -18,13 +42,17 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+    RedHatText_400Regular,
+    RedHatText_500Medium,
+    RedHatText_600SemiBold,
+    RedHatText_700Bold,
+    JetBrainsMono_400Regular,
+    JetBrainsMono_700Bold,
   });
 
   if (!fontsLoaded) return null;
+
+  customizeText();
 
   return (
     <QueryProvider>

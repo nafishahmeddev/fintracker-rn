@@ -20,7 +20,11 @@ export function Input({ label, error, style, ...props }: InputProps) {
       <View style={[styles.inputContainer, error ? styles.inputError : null]}>
         <BlurView intensity={15} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFillObject} />
         <TextInput
-          style={[styles.input, style]}
+          style={[
+            styles.input, 
+            (props.keyboardType === 'decimal-pad' || props.keyboardType === 'numeric') ? { fontFamily: typography.fonts.monoBold } : {},
+            style
+          ]}
           placeholderTextColor={colors.textMuted}
           {...props}
         />
