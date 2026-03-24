@@ -20,7 +20,12 @@ import { AccountStep } from '../../src/features/onboarding/components/AccountSte
 import { CurrencyStep } from '../../src/features/onboarding/components/CurrencyStep';
 import { ProfileStep } from '../../src/features/onboarding/components/ProfileStep';
 import { WelcomeStep } from '../../src/features/onboarding/components/WelcomeStep';
-import { ONBOARDING_ACCOUNT_COLORS, ONBOARDING_ACCOUNT_ICONS, ONBOARDING_STEPS } from '../../src/features/onboarding/constants';
+import {
+  getDeviceCurrencyCode,
+  ONBOARDING_ACCOUNT_COLORS,
+  ONBOARDING_ACCOUNT_ICONS,
+  ONBOARDING_STEPS,
+} from '../../src/features/onboarding/constants';
 import { createOnboardingStyles } from '../../src/features/onboarding/styles';
 import { parseAmount, toDbColor } from '../../src/features/onboarding/utils';
 import { useOnboarding } from '../../src/providers/OnboardingProvider';
@@ -40,7 +45,7 @@ export default function OnboardingScreen() {
   const currentStep = ONBOARDING_STEPS[stepIndex];
 
   const [name, setName] = React.useState('');
-  const [defaultCurrency, setDefaultCurrency] = React.useState<string>('USD');
+  const [defaultCurrency, setDefaultCurrency] = React.useState<string>(() => getDeviceCurrencyCode());
   const [accountName, setAccountName] = React.useState('Main Wallet');
   const [accountHolder, setAccountHolder] = React.useState('');
   const [accountNumber, setAccountNumber] = React.useState('');

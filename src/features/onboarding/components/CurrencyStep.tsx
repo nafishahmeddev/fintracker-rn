@@ -12,26 +12,28 @@ type CurrencyStepProps = {
 export function CurrencyStep({ currency, onCurrencyChange }: CurrencyStepProps) {
   const { colors } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const selectedCurrency = ONBOARDING_CURRENCIES.find((item) => item.code === currency);
 
   return (
     <View style={styles.wrapper}>
       <View style={styles.hero}>
         <Text style={styles.heroLabel}>SELECTED DEFAULT</Text>
-        <Text style={styles.heroValue}>{currency}</Text>
+        <Text style={styles.heroValue}>{selectedCurrency?.name ?? currency}</Text>
+        <Text style={styles.heroCode}>{selectedCurrency?.code ?? currency}</Text>
         <Text style={styles.heroSubtext}>Used for the first account and as the app default.</Text>
       </View>
 
       <View style={styles.chipsWrap}>
         {ONBOARDING_CURRENCIES.map((item) => {
-          const selected = currency === item;
+          const selected = currency === item.code;
           return (
             <TouchableOpacity
-              key={item}
+              key={item.code}
               style={[styles.chip, selected && styles.chipActive]}
-              onPress={() => onCurrencyChange(item)}
+              onPress={() => onCurrencyChange(item.code)}
               activeOpacity={0.9}
             >
-              <Text style={[styles.chipText, selected && styles.chipTextActive]}>{item}</Text>
+              <Text style={[styles.chipText, selected && styles.chipTextActive]}>{item.code} · {item.name}</Text>
             </TouchableOpacity>
           );
         })}
@@ -57,9 +59,16 @@ const createStyles = (colors: { [key: string]: string }) =>
     },
     heroValue: {
       fontFamily: typography.fonts.heading,
-      fontSize: 30,
+      fontSize: 24,
       color: colors.text,
       letterSpacing: -0.8,
+    },
+    heroCode: {
+      marginTop: 4,
+      fontFamily: typography.fonts.semibold,
+      fontSize: 12,
+      color: colors.textMuted,
+      letterSpacing: 0.6,
     },
     heroSubtext: {
       marginTop: 6,
@@ -74,10 +83,11 @@ const createStyles = (colors: { [key: string]: string }) =>
       gap: 10,
     },
     chip: {
-      minWidth: '22%',
-      height: 42,
       borderRadius: 999,
+      minHeight: 42,
       paddingHorizontal: 14,
+      paddingVertical: 10,
+      alignSelf: 'flex-start',
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: colors.background + 'B8',
@@ -92,6 +102,7 @@ const createStyles = (colors: { [key: string]: string }) =>
       fontFamily: typography.fonts.semibold,
       fontSize: 13,
       color: colors.text,
+      textAlign: 'center',
     },
     chipTextActive: {
       color: colors.background,
