@@ -177,7 +177,14 @@ export default function SettingsScreen() {
         </View>
       </ScrollView>
 
-      <Modal visible={showAppearanceDialog} transparent animationType="fade" onRequestClose={() => setShowAppearanceDialog(false)}>
+      <Modal
+        visible={showAppearanceDialog}
+        transparent
+        animationType="fade"
+        presentationStyle="overFullScreen"
+        statusBarTranslucent
+        onRequestClose={() => setShowAppearanceDialog(false)}
+      >
         <View style={styles.dialogOverlay}>
           <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={() => setShowAppearanceDialog(false)} />
           <View style={styles.dialogCard}>
@@ -214,7 +221,14 @@ export default function SettingsScreen() {
         </View>
       </Modal>
 
-      <Modal visible={showCurrencyDialog} transparent animationType="fade" onRequestClose={() => setShowCurrencyDialog(false)}>
+      <Modal
+        visible={showCurrencyDialog}
+        transparent
+        animationType="fade"
+        presentationStyle="overFullScreen"
+        statusBarTranslucent
+        onRequestClose={() => setShowCurrencyDialog(false)}
+      >
         <View style={styles.dialogOverlay}>
           <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={() => setShowCurrencyDialog(false)} />
           <View style={styles.dialogCard}>
@@ -421,11 +435,17 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     paddingHorizontal: 24,
   },
   dialogCard: {
+    alignSelf: 'stretch',
     borderRadius: 18,
-    backgroundColor: colors.surface,
+    backgroundColor: Platform.OS === 'ios' ? colors.background + 'F2' : colors.background,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.text + '14',
     padding: 16,
+    shadowColor: '#000000',
+    shadowOpacity: 0.22,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 10,
   },
   dialogTitle: {
     fontFamily: typography.fonts.heading,
@@ -448,9 +468,9 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     height: 46,
     borderRadius: 12,
     marginBottom: 8,
-    backgroundColor: colors.background + 'A6',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.text + '10',
     paddingHorizontal: 10,
     flexDirection: 'row',
     alignItems: 'center',
@@ -463,7 +483,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background + 'CC',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -490,9 +510,9 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     width: '31%',
     height: 42,
     borderRadius: 12,
-    backgroundColor: colors.background + 'A6',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.text + '10',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
@@ -515,6 +535,8 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     height: 42,
     borderRadius: 12,
     backgroundColor: colors.primary,
+    borderWidth: 1,
+    borderColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
