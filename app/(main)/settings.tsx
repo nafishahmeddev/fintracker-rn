@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { db } from '../../src/db/client';
 import { accounts, categories, payments } from '../../src/db/schema';
@@ -17,6 +17,16 @@ export default function SettingsScreen() {
   const { profile, updateProfile } = useSettings();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const router = useRouter();
+  const [showAppearanceDialog, setShowAppearanceDialog] = React.useState(false);
+  const [showCurrencyDialog, setShowCurrencyDialog] = React.useState(false);
+
+  const themeOptions: { label: string; value: 'light' | 'dark' | 'system'; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { label: 'Light Mode', value: 'light', icon: 'sunny-outline' },
+    { label: 'Dark Mode', value: 'dark', icon: 'moon-outline' },
+    { label: 'Follow System', value: 'system', icon: 'phone-portrait-outline' },
+  ];
+
+  const currencyOptions = ['USD', 'EUR', 'GBP', 'JPY', 'INR', 'AED', 'BTC'] as const;
 
   const handleResetData = () => {
     Alert.alert(
@@ -44,22 +54,8 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleThemeChange = () => {
-    Alert.alert("Appearance", "Select your preferred theme", [
-      { text: "Light Mode", onPress: () => updateProfile({ theme: 'light' }) },
-      { text: "Dark Mode", onPress: () => updateProfile({ theme: 'dark' }) },
-      { text: "Follow System", onPress: () => updateProfile({ theme: 'system' }) },
-      { text: "Cancel", style: "cancel" }
-    ]);
-  };
-
-  const handleCurrencyChange = () => {
-    const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'INR', 'AED', 'BTC'];
-    Alert.alert("Default Currency", "Set application-wide standard",
-      currencies.map(c => ({ text: c, onPress: () => updateProfile({ defaultCurrency: c }) })),
-      { cancelable: true }
-    );
-  };
+  const handleThemeChange = () => setShowAppearanceDialog(true);
+  const handleCurrencyChange = () => setShowCurrencyDialog(true);
 
   type PreferenceRowProps = {
     icon: any;
@@ -181,6 +177,76 @@ export default function SettingsScreen() {
           <Text style={styles.footerText}>LOCAL-FIRST. PRIVATE. FAST.</Text>
         </View>
       </ScrollView>
+
+      <Modal visible={showAppearanceDialog} transparent animationType="fade" onRequestClose={() => setShowAppearanceDialog(false)}>
+        <View style={styles.dialogOverlay}>
+          <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={() => setShowAppearanceDialog(false)} />
+          <View style={styles.dialogCard}>
+            <Text style={styles.dialogTitle}>Appearance</Text>
+            <Text style={styles.dialogSubtitle}>Select your preferred theme</Text>
+
+            <View style={styles.dialogOptionsWrap}>
+              {themeOptions.map((option) => {
+                const selected = (profile.theme || 'system') === option.value;
+                return (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[styles.dialogOptionRow, selected && styles.dialogOptionRowActive]}
+                    onPress={() => {
+                      updateProfile({ theme: option.value });
+                      setShowAppearanceDialog(false);
+                    }}
+                    activeOpacity={0.9}
+                  >
+                    <View style={[styles.dialogOptionIconWrap, selected && styles.dialogOptionIconWrapActive]}>
+                      <Ionicons name={option.icon} size={16} color={selected ? colors.background : colors.textMuted} />
+                    </View>
+                    <Text style={[styles.dialogOptionText, selected && styles.dialogOptionTextActive]}>{option.label}</Text>
+                    {selected && <Ionicons name="checkmark" size={16} color={colors.background} />}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <TouchableOpacity style={styles.dialogCloseBtn} onPress={() => setShowAppearanceDialog(false)}>
+              <Text style={styles.dialogCloseBtnText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showCurrencyDialog} transparent animationType="fade" onRequestClose={() => setShowCurrencyDialog(false)}>
+        <View style={styles.dialogOverlay}>
+          <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={() => setShowCurrencyDialog(false)} />
+          <View style={styles.dialogCard}>
+            <Text style={styles.dialogTitle}>Default Currency</Text>
+            <Text style={styles.dialogSubtitle}>Set application-wide standard</Text>
+
+            <View style={styles.currencyDialogGrid}>
+              {currencyOptions.map((option) => {
+                const selected = profile.defaultCurrency === option;
+                return (
+                  <TouchableOpacity
+                    key={option}
+                    style={[styles.currencyDialogChip, selected && styles.currencyDialogChipActive]}
+                    onPress={() => {
+                      updateProfile({ defaultCurrency: option });
+                      setShowCurrencyDialog(false);
+                    }}
+                    activeOpacity={0.9}
+                  >
+                    <Text style={[styles.currencyDialogChipText, selected && styles.currencyDialogChipTextActive]}>{option}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <TouchableOpacity style={styles.dialogCloseBtn} onPress={() => setShowCurrencyDialog(false)}>
+              <Text style={styles.dialogCloseBtnText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -348,5 +414,115 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     letterSpacing: 1,
     opacity: 0.65,
     marginBottom: 2,
+  },
+  dialogOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  dialogCard: {
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 16,
+  },
+  dialogTitle: {
+    fontFamily: typography.fonts.heading,
+    fontSize: 22,
+    color: colors.text,
+    letterSpacing: -0.5,
+  },
+  dialogSubtitle: {
+    fontFamily: typography.fonts.regular,
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 4,
+    marginBottom: 14,
+  },
+  dialogOptionsWrap: {
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  dialogOptionRow: {
+    height: 46,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: colors.background + 'A6',
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dialogOptionRowActive: {
+    backgroundColor: colors.text,
+    borderColor: colors.text,
+  },
+  dialogOptionIconWrap: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  dialogOptionIconWrapActive: {
+    backgroundColor: colors.background + '66',
+  },
+  dialogOptionText: {
+    flex: 1,
+    fontFamily: typography.fonts.semibold,
+    fontSize: 13,
+    color: colors.text,
+  },
+  dialogOptionTextActive: {
+    color: colors.background,
+  },
+  currencyDialogGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  currencyDialogChip: {
+    width: '31%',
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: colors.background + 'A6',
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  currencyDialogChipActive: {
+    backgroundColor: colors.text,
+    borderColor: colors.text,
+  },
+  currencyDialogChipText: {
+    fontFamily: typography.fonts.semibold,
+    fontSize: 12,
+    color: colors.text,
+    letterSpacing: 0.4,
+  },
+  currencyDialogChipTextActive: {
+    color: colors.background,
+  },
+  dialogCloseBtn: {
+    marginTop: 6,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dialogCloseBtnText: {
+    fontFamily: typography.fonts.heading,
+    fontSize: 13,
+    color: '#FFFFFF',
+    letterSpacing: 0.2,
   },
 });
