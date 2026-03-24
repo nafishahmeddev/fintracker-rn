@@ -3,14 +3,14 @@ import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-    Alert,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { accounts as accountsTable, categories as categoriesTable } from '../src/db/schema';
@@ -250,6 +250,7 @@ export default function AddTransactionScreen() {
             </View>
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.choiceRow}>
+         
               {accounts.map((account) => {
                 const selected = account.id === selectedAccountId;
                 const accent = toHexColor(account.color);
@@ -258,19 +259,27 @@ export default function AddTransactionScreen() {
                     key={account.id}
                     style={[
                       styles.choiceCard,
-                      selected && styles.choiceCardActive,
-                      { borderTopColor: accent, borderTopWidth: 3 },
+                      selected
+                        ? { backgroundColor: accent + '22', borderColor: accent, borderWidth: 2 }
+                        : null,
                     ]}
                     onPress={() => setSelectedAccountId(account.id)}
-                    activeOpacity={0.9}
+                    activeOpacity={0.85}
                   >
-                    <View style={[styles.choiceIconWrap, { backgroundColor: accent + '18' }]}>
+                    <View style={[styles.choiceIconWrap, { backgroundColor: selected ? accent + '30' : accent + '18' }]}>
                       <Ionicons name={(account.icon || 'wallet-outline') as IoniconName} size={17} color={accent} />
                     </View>
-                    <Text style={styles.choiceTitle} numberOfLines={1}>
+                    <Text style={[styles.choiceTitle, selected && { color: colors.text }]} numberOfLines={1}>
                       {account.name}
                     </Text>
-                    <Text style={styles.choiceMeta}>{account.currency}</Text>
+                    <View style={styles.choiceFooter}>
+                      <Text style={[styles.choiceMeta, selected && { color: accent, fontFamily: typography.fonts.semibold }]}>
+                        {account.currency}
+                      </Text>
+                      {selected ? (
+                        <Ionicons name="checkmark-circle" size={14} color={accent} />
+                      ) : null}
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -530,6 +539,7 @@ const createStyles = (colors: ThemeColors) =>
     },
     choiceRow: {
       paddingRight: 10,
+      paddingVertical: 4,
       gap: 10,
     },
     choiceCard: {
@@ -541,13 +551,12 @@ const createStyles = (colors: ThemeColors) =>
       borderColor: colors.border,
       gap: 8,
     },
-    choiceCardActive: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.text,
-      shadowOpacity: 0.08,
-      shadowRadius: 10,
-      shadowOffset: { width: 0, height: 3 },
-      elevation: 2,
+    choiceCardActive: {},
+    choiceFooter: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: -2,
     },
     choiceIconWrap: {
       width: 32,
@@ -561,12 +570,14 @@ const createStyles = (colors: ThemeColors) =>
       fontSize: 13,
       color: colors.text,
     },
+    choiceTitleActive: {},
     choiceMeta: {
       fontFamily: typography.fonts.regular,
       color: colors.textMuted,
       fontSize: 12,
       marginTop: -2,
     },
+    choiceMetaActive: {},
     categoryChipsWrap: {
       flexDirection: 'row',
       flexWrap: 'wrap',
