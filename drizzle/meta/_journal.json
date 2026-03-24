@@ -8,6 +8,20 @@
       "when": 1774284601601,
       "tag": "0000_large_freak",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1774322527551,
+      "tag": "0001_classy_senator_kelly",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1774322580306,
+      "tag": "0002_exotic_harpoon",
+      "breakpoints": true
     }
   ]
 }

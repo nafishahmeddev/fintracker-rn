@@ -7,6 +7,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { DatabaseProvider } from '@/src/providers/DatabaseProvider';
 import { QueryProvider } from '@/src/providers/QueryProvider';
 import { OnboardingProvider } from '@/src/providers/OnboardingProvider';
+import { SettingsProvider } from '@/src/providers/SettingsProvider';
 import { ThemeProvider as CustomThemeProvider } from '@/src/providers/ThemeProvider';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 
@@ -28,8 +29,9 @@ export default function RootLayout() {
   return (
     <QueryProvider>
       <DatabaseProvider>
-        <OnboardingProvider>
-          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <SettingsProvider>
+          <OnboardingProvider>
+            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <CustomThemeProvider>
               <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -39,7 +41,8 @@ export default function RootLayout() {
             </CustomThemeProvider>
           </ThemeProvider>
         </OnboardingProvider>
-      </DatabaseProvider>
+      </SettingsProvider>
+    </DatabaseProvider>
     </QueryProvider>
   );
 }

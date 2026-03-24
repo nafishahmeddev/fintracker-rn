@@ -8,6 +8,7 @@ import { typography } from '../../src/theme/typography';
 import { useCategories, useDeleteCategory } from '../../src/hooks/categories';
 import { Category } from '../../src/api/categories';
 import { CategoryFormModal } from '../../src/components/modals/CategoryFormModal';
+import { Header } from '../../src/components/ui/Header';
 
 export default function CategoriesScreen() {
   const { colors } = useTheme();
@@ -81,9 +82,7 @@ export default function CategoriesScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Categories</Text>
-      </View>
+      <Header title="Categories" />
 
       {isLoading ? (
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
@@ -112,8 +111,6 @@ export default function CategoriesScreen() {
 
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { padding: 16, paddingHorizontal: 20 },
-  title: { color: colors.text, fontSize: typography.sizes.xl, fontWeight: typography.weights.bold },
   listContent: { padding: 16 },
   
   card: {

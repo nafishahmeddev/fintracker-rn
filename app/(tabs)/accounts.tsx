@@ -8,6 +8,7 @@ import { typography } from '../../src/theme/typography';
 import { useAccounts, useDeleteAccount } from '../../src/hooks/accounts';
 import { Account } from '../../src/api/accounts';
 import { AccountFormModal } from '../../src/components/modals/AccountFormModal';
+import { Header } from '../../src/components/ui/Header';
 
 export default function AccountsScreen() {
   const { colors } = useTheme();
@@ -78,9 +79,7 @@ export default function AccountsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Accounts</Text>
-      </View>
+      <Header title="Accounts" />
 
       {isLoading ? (
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
@@ -109,8 +108,6 @@ export default function AccountsScreen() {
 
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { padding: 16, paddingHorizontal: 20 },
-  title: { color: colors.text, fontSize: typography.sizes.xl, fontWeight: typography.weights.bold },
   listContent: { padding: 16 },
   card: {
     backgroundColor: colors.card,

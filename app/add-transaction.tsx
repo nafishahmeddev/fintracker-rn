@@ -135,7 +135,7 @@ export default function AddTransactionScreen() {
             style={[styles.pickerItem, accountId === acc.id && styles.pickerSelected]}
             onPress={() => setAccountId(acc.id)}
           >
-            <Ionicons name="wallet" size={24} color={accountId === acc.id ? colors.primary : colors.textMuted} />
+            <Ionicons name={(acc.icon as any) || 'wallet'} size={24} color={accountId === acc.id ? colors.primary : colors.textMuted} />
             <Text style={[styles.pickerText, accountId === acc.id && styles.pickerSelectedText]}>{acc.name}</Text>
           </TouchableOpacity>
         ))}
@@ -147,13 +147,13 @@ export default function AddTransactionScreen() {
           <Ionicons name="add" size={24} color={colors.primary} />
           <Text style={styles.pickerAddText}>New</Text>
         </TouchableOpacity>
-        {categories?.map((cat) => (
+        {categories?.filter((c) => c.type === type).map((cat) => (
           <TouchableOpacity 
             key={'cat-'+cat.id} 
             style={[styles.pickerItem, categoryId === cat.id && styles.pickerSelected]}
             onPress={() => setCategoryId(cat.id)}
           >
-            <Ionicons name="grid" size={24} color={categoryId === cat.id ? colors.primary : colors.textMuted} />
+            <Ionicons name={(cat.icon as any) || 'grid'} size={24} color={categoryId === cat.id ? colors.primary : colors.textMuted} />
             <Text style={[styles.pickerText, categoryId === cat.id && styles.pickerSelectedText]}>{cat.name}</Text>
           </TouchableOpacity>
         ))}

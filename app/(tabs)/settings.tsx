@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
+import { Header } from '../../src/components/ui/Header';
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
@@ -37,9 +38,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Settings</Text>
-      </View>
+      <Header title="Settings" />
       
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.section}>
@@ -72,15 +71,6 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  header: {
-    padding: 16,
-    paddingHorizontal: 20,
-  },
-  title: {
-    color: colors.text,
-    fontSize: typography.sizes.xl,
-    fontWeight: typography.weights.bold,
   },
   content: {
     padding: 16,

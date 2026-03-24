@@ -17,6 +17,10 @@ export type AccountFormModalProps = {
   account?: Account;
 };
 
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'CAD', 'AUD', 'BGN'];
+const ICONS = ['wallet', 'card', 'cash', 'pie-chart', 'stats-chart', 'cart', 'car', 'home', 'airplane', 'fitness', 'gift', 'medical', 'business', 'briefcase'];
+const COLORS = ['#00FFAA', '#00F0FF', '#8B5CF6', '#EC4899', '#F43F5E', '#EAB308', '#F97316', '#10B981', '#3B82F6', '#64748B'];
+
 export function AccountFormModal({ visible, onClose, account }: AccountFormModalProps) {
   const { colors } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
@@ -28,6 +32,9 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
   const [holderName, setHolderName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [balance, setBalance] = useState('');
+  const [currency, setCurrency] = useState('USD');
+  const [icon, setIcon] = useState('wallet');
+  const [colorHex, setColorHex] = useState(COLORS[0]);
 
   useEffect(() => {
     if (account && visible) {
@@ -35,11 +42,18 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
       setHolderName(account.holderName);
       setAccountNumber(account.accountNumber);
       setBalance(account.balance.toString());
+      setCurrency(account.currency || 'USD');
+      setIcon(typeof account.icon === 'string' ? account.icon : 'wallet');
+      const hex = '#' + account.color.toString(16).padStart(6, '0').toUpperCase();
+      setColorHex(COLORS.includes(hex) ? hex : hex); // Fallback to raw hex if not in presets
     } else if (visible) {
       setName('');
       setHolderName('');
       setAccountNumber('');
       setBalance('');
+      setCurrency('USD');
+      setIcon('wallet');
+      setColorHex(COLORS[0]);
     }
   }, [account, visible]);
 
@@ -55,6 +69,9 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
             holderName,
             accountNumber,
             balance: parseFloat(balance) || 0,
+            currency,
+            icon,
+            color: parseInt(colorHex.replace('#', '0x')),
           }
         });
       } else {
@@ -63,9 +80,10 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
           holderName: holderName || 'N/A',
           accountNumber: accountNumber || 'N/A',
           balance: parseFloat(balance) || 0,
+          currency,
           isDefault: false,
-          icon: 58000,
-          color: parseInt(colors.primary.replace('#', '0x')),
+          icon,
+          color: parseInt(colorHex.replace('#', '0x')),
           income: 0,
           expense: 0,
         });
@@ -94,6 +112,35 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
           <Input label="Holder Name" value={holderName} onChangeText={setHolderName} placeholder="e.g. John Doe" />
           <Input label="Account Number" value={accountNumber} onChangeText={setAccountNumber} placeholder="e.g. XXXX-XXXX" />
           <Input label="Initial Balance" value={balance} onChangeText={setBalance} placeholder="0.00" keyboardType="decimal-pad" />
+          
+          <Text style={styles.sectionLabel}>Select Currency</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pickerScroll} contentContainerStyle={styles.pickerContent}>
+            {CURRENCIES.map((c) => (
+              <TouchableOpacity key={c} style={[styles.pickerItem, currency === c && styles.pickerSelected]} onPress={() => setCurrency(c)}>
+                <Text style={[styles.pickerText, currency === c && styles.pickerSelectedText]}>{c}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <Text style={styles.sectionLabel}>Select Icon</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pickerScroll} contentContainerStyle={styles.pickerContent}>
+            {ICONS.map((i) => (
+              <TouchableOpacity key={i} style={[styles.pickerItem, icon === i && styles.pickerSelected]} onPress={() => setIcon(i)}>
+                <Ionicons name={i as any} size={24} color={icon === i ? colors.primary : colors.textMuted} />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <Text style={styles.sectionLabel}>Select Color</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pickerScroll} contentContainerStyle={styles.pickerContent}>
+            {COLORS.map((c) => (
+              <TouchableOpacity 
+                key={c} 
+                style={[styles.colorItem, { backgroundColor: c }, colorHex === c && styles.colorSelected]} 
+                onPress={() => setColorHex(c)}
+              />
+            ))}
+          </ScrollView>
         </ScrollView>
 
         <View style={styles.footer}>
@@ -118,5 +165,14 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   closeButton: { padding: 4 },
   headerTitle: { fontSize: typography.sizes.lg, fontWeight: typography.weights.bold, color: colors.text },
   formContainer: { padding: 24 },
+  sectionLabel: { fontSize: typography.sizes.sm, fontWeight: typography.weights.bold, color: colors.textMuted, marginTop: 16, marginBottom: 8 },
+  pickerScroll: { marginBottom: 8 },
+  pickerContent: { paddingRight: 20 },
+  pickerItem: { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: 'transparent', paddingVertical: 12, paddingHorizontal: 16, marginRight: 8, minWidth: 64 },
+  pickerSelected: { borderColor: colors.primary, backgroundColor: colors.primary + '15' },
+  pickerSelectedText: { color: colors.primary, fontWeight: typography.weights.bold },
+  pickerText: { color: colors.text, fontSize: typography.sizes.sm },
+  colorItem: { width: 44, height: 44, borderRadius: 22, marginRight: 12, borderWidth: 2, borderColor: 'transparent' },
+  colorSelected: { borderColor: colors.text, transform: [{ scale: 1.1 }] },
   footer: { padding: 24, paddingBottom: 48 },
 });
