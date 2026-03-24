@@ -2,15 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from 'react-native';
 import { CurrencyPickerModal } from '../../../components/ui/CurrencyPickerModal';
 import { Input } from '../../../components/ui/Input';
@@ -46,7 +46,7 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
   const { width } = useWindowDimensions();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const isEditing = !!account;
-  const swatchSize = useMemo(() => Math.max(38, Math.floor((width - 24 * 2 - 8 * 4) / 5)), [width]);
+  const swatchSize = useMemo(() => Math.max(38, Math.floor((width - 24 * 2 - 8 * 5) / 6)), [width]);
 
   const { mutateAsync: createAccount } = useCreateAccount();
   const { mutateAsync: updateAccount } = useUpdateAccount();

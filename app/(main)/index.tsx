@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, Alert, Animated, Easing, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Easing, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MoneyText } from '../../src/components/ui/MoneyText';
 import { DEFAULT_CURRENCY } from '../../src/constants/currency';
@@ -15,7 +15,8 @@ import { typography } from '../../src/theme/typography';
 
 export default function DashboardScreen() {
   const { colors, isDark } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const { width: screenWidth } = useWindowDimensions();
+  const styles = React.useMemo(() => createStyles(colors, screenWidth), [colors, screenWidth]);
   const router = useRouter();
   const circleOneAnim = React.useRef(new Animated.Value(0)).current;
   const circleTwoAnim = React.useRef(new Animated.Value(0)).current;
@@ -315,7 +316,7 @@ export default function DashboardScreen() {
             );
           })}
           <TouchableOpacity
-            style={[styles.accountCard, { borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', minHeight: 70 }]}
+            style={[styles.accountCard, { borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }]}
             onPress={() => { setEditingAccount(undefined); setShowAccountForm(true); }}
           >
             <Ionicons name="add" size={24} color={colors.textMuted} />
@@ -377,7 +378,7 @@ export default function DashboardScreen() {
   );
 }
 
-const createStyles = (colors: ThemeColors) => StyleSheet.create({
+const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -481,17 +482,17 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   accountCard: {
     backgroundColor: colors.surface,
-    padding: 16,
+    padding: 14,
     borderRadius: 16,
     marginRight: 12,
-    minWidth: 220,
+    width: screenWidth * 0.72,
     borderWidth: 1,
     borderColor: colors.border,
   },
   accountCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   accountIconBox: {
     width: 40,
@@ -524,14 +525,14 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     fontFamily: typography.fonts.regular,
     color: colors.textMuted,
     fontSize: typography.sizes.xs,
-    marginTop: 8,
+    marginTop: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   accountCardStats: {
     flexDirection: 'row',
-    marginTop: 16,
-    paddingTop: 12,
+    marginTop: 10,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderColor: colors.border,
   },
