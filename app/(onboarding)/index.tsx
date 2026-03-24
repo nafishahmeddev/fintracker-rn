@@ -85,12 +85,63 @@ export default function OnboardingScreen() {
   };
 
   const seedCategories = async () => {
-    const defaults = [
-      { name: 'Salary', icon: 'cash-outline', color: toDbColor(colors.success), type: 'CR' as const, budget: 0, expense: 0 },
-      { name: 'Freelance', icon: 'sparkles-outline', color: toDbColor(colors.primary), type: 'CR' as const, budget: 0, expense: 0 },
-      { name: 'Groceries', icon: 'basket-outline', color: toDbColor('#F5C451'), type: 'DR' as const, budget: 0, expense: 0 },
-      { name: 'Transport', icon: 'car-outline', color: toDbColor('#63A4FF'), type: 'DR' as const, budget: 0, expense: 0 },
-      { name: 'Bills', icon: 'receipt-outline', color: toDbColor('#FF8A65'), type: 'DR' as const, budget: 0, expense: 0 },
+    const defaults: { name: string; icon: string; color: number; type: 'CR' | 'DR'; budget: number; expense: number }[] = [
+      // ── Income ──────────────────────────────────────────────────────
+      { name: 'Salary',        icon: 'cash-outline',          color: toDbColor('#6BD498'), type: 'CR', budget: 0, expense: 0 },
+      { name: 'Freelance',     icon: 'sparkles-outline',      color: toDbColor('#B8D641'), type: 'CR', budget: 0, expense: 0 },
+      { name: 'Business',      icon: 'briefcase-outline',     color: toDbColor('#63A4FF'), type: 'CR', budget: 0, expense: 0 },
+      { name: 'Investment',    icon: 'trending-up-outline',   color: toDbColor('#A78BFA'), type: 'CR', budget: 0, expense: 0 },
+      { name: 'Rental',        icon: 'home-outline',          color: toDbColor('#34D399'), type: 'CR', budget: 0, expense: 0 },
+      { name: 'Bonus',         icon: 'gift-outline',          color: toDbColor('#F9A8D4'), type: 'CR', budget: 0, expense: 0 },
+      { name: 'Refund',        icon: 'refresh-outline',       color: toDbColor('#6EE7B7'), type: 'CR', budget: 0, expense: 0 },
+      { name: 'Side Income',   icon: 'wallet-outline',        color: toDbColor('#FCD34D'), type: 'CR', budget: 0, expense: 0 },
+
+      // ── Essentials ──────────────────────────────────────────────────
+      { name: 'Groceries',     icon: 'basket-outline',        color: toDbColor('#F5C451'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Rent',          icon: 'business-outline',      color: toDbColor('#FF8A65'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Utilities',     icon: 'flash-outline',         color: toDbColor('#FBBF24'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Internet',      icon: 'wifi-outline',          color: toDbColor('#60A5FA'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Phone',         icon: 'phone-portrait-outline',color: toDbColor('#818CF8'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Insurance',     icon: 'shield-checkmark-outline', color: toDbColor('#6B7280'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Loan / EMI',    icon: 'card-outline',          color: toDbColor('#EF4444'), type: 'DR', budget: 0, expense: 0 },
+
+      // ── Transport ───────────────────────────────────────────────────
+      { name: 'Transport',     icon: 'car-outline',           color: toDbColor('#63A4FF'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Fuel',          icon: 'speedometer-outline',   color: toDbColor('#FB923C'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Parking',       icon: 'locate-outline',        color: toDbColor('#94A3B8'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Travel',        icon: 'airplane-outline',      color: toDbColor('#38BDF8'), type: 'DR', budget: 0, expense: 0 },
+
+      // ── Food & Social ────────────────────────────────────────────────
+      { name: 'Dining Out',    icon: 'restaurant-outline',    color: toDbColor('#F87171'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Coffee',        icon: 'cafe-outline',          color: toDbColor('#C4A35A'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Alcohol',       icon: 'wine-outline',          color: toDbColor('#C084FC'), type: 'DR', budget: 0, expense: 0 },
+
+      // ── Health & Fitness ─────────────────────────────────────────────
+      { name: 'Healthcare',    icon: 'medkit-outline',        color: toDbColor('#34D399'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Pharmacy',      icon: 'bandage-outline',       color: toDbColor('#6EE7B7'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Gym',           icon: 'barbell-outline',       color: toDbColor('#4ADE80'), type: 'DR', budget: 0, expense: 0 },
+
+      // ── Lifestyle ────────────────────────────────────────────────────
+      { name: 'Shopping',      icon: 'bag-outline',           color: toDbColor('#F472B6'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Electronics',   icon: 'hardware-chip-outline', color: toDbColor('#A5B4FC'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Subscriptions', icon: 'repeat-outline',        color: toDbColor('#C084FC'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Entertainment', icon: 'film-outline',          color: toDbColor('#FCA5A5'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Games',         icon: 'game-controller-outline', color: toDbColor('#7C3AED'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Books',         icon: 'book-outline',          color: toDbColor('#D97706'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Education',     icon: 'school-outline',        color: toDbColor('#0EA5E9'), type: 'DR', budget: 0, expense: 0 },
+
+      // ── Home ─────────────────────────────────────────────────────────
+      { name: 'Home & Garden', icon: 'leaf-outline',          color: toDbColor('#86EFAC'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Maintenance',   icon: 'build-outline',         color: toDbColor('#9CA3AF'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Furniture',     icon: 'bed-outline',           color: toDbColor('#C4B5FD'), type: 'DR', budget: 0, expense: 0 },
+
+      // ── Personal & Other ─────────────────────────────────────────────
+      { name: 'Personal Care', icon: 'cut-outline',           color: toDbColor('#F9A8D4'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Kids',          icon: 'happy-outline',         color: toDbColor('#FCD34D'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Pets',          icon: 'paw-outline',           color: toDbColor('#A3E635'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Charity',       icon: 'heart-outline',         color: toDbColor('#FB7185'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Taxes',         icon: 'document-text-outline', color: toDbColor('#6B7280'), type: 'DR', budget: 0, expense: 0 },
+      { name: 'Other',         icon: 'ellipsis-horizontal-outline', color: toDbColor('#94A3B8'), type: 'DR', budget: 0, expense: 0 },
     ];
 
     for (const category of defaults) {
