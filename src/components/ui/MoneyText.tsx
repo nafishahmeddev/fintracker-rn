@@ -43,7 +43,7 @@ export function MoneyText({
     <Text 
       style={[
         styles.base, 
-        { color, fontFamily, fontWeight: typography.weights[weight] }, 
+        { color, fontFamily }, 
         style
       ]} 
       {...props}

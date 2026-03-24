@@ -20,6 +20,9 @@ export default function DashboardScreen() {
   const circleOneAnim = React.useRef(new Animated.Value(0)).current;
   const circleTwoAnim = React.useRef(new Animated.Value(0)).current;
   const circleThreeAnim = React.useRef(new Animated.Value(0)).current;
+  const circleOneOpac = React.useRef(new Animated.Value(0)).current;
+  const circleTwoOpac = React.useRef(new Animated.Value(0)).current;
+  const circleThreeOpac = React.useRef(new Animated.Value(0)).current;
 
   const { data: transactions, isLoading: txLoading } = useTransactions();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
@@ -75,6 +78,9 @@ export default function DashboardScreen() {
       createLoop(circleOneAnim, 9000, 1),
       createLoop(circleTwoAnim, 12000, 1),
       createLoop(circleThreeAnim, 10500, 1),
+      createLoop(circleOneOpac, 7000, 1),
+      createLoop(circleTwoOpac, 11000, 1),
+      createLoop(circleThreeOpac, 8500, 1),
     ];
 
     animations.forEach((animation) => animation.start());
@@ -84,85 +90,91 @@ export default function DashboardScreen() {
       circleOneAnim.stopAnimation();
       circleTwoAnim.stopAnimation();
       circleThreeAnim.stopAnimation();
+      circleOneOpac.stopAnimation();
+      circleTwoOpac.stopAnimation();
+      circleThreeOpac.stopAnimation();
     };
-  }, [circleOneAnim, circleTwoAnim, circleThreeAnim]);
+  }, [circleOneAnim, circleTwoAnim, circleThreeAnim, circleOneOpac, circleTwoOpac, circleThreeOpac]);
 
   const circleOneStyle = React.useMemo(
     () => ({
+      opacity: circleOneOpac.interpolate({ inputRange: [0, 1], outputRange: [0.45, 0.9] }),
       transform: [
         {
           translateX: circleOneAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, 18],
+            outputRange: [0, 36],
           }),
         },
         {
           translateY: circleOneAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, 12],
+            outputRange: [0, 28],
           }),
         },
         {
           scale: circleOneAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [1, 1.08],
+            outputRange: [1, 1.22],
           }),
         },
       ],
     }),
-    [circleOneAnim]
+    [circleOneAnim, circleOneOpac]
   );
 
   const circleTwoStyle = React.useMemo(
     () => ({
+      opacity: circleTwoOpac.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.75] }),
       transform: [
         {
           translateX: circleTwoAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, -22],
+            outputRange: [0, -44],
           }),
         },
         {
           translateY: circleTwoAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, 16],
+            outputRange: [0, 32],
           }),
         },
         {
           scale: circleTwoAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [1, 1.05],
+            outputRange: [1, 1.16],
           }),
         },
       ],
     }),
-    [circleTwoAnim]
+    [circleTwoAnim, circleTwoOpac]
   );
 
   const circleThreeStyle = React.useMemo(
     () => ({
+      opacity: circleThreeOpac.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0.85] }),
       transform: [
         {
           translateX: circleThreeAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, 14],
+            outputRange: [0, 28],
           }),
         },
         {
           translateY: circleThreeAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, -14],
+            outputRange: [0, -30],
           }),
         },
         {
           scale: circleThreeAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [1, 1.06],
+            outputRange: [1, 1.18],
           }),
         },
       ],
     }),
-    [circleThreeAnim]
+    [circleThreeAnim, circleThreeOpac]
   );
 
   const handleAccountLongPress = (acc: any) => {
@@ -196,9 +208,9 @@ export default function DashboardScreen() {
     <SafeAreaView style={styles.container}>
       {/* Background Decorative Circles */}
       <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-        <Animated.View style={[styles.bgCircle, { top: -50, left: -50, width: 300, height: 300, backgroundColor: colors.primary + '30' }, circleOneStyle]} />
-        <Animated.View style={[styles.bgCircle, { top: 200, right: -100, width: 400, height: 400, backgroundColor: colors.text + '10' }, circleTwoStyle]} />
-        <Animated.View style={[styles.bgCircle, { bottom: -100, left: 50, width: 350, height: 350, backgroundColor: colors.primary + '20' }, circleThreeStyle]} />
+        <Animated.View style={[styles.bgCircle, { top: -60, left: -60, width: 340, height: 340, backgroundColor: colors.primary }, circleOneStyle]} />
+        <Animated.View style={[styles.bgCircle, { top: 180, right: -110, width: 440, height: 440, backgroundColor: colors.primaryDark }, circleTwoStyle]} />
+        <Animated.View style={[styles.bgCircle, { bottom: -110, left: 40, width: 380, height: 380, backgroundColor: colors.primary }, circleThreeStyle]} />
       </View>
 
       {/* Frosted Glass Overlay */}
