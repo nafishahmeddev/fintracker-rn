@@ -10,12 +10,12 @@ import { typography } from '../src/theme/typography';
 import { Input } from '../src/components/ui/Input';
 import { Button } from '../src/components/ui/Button';
 
-import { useCreateTransaction } from '../src/hooks/transactions';
-import { useAccounts } from '../src/hooks/accounts';
-import { useCategories } from '../src/hooks/categories';
+import { useCreateTransaction } from '../src/features/transactions/hooks/transactions';
+import { useAccounts } from '../src/features/accounts/hooks/accounts';
+import { useCategories } from '../src/features/categories/hooks/categories';
 
-import { AccountFormModal } from '../src/components/modals/AccountFormModal';
-import { CategoryFormModal } from '../src/components/modals/CategoryFormModal';
+import { AccountFormModal } from '../src/features/accounts/components/AccountFormModal';
+import { CategoryFormModal } from '../src/features/categories/components/CategoryFormModal';
 
 export default function AddTransactionScreen() {
   const { colors } = useTheme();
@@ -25,8 +25,7 @@ export default function AddTransactionScreen() {
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [note, setNote] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'CR' | 'DR'>('DR');
   const [accountId, setAccountId] = useState<number | null>(null);
@@ -43,8 +42,8 @@ export default function AddTransactionScreen() {
     if (!accountId || !categoryId) {
       return alert("Please select an Account and a Category.");
     }
-    if (!title || !amount) {
-      return alert("Please provide a Title and Amount.");
+    if (!note || !amount) {
+      return alert("Please provide a Note and Amount.");
     }
 
     try {
@@ -52,8 +51,7 @@ export default function AddTransactionScreen() {
         accountId,
         categoryId,
         amount: parseFloat(amount) || 0,
-        title,
-        description,
+        note,
         type,
         datetime: date.toISOString(),
       });
@@ -82,8 +80,7 @@ export default function AddTransactionScreen() {
         />
       </View>
 
-      <Input label="Title" placeholder="e.g. Groceries" value={title} onChangeText={setTitle} />
-      <Input label="Description (Optional)" placeholder="Additional notes..." value={description} onChangeText={setDescription} />
+      <Input label="Note" placeholder="e.g. Groceries at Walmart" value={note} onChangeText={setNote} />
       <Input label="Amount" placeholder="0.00" value={amount} onChangeText={setAmount} keyboardType="decimal-pad" />
 
       {/* Date & Time Picker Triggers */}

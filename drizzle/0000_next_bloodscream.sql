@@ -3,9 +3,10 @@ CREATE TABLE `accounts` (
 	`name` text NOT NULL,
 	`holderName` text NOT NULL,
 	`accountNumber` text NOT NULL,
-	`icon` integer NOT NULL,
+	`icon` text DEFAULT 'wallet' NOT NULL,
 	`color` integer NOT NULL,
 	`isDefault` integer DEFAULT false NOT NULL,
+	`currency` text DEFAULT 'USD' NOT NULL,
 	`balance` real DEFAULT 0 NOT NULL,
 	`income` real DEFAULT 0 NOT NULL,
 	`expense` real DEFAULT 0 NOT NULL
@@ -14,8 +15,9 @@ CREATE TABLE `accounts` (
 CREATE TABLE `categories` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
-	`icon` integer NOT NULL,
+	`icon` text DEFAULT 'grid' NOT NULL,
 	`color` integer NOT NULL,
+	`type` text DEFAULT 'DR' NOT NULL,
 	`budget` real DEFAULT 0 NOT NULL,
 	`expense` real DEFAULT 0 NOT NULL
 );
@@ -27,8 +29,7 @@ CREATE TABLE `payments` (
 	`amount` real NOT NULL,
 	`type` text NOT NULL,
 	`datetime` text NOT NULL,
-	`title` text NOT NULL,
-	`description` text,
+	`note` text NOT NULL,
 	FOREIGN KEY (`account_id`) REFERENCES `accounts`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON UPDATE no action ON DELETE cascade
 );

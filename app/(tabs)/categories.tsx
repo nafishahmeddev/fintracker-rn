@@ -5,9 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
-import { useCategories, useDeleteCategory } from '../../src/hooks/categories';
-import { Category } from '../../src/api/categories';
-import { CategoryFormModal } from '../../src/components/modals/CategoryFormModal';
+import { useCategories, useDeleteCategory } from '../../src/features/categories/hooks/categories';
+import { Category } from '../../src/features/categories/api/categories';
+import { CategoryFormModal } from '../../src/features/categories/components/CategoryFormModal';
 import { Header } from '../../src/components/ui/Header';
 
 export default function CategoriesScreen() {

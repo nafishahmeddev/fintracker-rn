@@ -1,5 +1,5 @@
-import { db } from '../db/client';
-import { accounts } from '../db/schema';
+import { db } from '../../../db/client';
+import { accounts } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
 
 export type Account = typeof accounts.$inferSelect;

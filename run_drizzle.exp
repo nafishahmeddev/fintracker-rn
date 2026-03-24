@@ -1,0 +1,5 @@
+#!/usr/bin/expect -f
+spawn npx drizzle-kit generate
+expect "Is note column in payments table created or renamed from another column?"
+send "\r"
+expect eof

@@ -7,8 +7,8 @@ import { BlurView } from 'expo-blur';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
-import { useTransactions } from '../../src/hooks/transactions';
-import { useAccounts } from '../../src/hooks/accounts';
+import { useTransactions } from '../../src/features/transactions/hooks/transactions';
+import { useAccounts } from '../../src/features/accounts/hooks/accounts';
 
 export default function DashboardScreen() {
   const { colors, isDark } = useTheme();
@@ -85,7 +85,7 @@ export default function DashboardScreen() {
                   <Ionicons name={tx.type === 'CR' ? 'arrow-down' : 'arrow-up'} size={18} color={tx.type === 'CR' ? colors.success : colors.danger} />
                 </View>
                 <View>
-                  <Text style={styles.txTitle}>{tx.title || 'Untitled'}</Text>
+                  <Text style={styles.txTitle}>{tx.note || 'Untitled'}</Text>
                   <Text style={styles.txCategory}>{tx.category?.name || 'Uncategorized'}</Text>
                 </View>
               </View>
@@ -129,7 +129,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   content: {
     padding: 24,
-    paddingBottom: 60,
+    paddingBottom: 120,
   },
   heroSection: {
     alignItems: 'center',

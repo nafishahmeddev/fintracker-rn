@@ -5,9 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
-import { useAccounts, useDeleteAccount } from '../../src/hooks/accounts';
-import { Account } from '../../src/api/accounts';
-import { AccountFormModal } from '../../src/components/modals/AccountFormModal';
+import { useAccounts, useDeleteAccount } from '../../src/features/accounts/hooks/accounts';
+import { Account } from '../../src/features/accounts/api/accounts';
+import { AccountFormModal } from '../../src/features/accounts/components/AccountFormModal';
 import { Header } from '../../src/components/ui/Header';
 
 export default function AccountsScreen() {

@@ -58,7 +58,7 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
 
 const styles = StyleSheet.create({
   tabBarContainer: {
-    // position: 'absolute',
+    position: 'absolute',
     bottom: Platform.OS === 'ios' ? 24 : 16,
     left: 20,
     right: 20,

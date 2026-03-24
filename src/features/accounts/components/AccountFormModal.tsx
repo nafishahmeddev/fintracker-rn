@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../providers/ThemeProvider';
-import { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { useCreateAccount, useUpdateAccount } from '../../hooks/accounts';
+import { useTheme } from '../../../providers/ThemeProvider';
+import { ThemeColors } from '../../../theme/colors';
+import { typography } from '../../../theme/typography';
+import { Input } from '../../../components/ui/Input';
+import { Button } from '../../../components/ui/Button';
+import { useCreateAccount, useUpdateAccount } from '../hooks/accounts';
 
-import { Account } from '../../api/accounts';
+import { Account } from '../api/accounts';
 
 export type AccountFormModalProps = {
   visible: boolean;

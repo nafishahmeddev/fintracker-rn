@@ -31,6 +31,5 @@ export const payments = sqliteTable('payments', {
   amount: real('amount').notNull(),
   type: text('type', { enum: ['CR', 'DR'] }).notNull(),
   datetime: text('datetime').notNull(),
-  title: text('title').notNull(),
-  description: text('description'),
+  note: text('note').notNull(),
 });

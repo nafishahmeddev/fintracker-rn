@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
-import { useTransactions } from '../../src/hooks/transactions';
+import { useTransactions } from '../../src/features/transactions/hooks/transactions';
 import { Card } from '../../src/components/ui/Card';
 
 export default function TransactionsScreen() {
@@ -37,7 +37,7 @@ export default function TransactionsScreen() {
           <Card style={styles.txCard}>
             <View style={styles.txRow}>
               <View>
-                <Text style={styles.txTitle}>{tx.title || 'Untitled'}</Text>
+                <Text style={styles.txTitle}>{tx.note || 'Untitled'}</Text>
                 <Text style={styles.txSubtitle}>
                   {tx.category.name} • {new Date(tx.datetime).toLocaleDateString()}
                 </Text>

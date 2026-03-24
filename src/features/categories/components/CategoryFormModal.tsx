@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../providers/ThemeProvider';
-import { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { useCreateCategory, useUpdateCategory } from '../../hooks/categories';
+import { useTheme } from '../../../providers/ThemeProvider';
+import { ThemeColors } from '../../../theme/colors';
+import { typography } from '../../../theme/typography';
+import { Input } from '../../../components/ui/Input';
+import { Button } from '../../../components/ui/Button';
+import { useCreateCategory, useUpdateCategory } from '../hooks/categories';
 
-import { Category } from '../../api/categories';
+import { Category } from '../api/categories';
 
 export type CategoryFormModalProps = {
   visible: boolean;

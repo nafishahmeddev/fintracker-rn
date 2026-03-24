@@ -10,8 +10,8 @@ import { Button } from '../../src/components/ui/Button';
 import { Input } from '../../src/components/ui/Input';
 import { useOnboarding } from '../../src/providers/OnboardingProvider';
 import { useSettings } from '../../src/providers/SettingsProvider';
-import { useCreateAccount } from '../../src/hooks/accounts';
-import { useCreateCategory } from '../../src/hooks/categories';
+import { useCreateAccount } from '../../src/features/accounts/hooks/accounts';
+import { useCreateCategory } from '../../src/features/categories/hooks/categories';
 
 const ONBOARDING_SLIDES = [
   { id: '1', type: 'info', title: 'Track Your Finances', subtitle: 'Premium tools to manage your wealth and expenses seamlessly.', emoji: '📈' },

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9dba5dc5-a3a7-40c3-9eb9-9bc48307d680",
+  "id": "98f8299e-ad63-4737-9667-2c8887410111",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "accounts": {
@@ -37,10 +37,11 @@
         },
         "icon": {
           "name": "icon",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'wallet'"
         },
         "color": {
           "name": "color",
@@ -56,6 +57,14 @@
           "notNull": true,
           "autoincrement": false,
           "default": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'USD'"
         },
         "balance": {
           "name": "balance",
@@ -107,10 +116,11 @@
         },
         "icon": {
           "name": "icon",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'grid'"
         },
         "color": {
           "name": "color",
@@ -118,6 +128,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'DR'"
         },
         "budget": {
           "name": "budget",
@@ -187,18 +205,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "title": {
-          "name": "title",
+        "note": {
+          "name": "note",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         }
       },
