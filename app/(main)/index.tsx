@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Easing, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MoneyText } from '../../src/components/ui/MoneyText';
 import { DEFAULT_CURRENCY } from '../../src/constants/currency';
@@ -17,6 +17,9 @@ export default function DashboardScreen() {
   const { colors, isDark } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const router = useRouter();
+  const circleOneAnim = React.useRef(new Animated.Value(0)).current;
+  const circleTwoAnim = React.useRef(new Animated.Value(0)).current;
+  const circleThreeAnim = React.useRef(new Animated.Value(0)).current;
 
   const { data: transactions, isLoading: txLoading } = useTransactions();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
@@ -45,6 +48,122 @@ export default function DashboardScreen() {
       setSelectedCurrency(currencyKeys[0]);
     }
   }, [currencyKeys, selectedCurrency]);
+
+  React.useEffect(() => {
+    const createLoop = (
+      animatedValue: Animated.Value,
+      duration: number,
+      toValue: number
+    ) => Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedValue, {
+          toValue,
+          duration,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 0,
+          duration,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    const animations = [
+      createLoop(circleOneAnim, 9000, 1),
+      createLoop(circleTwoAnim, 12000, 1),
+      createLoop(circleThreeAnim, 10500, 1),
+    ];
+
+    animations.forEach((animation) => animation.start());
+
+    return () => {
+      animations.forEach((animation) => animation.stop());
+      circleOneAnim.stopAnimation();
+      circleTwoAnim.stopAnimation();
+      circleThreeAnim.stopAnimation();
+    };
+  }, [circleOneAnim, circleTwoAnim, circleThreeAnim]);
+
+  const circleOneStyle = React.useMemo(
+    () => ({
+      transform: [
+        {
+          translateX: circleOneAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 18],
+          }),
+        },
+        {
+          translateY: circleOneAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 12],
+          }),
+        },
+        {
+          scale: circleOneAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [1, 1.08],
+          }),
+        },
+      ],
+    }),
+    [circleOneAnim]
+  );
+
+  const circleTwoStyle = React.useMemo(
+    () => ({
+      transform: [
+        {
+          translateX: circleTwoAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, -22],
+          }),
+        },
+        {
+          translateY: circleTwoAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 16],
+          }),
+        },
+        {
+          scale: circleTwoAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [1, 1.05],
+          }),
+        },
+      ],
+    }),
+    [circleTwoAnim]
+  );
+
+  const circleThreeStyle = React.useMemo(
+    () => ({
+      transform: [
+        {
+          translateX: circleThreeAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 14],
+          }),
+        },
+        {
+          translateY: circleThreeAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, -14],
+          }),
+        },
+        {
+          scale: circleThreeAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [1, 1.06],
+          }),
+        },
+      ],
+    }),
+    [circleThreeAnim]
+  );
 
   const handleAccountLongPress = (acc: any) => {
     Alert.alert(
@@ -77,9 +196,9 @@ export default function DashboardScreen() {
     <SafeAreaView style={styles.container}>
       {/* Background Decorative Circles */}
       <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-        <View style={[styles.bgCircle, { top: -50, left: -50, width: 300, height: 300, backgroundColor: colors.primary + '30' }]} />
-        <View style={[styles.bgCircle, { top: 200, right: -100, width: 400, height: 400, backgroundColor: colors.text + '10' }]} />
-        <View style={[styles.bgCircle, { bottom: -100, left: 50, width: 350, height: 350, backgroundColor: colors.primary + '20' }]} />
+        <Animated.View style={[styles.bgCircle, { top: -50, left: -50, width: 300, height: 300, backgroundColor: colors.primary + '30' }, circleOneStyle]} />
+        <Animated.View style={[styles.bgCircle, { top: 200, right: -100, width: 400, height: 400, backgroundColor: colors.text + '10' }, circleTwoStyle]} />
+        <Animated.View style={[styles.bgCircle, { bottom: -100, left: 50, width: 350, height: 350, backgroundColor: colors.primary + '20' }, circleThreeStyle]} />
       </View>
 
       {/* Frosted Glass Overlay */}
