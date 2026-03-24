@@ -77,8 +77,8 @@ export default function CategoriesScreen() {
           
           {item.budget > 0 && (
             <View style={styles.budgetRow}>
-              <Text style={styles.categoryValueMuted}>of </Text>
-              <MoneyText amount={item.budget} style={styles.categoryValueMuted} />
+              <Text style={styles.budgetPrefixText}>of </Text>
+              <MoneyText amount={item.budget} style={styles.budgetAmountText} />
             </View>
           )}
         </View>
@@ -192,7 +192,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.text,
   },
   segmentText: {
-    fontFamily: typography.fonts.monoBold,
+    fontFamily: typography.fonts.semibold,
     color: colors.textMuted,
     fontSize: 11,
     letterSpacing: 1.5,
@@ -236,7 +236,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginBottom: 4,
   },
   categoryValue: {
-    fontFamily: typography.fonts.monoBold,
+    fontFamily: typography.fonts.amountBold,
     color: colors.text,
     fontSize: typography.sizes.sm + 2,
   },
@@ -245,8 +245,13 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     alignItems: 'center',
     marginTop: 2,
   },
-  categoryValueMuted: {
-    fontFamily: typography.fonts.mono,
+  budgetPrefixText: {
+    fontFamily: typography.fonts.regular,
+    color: colors.textMuted,
+    fontSize: 10,
+  },
+  budgetAmountText: {
+    fontFamily: typography.fonts.amountRegular,
     color: colors.textMuted,
     fontSize: 10,
   },

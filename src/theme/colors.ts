@@ -1,4 +1,20 @@
-export const darkTheme = {
+export type ThemePalette = {
+  background: string;
+  card: string;
+  surface: string;
+  primary: string;
+  primaryLight: string;
+  primaryDark: string;
+  secondary: string;
+  text: string;
+  textMuted: string;
+  border: string;
+  success: string;
+  danger: string;
+  warning: string;
+};
+
+export const darkTheme: ThemePalette = {
   background: '#000000', // Pitch OLED Black
   card: 'rgba(255, 255, 255, 0.02)', // Extremely subtle phantom bounds
   surface: 'rgba(255, 255, 255, 0.05)',
@@ -14,7 +30,7 @@ export const darkTheme = {
   warning: '#F59E0B',
 };
 
-export const lightTheme = {
+export const lightTheme: ThemePalette = {
   background: '#FFFFFF', // Pure White
   card: 'rgba(0, 0, 0, 0.02)', 
   surface: 'rgba(0, 0, 0, 0.05)',
@@ -30,4 +46,4 @@ export const lightTheme = {
   warning: '#D97706',
 };
 
-export type ThemeColors = typeof darkTheme;
+export type ThemeColors = ThemePalette;

@@ -1,15 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import React, { useEffect, useState } from 'react';
-import { Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Button } from '../../../components/ui/Button';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    useWindowDimensions,
+    View,
+} from 'react-native';
 import { Input } from '../../../components/ui/Input';
 import { useTheme } from '../../../providers/ThemeProvider';
 import { ThemeColors } from '../../../theme/colors';
 import { typography } from '../../../theme/typography';
-import { useCreateCategory, useUpdateCategory } from '../hooks/categories';
-
 import { Category } from '../api/categories';
+import { useCreateCategory, useUpdateCategory } from '../hooks/categories';
 
 export type CategoryFormModalProps = {
   visible: boolean;
@@ -17,211 +25,414 @@ export type CategoryFormModalProps = {
   category?: Category;
 };
 
-const ICONS = ['grid', 'fast-food', 'cafe', 'car', 'bus', 'airplane', 'home', 'medkit', 'barbell', 'book', 'game-controller', 'gift', 'heart', 'star'];
-const COLORS = ['#00FFAA', '#00F0FF', '#8B5CF6', '#EC4899', '#F43F5E', '#EAB308', '#F97316', '#10B981', '#3B82F6', '#64748B'];
+const ICONS = [
+  'grid-outline',
+  'fast-food-outline',
+  'cafe-outline',
+  'car-outline',
+  'bus-outline',
+  'airplane-outline',
+  'home-outline',
+  'medkit-outline',
+  'barbell-outline',
+  'book-outline',
+  'game-controller-outline',
+  'gift-outline',
+  'heart-outline',
+  'star-outline',
+] as const;
+
+const COLORS = [
+  '#00FFAA',
+  '#00F0FF',
+  '#8B5CF6',
+  '#EC4899',
+  '#F43F5E',
+  '#EAB308',
+  '#F97316',
+  '#10B981',
+  '#3B82F6',
+  '#64748B',
+] as const;
 
 export function CategoryFormModal({ visible, onClose, category }: CategoryFormModalProps) {
   const { colors, isDark } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const isEditing = !!category;
-  const { mutateAsync: createCategory, isPending: creating } = useCreateCategory();
-  const { mutateAsync: updateCategory, isPending: updating } = useUpdateCategory();
+  const iconCellSize = useMemo(() => Math.max(42, Math.floor((width - 24 * 2 - 8 * 5) / 6)), [width]);
+  const swatchSize = iconCellSize;
+
+  const { mutateAsync: createCategory } = useCreateCategory();
+  const { mutateAsync: updateCategory } = useUpdateCategory();
 
   const [name, setName] = useState('');
   const [budget, setBudget] = useState('');
   const [type, setType] = useState<'CR' | 'DR'>('DR');
-  const [icon, setIcon] = useState('grid');
-  const [colorHex, setColorHex] = useState(COLORS[0]);
+  const [icon, setIcon] = useState<string>(ICONS[0]);
+  const [colorHex, setColorHex] = useState<string>(COLORS[0]);
 
   useEffect(() => {
-    if (category && visible) {
+    if (!visible) return;
+
+    if (category) {
       setName(category.name);
-      setBudget(category.budget?.toString() || '');
-      setType(category.type as 'CR' | 'DR' || 'DR');
-      setIcon(typeof category.icon === 'string' ? category.icon : 'grid');
-      const hex = '#' + category.color.toString(16).padStart(6, '0').toUpperCase();
-      setColorHex(COLORS.includes(hex) ? hex : hex);
-    } else if (visible) {
-      setName('');
-      setBudget('');
-      setType('DR');
-      setIcon('grid');
-      setColorHex(COLORS[0]);
+      setBudget(category.budget > 0 ? String(category.budget) : '');
+      setType(category.type);
+      setIcon(typeof category.icon === 'string' ? category.icon : ICONS[0]);
+      setColorHex(`#${category.color.toString(16).padStart(6, '0').toUpperCase()}`);
+      return;
     }
+
+    setName('');
+    setBudget('');
+    setType('DR');
+    setIcon(ICONS[0]);
+    setColorHex(COLORS[0]);
   }, [category, visible]);
 
   const handleSave = async () => {
-    if (!name) return alert("Category Name is required");
+    if (!name.trim()) return;
+
+    const payload = {
+      name: name.trim(),
+      type,
+      icon,
+      color: parseInt(colorHex.replace('#', ''), 16),
+      budget: budget.trim() ? parseFloat(budget) : undefined,
+    };
 
     try {
-      if (isEditing) {
-        await updateCategory({
-          id: category.id,
-          data: {
-            name,
-            budget: parseFloat(budget) || 0,
-            type,
-            icon,
-            color: parseInt(colorHex.replace('#', '0x')),
-          }
-        });
+      if (isEditing && category) {
+        await updateCategory({ id: category.id, data: payload });
       } else {
-        await createCategory({
-          name,
-          icon,
-          type,
-          color: parseInt(colorHex.replace('#', '0x')),
-          budget: parseFloat(budget) || 0,
-          expense: 0,
-        });
+        await createCategory(payload);
       }
       onClose();
-    } catch {
-      alert("Failed to save category.");
+    } catch (error) {
+      console.error('Failed to save category:', error);
     }
   };
 
-  const isPending = creating || updating;
-
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <TouchableOpacity style={styles.dismissArea} onPress={onClose} activeOpacity={1} />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.overlay}>
+        <TouchableOpacity style={styles.backdrop} onPress={onClose} activeOpacity={1} />
+
         <View style={styles.sheet}>
+          <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+            <View style={[styles.glow, { top: -120, right: -80, width: 280, height: 280, backgroundColor: colors.primary + '1F' }]} />
+            <View style={[styles.glow, { bottom: -100, left: -70, width: 260, height: 260, backgroundColor: colorHex + '20' }]} />
+          </View>
+
           <BlurView
-            intensity={Platform.OS === 'ios' ? 60 : 90}
+            intensity={Platform.OS === 'ios' ? 70 : 94}
             tint={isDark ? 'dark' : 'light'}
-            experimentalBlurMethod={"dimezisBlurView"}
+            experimentalBlurMethod={'dimezisBlurView' as any}
             style={StyleSheet.absoluteFillObject}
           />
-          {Platform.OS === 'android' && <View style={[StyleSheet.absoluteFillObject, { backgroundColor: isDark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)' }]} pointerEvents="none" />}
+
+          {Platform.OS === 'android' && (
+            <View
+              pointerEvents="none"
+              style={[StyleSheet.absoluteFillObject, { backgroundColor: isDark ? 'rgba(0,0,0,0.46)' : 'rgba(255,255,255,0.44)' }]}
+            />
+          )}
 
           <View style={styles.handle} />
 
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>{isEditing ? 'Edit Category' : 'New Category'}</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Ionicons name="close-circle" size={28} color={colors.textMuted} />
+            <View>
+              <Text style={styles.title}>{isEditing ? 'Edit Category' : 'New Category'}</Text>
+              <Text style={styles.subtitle}>Make your transaction groups clear and clean</Text>
+            </View>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+              <Ionicons name="close" size={18} color={colors.text} />
             </TouchableOpacity>
           </View>
 
-          <ScrollView contentContainerStyle={styles.formContainer} showsVerticalScrollIndicator={false}>
-            <Input label="Category Name" value={name} onChangeText={setName} placeholder="e.g. Groceries, Rent" />
-            <Input label="Monthly Budget (Optional)" value={budget} onChangeText={setBudget} placeholder="0.00" keyboardType="decimal-pad" />
+          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+            <View style={styles.section}>
+              <Text style={styles.label}>Name</Text>
+              <Input value={name} onChangeText={setName} placeholder="Groceries" autoFocus={!isEditing} style={styles.formInput} />
 
-            <Text style={styles.sectionLabel}>Category Type {isEditing && "(Locked)"}</Text>
-            <View style={[styles.typeRow, isEditing && { opacity: 0.6 }]}>
-              <Button
-                title="Expense (DR)"
-                variant={type === 'DR' ? 'danger' : 'outline'}
-                onPress={() => !isEditing && setType('DR')}
-                style={styles.typeBtn}
-                disabled={isEditing && type !== 'DR'}
-              />
-              <Button
-                title="Income (CR)"
-                variant={type === 'CR' ? 'success' : 'outline'}
-                onPress={() => !isEditing && setType('CR')}
-                style={styles.typeBtn}
-                disabled={isEditing && type !== 'CR'}
-              />
+              <Text style={[styles.label, styles.labelSpaced]}>Monthly Budget (Optional)</Text>
+              <Input value={budget} onChangeText={setBudget} placeholder="0.00" keyboardType="decimal-pad" style={styles.formInput} />
             </View>
 
-            <Text style={styles.sectionLabel}>Select Icon</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pickerScroll} contentContainerStyle={styles.pickerContent}>
-              {ICONS.map((i) => (
-                <TouchableOpacity key={i} style={[styles.pickerItem, icon === i && styles.pickerSelected]} onPress={() => setIcon(i)}>
-                  <Ionicons name={i as any} size={24} color={icon === i ? colors.primary : colors.textMuted} />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <Text style={styles.sectionLabel}>Select Color</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pickerScroll} contentContainerStyle={styles.pickerContent}>
-              {COLORS.map((c) => (
+            <View style={styles.section}>
+              <Text style={styles.label}>Type</Text>
+              <View style={styles.typeRow}>
                 <TouchableOpacity
-                  key={c}
-                  style={[styles.colorItem, { backgroundColor: c }, colorHex === c && styles.colorSelected]}
-                  onPress={() => setColorHex(c)}
-                />
-              ))}
-            </ScrollView>
+                  activeOpacity={0.9}
+                  onPress={() => !isEditing && setType('DR')}
+                  disabled={isEditing}
+                  style={[styles.typeBtn, type === 'DR' && styles.typeBtnDanger]}
+                >
+                  <Ionicons name="arrow-down-circle-outline" size={16} color={type === 'DR' ? colors.danger : colors.textMuted} />
+                  <Text style={[styles.typeBtnText, type === 'DR' && styles.typeBtnTextDanger]}>Expense</Text>
+                </TouchableOpacity>
 
-            <View style={{ height: 40 }} />
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={() => !isEditing && setType('CR')}
+                  disabled={isEditing}
+                  style={[styles.typeBtn, type === 'CR' && styles.typeBtnSuccess]}
+                >
+                  <Ionicons name="arrow-up-circle-outline" size={16} color={type === 'CR' ? colors.success : colors.textMuted} />
+                  <Text style={[styles.typeBtnText, type === 'CR' && styles.typeBtnTextSuccess]}>Income</Text>
+                </TouchableOpacity>
+              </View>
+              {isEditing && <Text style={styles.lockHint}>Type cannot be changed for existing categories</Text>}
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.label}>Icon</Text>
+              <View style={styles.iconGrid}>
+                {ICONS.map((item) => (
+                  <TouchableOpacity
+                    key={item}
+                    activeOpacity={0.9}
+                    onPress={() => setIcon(item)}
+                    style={[styles.iconCell, { width: iconCellSize, height: iconCellSize }, icon === item && styles.iconCellActive]}
+                  >
+                    <Ionicons name={item as any} size={18} color={icon === item ? colorHex : colors.textMuted} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={[styles.section, styles.sectionLast]}>
+              <Text style={styles.label}>Color</Text>
+              <View style={styles.colorGrid}>
+                {COLORS.map((item) => (
+                  <TouchableOpacity
+                    key={item}
+                    activeOpacity={0.9}
+                    onPress={() => setColorHex(item)}
+                    style={[
+                      styles.colorCell,
+                      { backgroundColor: item, width: swatchSize, height: swatchSize },
+                      colorHex === item && styles.colorCellActive,
+                    ]}
+                  >
+                    {colorHex === item ? <Ionicons name="checkmark" size={13} color="#FFF" /> : null}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
           </ScrollView>
 
           <View style={styles.footer}>
-            <Button title="Save Category" onPress={handleSave} isLoading={isPending} style={{ width: '100%' }} />
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={[styles.primaryBtn, !name.trim() && styles.primaryBtnDisabled]}
+              onPress={handleSave}
+              disabled={!name.trim()}
+            >
+              <Text style={styles.primaryBtnText}>{isEditing ? 'Save Category' : 'Create Category'}</Text>
+              <Ionicons name="arrow-forward" size={16} color="#FFF" />
+            </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
 
-const createStyles = (colors: ThemeColors) => StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
-  },
-  dismissArea: {
-    flex: 1,
-  },
-  sheet: {
-    backgroundColor: colors.background === '#000000' ? 'rgba(20,20,20,0.8)' : 'rgba(255,255,255,0.8)',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    maxHeight: '85%',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingTop: 12,
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    backgroundColor: colors.border,
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 8,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-  },
-  closeButton: { padding: 4 },
-  headerTitle: {
-    fontFamily: typography.fonts.heading,
-    fontSize: 24,
-    color: colors.text,
-    letterSpacing: -0.5,
-  },
-  formContainer: { padding: 24 },
-  sectionLabel: {
-    fontFamily: typography.fonts.monoBold,
-    fontSize: 10,
-    color: colors.textMuted,
-    marginTop: 20,
-    marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-    opacity: 0.6,
-  },
-  typeRow: { flexDirection: 'row', gap: 12, marginBottom: 8 },
-  typeBtn: { flex: 1 },
-  pickerScroll: { marginBottom: 8 },
-  pickerContent: { paddingRight: 20 },
-  pickerItem: { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface + '80', borderRadius: 16, borderWidth: 1, borderColor: colors.border, paddingVertical: 12, paddingHorizontal: 16, marginRight: 12, minWidth: 64 },
-  pickerSelected: { borderColor: colors.primary, backgroundColor: colors.primary + '15' },
-  colorItem: { width: 44, height: 44, borderRadius: 22, marginRight: 12, borderWidth: 2, borderColor: 'transparent' },
-  colorSelected: { borderColor: colors.text, transform: [{ scale: 1.1 }] },
-  footer: {
-    padding: 24,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
-    backgroundColor: 'transparent',
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      justifyContent: 'flex-end',
+    },
+    backdrop: {
+      flex: 1,
+    },
+    sheet: {
+      height: '86%',
+      borderTopLeftRadius: 30,
+      borderTopRightRadius: 30,
+      borderTopWidth: 1,
+      borderColor: colors.border,
+      overflow: 'hidden',
+      backgroundColor: 'transparent',
+    },
+    glow: {
+      position: 'absolute',
+      borderRadius: 999,
+    },
+    handle: {
+      alignSelf: 'center',
+      width: 42,
+      height: 4,
+      borderRadius: 999,
+      marginTop: 10,
+      backgroundColor: colors.textMuted + '55',
+    },
+    header: {
+      paddingHorizontal: 24,
+      paddingTop: 14,
+      paddingBottom: 8,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    title: {
+      fontFamily: typography.fonts.heading,
+      fontSize: 30,
+      color: colors.text,
+      letterSpacing: -1,
+    },
+    subtitle: {
+      fontFamily: typography.fonts.regular,
+      fontSize: 12,
+      color: colors.textMuted,
+      marginTop: 3,
+    },
+    closeBtn: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    content: {
+      paddingHorizontal: 24,
+      paddingTop: 10,
+      paddingBottom: 20,
+    },
+    section: {
+      paddingBottom: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      marginBottom: 20,
+    },
+    sectionLast: {
+      borderBottomWidth: 0,
+      marginBottom: 0,
+      paddingBottom: 0,
+    },
+    label: {
+      fontFamily: typography.fonts.semibold,
+      fontSize: 10,
+      color: colors.textMuted,
+      letterSpacing: 1.4,
+      marginBottom: 8,
+      textTransform: 'uppercase',
+    },
+    labelSpaced: {
+      marginTop: 16,
+    },
+    formInput: {
+      height: 58,
+    },
+    typeRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    typeBtn: {
+      flex: 1,
+      height: 44,
+      borderRadius: 14,
+      backgroundColor: colors.background + 'AA',
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginHorizontal: 4,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    typeBtnDanger: {
+      backgroundColor: colors.danger + '16',
+      borderColor: colors.danger + '44',
+    },
+    typeBtnSuccess: {
+      backgroundColor: colors.success + '16',
+      borderColor: colors.success + '44',
+    },
+    typeBtnText: {
+      marginLeft: 6,
+      fontFamily: typography.fonts.semibold,
+      fontSize: 12,
+      color: colors.textMuted,
+    },
+    typeBtnTextDanger: {
+      color: colors.danger,
+    },
+    typeBtnTextSuccess: {
+      color: colors.success,
+    },
+    lockHint: {
+      marginTop: 8,
+      fontFamily: typography.fonts.regular,
+      fontSize: 12,
+      color: colors.textMuted,
+    },
+    iconGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      marginTop: 4,
+    },
+    iconCell: {
+      borderRadius: 12,
+      backgroundColor: colors.surface,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    iconCellActive: {
+      backgroundColor: colors.primary + '18',
+    },
+    colorGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      marginTop: 4,
+    },
+    colorCell: {
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: 'transparent',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    colorCellActive: {
+      borderColor: colors.text,
+      transform: [{ scale: 1.05 }],
+    },
+    footer: {
+      paddingHorizontal: 24,
+      paddingTop: 10,
+      paddingBottom: Platform.OS === 'ios' ? 36 : 22,
+    },
+    primaryBtn: {
+      height: 58,
+      borderRadius: 18,
+      backgroundColor: colors.primary,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+    primaryBtnDisabled: {
+      opacity: 0.45,
+    },
+    primaryBtnText: {
+      fontFamily: typography.fonts.heading,
+      fontSize: 14,
+      color: '#FFFFFF',
+      letterSpacing: 0.3,
+      marginRight: 10,
+    },
+  });

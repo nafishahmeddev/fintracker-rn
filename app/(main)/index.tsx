@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
+import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MoneyText } from '../../src/components/ui/MoneyText';
 import { DEFAULT_CURRENCY } from '../../src/constants/currency';
@@ -83,11 +83,11 @@ export default function DashboardScreen() {
       </View>
 
       {/* Frosted Glass Overlay */}
-      <BlurView 
-        intensity={Platform.OS === 'ios' ? 80 : 95} 
-        tint={isDark ? 'dark' : 'light'} 
-        experimentalBlurMethod={"dimezisBlurView" as any}
-        style={StyleSheet.absoluteFillObject} 
+      <BlurView
+        intensity={Platform.OS === 'ios' ? 80 : 95}
+        tint={isDark ? 'dark' : 'light'}
+        experimentalBlurMethod={"dimezisBlurView"}
+        style={StyleSheet.absoluteFillObject}
       />
       {/* Subtle Tint Layer for Android */}
       {Platform.OS === 'android' && <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background + '60' }]} pointerEvents="none" />}
@@ -327,7 +327,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     borderColor: colors.text,
   },
   currencyTabText: {
-    fontFamily: typography.fonts.monoBold,
+    fontFamily: typography.fonts.semibold,
     color: colors.textMuted,
     fontSize: typography.sizes.lg,
   },
@@ -336,7 +336,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   },
 
   balanceHuge: {
-    fontFamily: typography.fonts.monoBold,
+    fontFamily: typography.fonts.amountBold,
     fontSize: typography.sizes.xxxl,
     color: colors.text,
     letterSpacing: -1.5,
@@ -380,13 +380,13 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     fontSize: typography.sizes.sm,
   },
   accountCardNumber: {
-    fontFamily: typography.fonts.mono,
+    fontFamily: typography.fonts.medium,
     color: colors.textMuted,
     fontSize: typography.sizes.xs - 2,
     marginTop: 2,
   },
   accountCardBalance: {
-    fontFamily: typography.fonts.monoBold,
+    fontFamily: typography.fonts.amountBold,
     color: colors.text,
     fontSize: typography.sizes.lg,
   },
@@ -409,14 +409,14 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     flex: 1,
   },
   accountCardStatLabel: {
-    fontFamily: typography.fonts.mono,
+    fontFamily: typography.fonts.medium,
     fontSize: 9,
     color: colors.textMuted,
     marginBottom: 2,
     letterSpacing: 0.5,
   },
   accountCardStatValue: {
-    fontFamily: typography.fonts.mono,
+    fontFamily: typography.fonts.amountRegular,
     fontSize: typography.sizes.xs,
   },
 
@@ -505,11 +505,11 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     alignItems: 'flex-end',
   },
   txAmount: {
-    fontFamily: typography.fonts.monoBold,
+    fontFamily: typography.fonts.amountBold,
     fontSize: typography.sizes.md,
   },
   txDate: {
-    fontFamily: typography.fonts.mono,
+    fontFamily: typography.fonts.medium,
     color: colors.textMuted,
     fontSize: typography.sizes.xs,
     marginTop: 4,

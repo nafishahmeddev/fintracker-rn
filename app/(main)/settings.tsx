@@ -1,17 +1,16 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BlurView } from 'expo-blur';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { db } from '../../src/db/client';
+import { accounts, categories, payments } from '../../src/db/schema';
+import { useSettings } from '../../src/providers/SettingsProvider';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
-import { Header } from '../../src/components/ui/Header';
-import { db } from '../../src/db/client';
-import { payments, accounts, categories } from '../../src/db/schema';
-import { useSettings } from '../../src/providers/SettingsProvider';
 
 export default function SettingsScreen() {
   const { colors, isDark } = useTheme();
@@ -21,13 +20,13 @@ export default function SettingsScreen() {
 
   const handleResetData = () => {
     Alert.alert(
-      "FACTORY RESET", 
-      "THIS WILL PERMANENTLY WIPE ALL DATA. ACCOUNTS, CATEGORIES, AND PAYMENTS WILL BE DESTROYED.", 
+      "FACTORY RESET",
+      "THIS WILL PERMANENTLY WIPE ALL DATA. ACCOUNTS, CATEGORIES, AND PAYMENTS WILL BE DESTROYED.",
       [
         { text: "CANCEL", style: "cancel" },
-        { 
-          text: "WIPE EVERYTHING", 
-          style: "destructive", 
+        {
+          text: "WIPE EVERYTHING",
+          style: "destructive",
           onPress: async () => {
             try {
               await db.delete(payments);
@@ -39,7 +38,7 @@ export default function SettingsScreen() {
             } catch {
               Alert.alert("Critical Error", "Failed to clear physical storage.");
             }
-          } 
+          }
         }
       ]
     );
@@ -56,97 +55,130 @@ export default function SettingsScreen() {
 
   const handleCurrencyChange = () => {
     const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'INR', 'AED', 'BTC'];
-    Alert.alert("Default Currency", "Set application-wide standard", 
+    Alert.alert("Default Currency", "Set application-wide standard",
       currencies.map(c => ({ text: c, onPress: () => updateProfile({ defaultCurrency: c }) })),
       { cancelable: true }
     );
   };
 
-  type PreferenceRowProps = { 
-    icon: any; 
-    title: string; 
-    value?: string; 
-    onPress: () => void; 
+  type PreferenceRowProps = {
+    icon: any;
+    title: string;
+    value?: string;
+    subtitle?: string;
+    onPress: () => void;
     destructive?: boolean;
     color?: string;
   };
 
-  const PreferenceRow = ({ icon, title, value, onPress, destructive, color }: PreferenceRowProps) => (
-    <TouchableOpacity style={styles.row} onPress={onPress}>
-      <View style={[styles.iconBox, { backgroundColor: (color || (destructive ? colors.danger : colors.text)) + '15' }]}>
-        <Ionicons name={icon} size={20} color={color || (destructive ? colors.danger : colors.text)} />
-      </View>
-      <View style={styles.textDetails}>
-        <Text style={[styles.rowTitle, destructive && { color: colors.danger }]}>{title}</Text>
-        {value && <Text style={styles.rowValue}>{value}</Text>}
-      </View>
-      <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-    </TouchableOpacity>
-  );
+  const PreferenceRow = ({ icon, title, value, subtitle, onPress, destructive, color }: PreferenceRowProps) => {
+    const iconColor = color || (destructive ? colors.danger : colors.text);
+
+    return (
+      <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.92}>
+        <View style={[styles.iconBox, { backgroundColor: iconColor + '18' }]}>
+          <Ionicons name={icon} size={18} color={iconColor} />
+        </View>
+        <View style={styles.textDetails}>
+          <Text style={[styles.rowTitle, destructive && { color: colors.danger }]}>{title}</Text>
+          {subtitle && <Text style={styles.rowSubtitle}>{subtitle}</Text>}
+        </View>
+        {value ? <Text style={styles.rowValue}>{value}</Text> : null}
+        <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Background Decorative Circles */}
       <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-        <View style={[styles.bgCircle, { top: -50, right: -50, width: 300, height: 300, backgroundColor: colors.primary + '10' }]} />
-        <View style={[styles.bgCircle, { bottom: 100, left: -100, width: 400, height: 400, backgroundColor: colors.text + '03' }]} />
+        <View style={[styles.bgCircle, { top: -70, left: -70, width: 330, height: 330, backgroundColor: colors.primary + '2E' }]} />
+        <View style={[styles.bgCircle, { top: 260, right: -140, width: 480, height: 480, backgroundColor: colors.text + '0E' }]} />
+        <View style={[styles.bgCircle, { bottom: -90, left: 40, width: 320, height: 320, backgroundColor: colors.primary + '1C' }]} />
       </View>
 
-      {/* Frosted Glass Overlay */}
-      <BlurView            intensity={Platform.OS === 'ios' ? 60 : 90} 
-            tint={isDark ? 'dark' : 'light'} 
-            experimentalBlurMethod={"dimezisBlurViewSdk31Plus" as any}
-            style={StyleSheet.absoluteFillObject} 
+      <BlurView intensity={Platform.OS === 'ios' ? 80 : 96}
+        tint={isDark ? 'dark' : 'light'}
+        experimentalBlurMethod={"dimezisBlurView"}
+        style={StyleSheet.absoluteFillObject}
       />
       {Platform.OS === 'android' && <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background + '60' }]} pointerEvents="none" />}
 
-      <Header title="Preferences" showBack />
-      
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.headerBtn} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={22} color={colors.text} />
+        </TouchableOpacity>
+        <View style={styles.headerCopy}>
+          <Text style={styles.headerTitle}>FINTRACKER.</Text>
+          <Text style={styles.headerSubtitle}>Preferences And Control Center</Text>
+        </View>
+        <View style={styles.headerBtnPlaceholder} />
+      </View>
+
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.heroSection}>
-          <Text style={styles.heroBrand}>FINTRACKER.</Text>
-          <Text style={styles.heroSub}>EDGLESS STACK V1.0</Text>
+        <View style={styles.heroPanel}>
+          <Text style={styles.heroPanelKicker}>PROFILE</Text>
+          <Text style={styles.heroPanelTitle}>Current Defaults</Text>
+          <View style={styles.heroPillsRow}>
+            <View style={styles.heroPill}>
+              <Text style={styles.heroPillLabel}>THEME</Text>
+              <Text style={styles.heroPillValue}>{(profile.theme || 'system').toUpperCase()}</Text>
+            </View>
+            <View style={styles.heroPill}>
+              <Text style={styles.heroPillLabel}>CURRENCY</Text>
+              <Text style={styles.heroPillValue}>{profile.defaultCurrency}</Text>
+            </View>
+          </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>TAXONOMY</Text>
-          <PreferenceRow 
-            icon="grid-outline" 
-            title="Categories" 
-            value="Manage your tags" 
-            onPress={() => router.push('/categories')} 
-          />
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionLabel}>FINANCE STRUCTURE</Text>
+          <View style={styles.sectionCard}>
+            <PreferenceRow
+              icon="grid-outline"
+              title="Categories"
+              subtitle="Manage your income and expense taxonomy"
+              onPress={() => router.push('/categories')}
+            />
+          </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>VISUALS & LOCALES</Text>
-          <PreferenceRow 
-            icon="contrast-outline" 
-            title="Appearance" 
-            value={(profile.theme || 'system').toUpperCase()} 
-            onPress={handleThemeChange} 
-          />
-          <PreferenceRow 
-            icon="cash-outline" 
-            title="Primary Currency" 
-            value={profile.defaultCurrency} 
-            onPress={handleCurrencyChange} 
-          />
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionLabel}>APPEARANCE & REGION</Text>
+          <View style={styles.sectionCard}>
+            <PreferenceRow
+              icon="contrast-outline"
+              title="Appearance"
+              value={(profile.theme || 'system').toUpperCase()}
+              subtitle="Light, dark, or follow device"
+              onPress={handleThemeChange}
+            />
+            <PreferenceRow
+              icon="cash-outline"
+              title="Primary Currency"
+              value={profile.defaultCurrency}
+              subtitle="Default used in new records"
+              onPress={handleCurrencyChange}
+            />
+          </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>DANGER ZONE</Text>
-          <PreferenceRow 
-            icon="trash-bin-outline" 
-            title="Factory Reset" 
-            destructive
-            value="Wipe local SQLite database" 
-            onPress={handleResetData} 
-          />
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionLabel}>RISK OPERATIONS</Text>
+          <View style={styles.sectionCard}>
+            <PreferenceRow
+              icon="trash-bin-outline"
+              title="Factory Reset"
+              destructive
+              subtitle="Wipe local SQLite database and app storage"
+              onPress={handleResetData}
+            />
+          </View>
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>BUILT FOR PERFORMANCE — 2024</Text>
+          <Text style={styles.footerText}>BUILT FOR PERFORMANCE</Text>
+          <Text style={styles.footerText}>LOCAL-FIRST. PRIVATE. FAST.</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -163,78 +195,158 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     position: 'absolute',
     borderRadius: 999,
   },
-  scrollContent: {
-    paddingBottom: 60,
-  },
-  heroSection: {
+  header: {
+    marginTop: 10,
+    marginBottom: 12,
     paddingHorizontal: 24,
-    paddingVertical: 40,
-  },
-  heroBrand: {
-    fontFamily: typography.fonts.heading,
-    fontSize: 48,
-    color: colors.text,
-    letterSpacing: -2,
-    lineHeight: 48,
-  },
-  heroSub: {
-    fontFamily: typography.fonts.mono,
-    fontSize: 10,
-    color: colors.textMuted,
-    marginTop: 8,
-    letterSpacing: 2,
-  },
-  section: {
-    marginTop: 24,
-    paddingHorizontal: 24,
-  },
-  sectionLabel: {
-    fontFamily: typography.fonts.monoBold,
-    fontSize: 10,
-    color: colors.textMuted,
-    letterSpacing: 1.5,
-    marginBottom: 8,
-    opacity: 0.6,
-  },
-  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderColor: colors.border,
   },
-  iconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  headerBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
   },
-  textDetails: {
+  headerBtnPlaceholder: {
+    width: 44,
+  },
+  headerCopy: {
     flex: 1,
+    paddingHorizontal: 16,
   },
-  rowTitle: {
-    fontFamily: typography.fonts.headingRegular,
-    fontSize: typography.sizes.md + 2,
+  headerTitle: {
+    fontFamily: typography.fonts.heading,
+    fontSize: 26,
     color: colors.text,
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
+    lineHeight: 30,
   },
-  rowValue: {
-    fontFamily: typography.fonts.mono,
+  headerSubtitle: {
+    fontFamily: typography.fonts.regular,
     fontSize: 12,
     color: colors.textMuted,
     marginTop: 2,
   },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingBottom: 42,
+  },
+  heroPanel: {
+    borderRadius: 18,
+    padding: 18,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 24,
+  },
+  heroPanelKicker: {
+    fontFamily: typography.fonts.semibold,
+    fontSize: 10,
+    color: colors.textMuted,
+    letterSpacing: 1.5,
+    marginBottom: 6,
+  },
+  heroPanelTitle: {
+    fontFamily: typography.fonts.headingRegular,
+    fontSize: 20,
+    color: colors.text,
+    letterSpacing: -0.3,
+  },
+  heroPillsRow: {
+    flexDirection: 'row',
+    marginTop: 14,
+  },
+  heroPill: {
+    flex: 1,
+    borderRadius: 12,
+    backgroundColor: colors.background + 'A6',
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  sectionWrap: {
+    marginBottom: 20,
+  },
+  sectionLabel: {
+    fontFamily: typography.fonts.semibold,
+    fontSize: 10,
+    color: colors.textMuted,
+    letterSpacing: 1.5,
+    marginBottom: 8,
+  },
+  sectionCard: {
+    borderRadius: 16,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  iconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  textDetails: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  rowTitle: {
+    fontFamily: typography.fonts.headingRegular,
+    fontSize: typography.sizes.md + 1,
+    color: colors.text,
+    letterSpacing: -0.2,
+  },
+  rowSubtitle: {
+    fontFamily: typography.fonts.regular,
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  rowValue: {
+    fontFamily: typography.fonts.semibold,
+    fontSize: 11,
+    color: colors.textMuted,
+    marginRight: 8,
+    letterSpacing: 1,
+  },
+  heroPillLabel: {
+    fontFamily: typography.fonts.medium,
+    fontSize: 10,
+    color: colors.textMuted,
+    letterSpacing: 1,
+  },
+  heroPillValue: {
+    fontFamily: typography.fonts.semibold,
+    fontSize: 14,
+    color: colors.text,
+    marginTop: 6,
+  },
   footer: {
-    marginTop: 60,
+    marginTop: 14,
     alignItems: 'center',
   },
   footerText: {
-    fontFamily: typography.fonts.mono,
+    fontFamily: typography.fonts.medium,
     fontSize: 9,
     color: colors.textMuted,
     letterSpacing: 1,
-    opacity: 0.4,
-  }
+    opacity: 0.65,
+    marginBottom: 2,
+  },
 });

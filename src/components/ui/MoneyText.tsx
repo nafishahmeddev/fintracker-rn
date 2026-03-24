@@ -1,8 +1,8 @@
 import React from 'react';
-import { Text, TextProps, StyleSheet } from 'react-native';
+import { StyleSheet, Text, TextProps } from 'react-native';
+import { DEFAULT_CURRENCY, getCurrencySymbol } from '../../constants/currency';
 import { useTheme } from '../../providers/ThemeProvider';
 import { typography } from '../../theme/typography';
-import { getCurrencySymbol, DEFAULT_CURRENCY } from '../../constants/currency';
 
 interface MoneyTextProps extends TextProps {
   amount: number;
@@ -35,7 +35,9 @@ export function MoneyText({
     color = colors.danger;
   }
 
-  const fontFamily = weight === 'regular' || weight === 'medium' ? typography.fonts.mono : typography.fonts.monoBold;
+  const fontFamily = weight === 'regular' || weight === 'medium'
+    ? typography.fonts.amountRegular
+    : typography.fonts.amountBold;
 
   return (
     <Text 

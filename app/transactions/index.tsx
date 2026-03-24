@@ -216,12 +216,12 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginTop: 4,
   },
   txAmount: {
-    fontFamily: typography.fonts.monoBold,
+    fontFamily: typography.fonts.amountBold,
     fontSize: typography.sizes.md,
     letterSpacing: -0.5,
   },
   emptyText: {
-    fontFamily: typography.fonts.mono,
+    fontFamily: typography.fonts.medium,
     color: colors.textMuted,
     textAlign: 'center',
     marginTop: 60,
@@ -283,7 +283,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginBottom: 16,
   },
   filterSectionTitle: {
-    fontFamily: typography.fonts.mono,
+    fontFamily: typography.fonts.semibold,
     fontSize: typography.sizes.xs,
     color: colors.textMuted,
     marginBottom: 12,

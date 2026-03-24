@@ -1,6 +1,6 @@
 import { BlurView } from 'expo-blur';
 import React from 'react';
-import { StyleSheet, Text, TextInput, TextInputProps, View, Platform } from 'react-native';
+import { Platform, StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -8,28 +8,33 @@ import { typography } from '../../theme/typography';
 interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
+  variant?: 'default' | 'minimal';
 }
 
-export function Input({ label, error, style, ...props }: InputProps) {
+export function Input({ label, error, style, variant = 'default', ...props }: InputProps) {
   const { colors, isDark } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
-      <View style={[styles.inputContainer, error ? styles.inputError : null]}>
-        <BlurView 
-          intensity={Platform.OS === 'ios' ? 15 : 0} 
-          tint={isDark ? "dark" : "light"} 
-          style={[StyleSheet.absoluteFillObject, { backgroundColor: Platform.OS === 'android' ? colors.surface : 'transparent' }]} 
-        />
+      <View style={[
+        variant === 'default' ? styles.inputContainer : styles.minimalContainer, 
+        error ? styles.inputError : null
+      ]}>
+        {variant === 'default' && (
+          <BlurView 
+            intensity={Platform.OS === 'ios' ? 15 : 0} 
+            tint={isDark ? "dark" : "light"} 
+            style={[StyleSheet.absoluteFillObject, { backgroundColor: Platform.OS === 'android' ? colors.surface : 'transparent' }]} 
+          />
+        )}
         <TextInput
           style={[
-            styles.input,
-            (props.keyboardType === 'decimal-pad' || props.keyboardType === 'numeric') ? { fontFamily: typography.fonts.monoBold } : {},
+            variant === 'default' ? styles.input : styles.minimalInput,
             style
           ]}
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.textMuted + '80'}
           {...props}
         />
       </View>
@@ -40,7 +45,7 @@ export function Input({ label, error, style, ...props }: InputProps) {
 
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: 0, // Let parent handle spacing in high-density
   },
   label: {
     fontSize: typography.sizes.sm,
@@ -55,6 +60,12 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     borderColor: 'transparent',
     overflow: 'hidden',
   },
+  minimalContainer: {
+    backgroundColor: 'transparent',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border + '50',
+    overflow: 'hidden',
+  },
   inputError: {
     borderColor: colors.danger,
   },
@@ -63,6 +74,14 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     fontSize: typography.sizes.lg,
     paddingHorizontal: 16,
     height: 64,
+    fontFamily: typography.fonts.regular,
+  },
+  minimalInput: {
+    color: colors.text,
+    fontSize: 16,
+    paddingHorizontal: 0,
+    height: 48,
+    fontFamily: typography.fonts.regular,
   },
   errorText: {
     color: colors.danger,
