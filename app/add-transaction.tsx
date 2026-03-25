@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -61,6 +63,9 @@ export default function AddTransactionScreen() {
   const [type, setType] = React.useState<TransactionType>('DR');
   const [selectedAccountId, setSelectedAccountId] = React.useState<number | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<number | null>(null);
+  const [transactionDateTime, setTransactionDateTime] = React.useState<Date>(() => new Date());
+  const [showDatePicker, setShowDatePicker] = React.useState(false);
+  const [showTimePicker, setShowTimePicker] = React.useState(false);
 
   const {
     control,
@@ -89,6 +94,50 @@ export default function AddTransactionScreen() {
     () => categories.find((category) => category.id === selectedCategoryId) ?? null,
     [categories, selectedCategoryId]
   );
+
+  const formattedDate = React.useMemo(
+    () => transactionDateTime.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
+    [transactionDateTime]
+  );
+
+  const formattedTime = React.useMemo(
+    () => transactionDateTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
+    [transactionDateTime]
+  );
+
+  const applyDatePart = React.useCallback((picked: Date) => {
+    setTransactionDateTime((current) => {
+      const next = new Date(current);
+      next.setFullYear(picked.getFullYear(), picked.getMonth(), picked.getDate());
+      return next;
+    });
+  }, []);
+
+  const applyTimePart = React.useCallback((picked: Date) => {
+    setTransactionDateTime((current) => {
+      const next = new Date(current);
+      next.setHours(picked.getHours(), picked.getMinutes(), 0, 0);
+      return next;
+    });
+  }, []);
+
+  const onDatePicked = React.useCallback((event: DateTimePickerEvent, picked?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    if (event.type === 'set' && picked) {
+      applyDatePart(picked);
+    }
+  }, [applyDatePart]);
+
+  const onTimePicked = React.useCallback((event: DateTimePickerEvent, picked?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowTimePicker(false);
+    }
+    if (event.type === 'set' && picked) {
+      applyTimePart(picked);
+    }
+  }, [applyTimePart]);
 
   React.useEffect(() => {
     if (accounts.length === 0) {
@@ -135,7 +184,7 @@ export default function AddTransactionScreen() {
         categoryId: selectedCategoryId,
         amount: parseAmount(data.amountInput),
         type,
-        datetime: new Date().toISOString(),
+        datetime: transactionDateTime.toISOString(),
         note: data.note.trim() || selectedCategory?.name || 'Transaction',
       });
 
@@ -327,6 +376,54 @@ export default function AddTransactionScreen() {
               })}
             </View>
           )}
+        </View>
+
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionLabel}>DATE & TIME</Text>
+          <View style={styles.noteBox}>
+            <View style={styles.dateTimeRow}>
+              <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowDatePicker(true)} activeOpacity={0.9}>
+                <Ionicons name="calendar-outline" size={14} color={colors.textMuted} />
+                <Text style={styles.dateTimeButtonText}>{formattedDate}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowTimePicker(true)} activeOpacity={0.9}>
+                <Ionicons name="time-outline" size={14} color={colors.textMuted} />
+                <Text style={styles.dateTimeButtonText}>{formattedTime}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {showDatePicker && (
+              <View style={styles.inlinePickerWrap}>
+                <DateTimePicker
+                  value={transactionDateTime}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onDatePicked}
+                />
+                {Platform.OS === 'ios' && (
+                  <TouchableOpacity style={styles.inlinePickerDone} onPress={() => setShowDatePicker(false)}>
+                    <Text style={styles.emptyActionText}>Done</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+
+            {showTimePicker && (
+              <View style={styles.inlinePickerWrap}>
+                <DateTimePicker
+                  value={transactionDateTime}
+                  mode="time"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onTimePicked}
+                />
+                {Platform.OS === 'ios' && (
+                  <TouchableOpacity style={styles.inlinePickerDone} onPress={() => setShowTimePicker(false)}>
+                    <Text style={styles.emptyActionText}>Done</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
         </View>
 
         <View style={styles.sectionWrap}>
@@ -619,6 +716,46 @@ const createStyles = (colors: ThemeColors) =>
       borderColor: colors.border,
       paddingHorizontal: 12,
       paddingVertical: 10,
+    },
+    dateTimeRow: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    dateTimeButton: {
+      flex: 1,
+      minHeight: 40,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.background,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      paddingHorizontal: 8,
+    },
+    dateTimeButtonText: {
+      fontFamily: typography.fonts.medium,
+      color: colors.text,
+      fontSize: 13,
+      textAlign: 'center',
+    },
+    inlinePickerWrap: {
+      marginTop: 10,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.background,
+      overflow: 'hidden',
+    },
+    inlinePickerDone: {
+      alignSelf: 'flex-end',
+      margin: 10,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      height: 28,
+      justifyContent: 'center',
+      backgroundColor: colors.text,
     },
     noteInput: {
       minHeight: 80,
