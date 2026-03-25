@@ -45,7 +45,11 @@ export function MoneyText({
         styles.base, 
         { color, fontFamily }, 
         style
-      ]} 
+      ]}
+      numberOfLines={1}
+      adjustsFontSizeToFit
+      minimumFontScale={0.72}
+      ellipsizeMode="tail"
       {...props}
     >
       {prefix}{formattedAmount}
@@ -56,5 +60,6 @@ export function MoneyText({
 const styles = StyleSheet.create({
   base: {
     fontSize: typography.sizes.md,
+    flexShrink: 1,
   }
 });
