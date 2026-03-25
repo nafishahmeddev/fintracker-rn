@@ -18,7 +18,7 @@ export const ACCOUNT_ICONS = [
 export type AccountIconName = (typeof ACCOUNT_ICONS)[number];
 
 export const ACCOUNT_COLORS = [
-  '#00FFAA',
+  '#86d204',
   '#00F0FF',
   '#8B5CF6',
   '#EC4899',

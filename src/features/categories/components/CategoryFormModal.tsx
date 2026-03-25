@@ -10,7 +10,6 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { Input } from '../../../components/ui/Input';
@@ -34,10 +33,9 @@ export type CategoryFormModalProps = {
 
 export function CategoryFormModal({ visible, onClose, category }: CategoryFormModalProps) {
   const { colors, isDark } = useTheme();
-  const { width } = useWindowDimensions();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const isEditing = !!category;
-  const iconCellSize = useMemo(() => Math.max(42, Math.floor((width - 24 * 2 - 8 * 5) / 6)), [width]);
+  const iconCellSize = 48;
   const swatchSize = iconCellSize;
 
   const { mutateAsync: createCategory } = useCreateCategory();
@@ -394,61 +392,39 @@ const createStyles = (colors: ThemeColors) =>
     iconGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      marginTop: 4,
-      gap: 4,
+      gap: 12,
     },
     iconCell: {
-      borderRadius: 13,
-      backgroundColor: colors.surface,
-      borderWidth: 2,
-      borderColor: 'transparent',
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor: colors.text + '10',
+      backgroundColor: colors.background + 'B8',
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 8,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0,
-      shadowRadius: 0,
-      elevation: 0,
     },
     iconCellActive: {
-      backgroundColor: colors.primary + '15',
+      backgroundColor: colors.primary + '20',
       borderColor: colors.primary,
-      shadowColor: colors.primary,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.12,
-      shadowRadius: 4,
-      elevation: 2,
     },
     colorGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      marginTop: 4,
-      gap: 4,
+      gap: 12,
     },
     colorCell: {
-      borderRadius: 13,
+      width: 48,
+      height: 48,
+      borderRadius: 24,
       borderWidth: 2,
       borderColor: 'transparent',
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 8,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0,
-      shadowRadius: 0,
-      elevation: 0,
     },
     colorCellActive: {
       borderColor: colors.text,
-      transform: [{ scale: 1.08 }],
-      shadowColor: colors.text,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 6,
-      elevation: 3,
+      transform: [{ scale: 1.1 }],
     },
     footer: {
       paddingHorizontal: 24,

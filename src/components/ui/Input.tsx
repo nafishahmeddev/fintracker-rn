@@ -1,6 +1,5 @@
-import { BlurView } from '@sbaiahmed1/react-native-blur';
 import React from 'react';
-import { Platform, StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
+import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -22,13 +21,6 @@ export function Input({ label, error, style, variant = 'default', ...props }: In
         variant === 'default' ? styles.inputContainer : styles.minimalContainer, 
         error ? styles.inputError : null
       ]}>
-        {variant === 'default' && (
-          <BlurView 
-            blurAmount={Platform.OS === 'ios' ? 15 : 0} 
-            blurType={isDark ? "dark" : "light"} 
-            style={[StyleSheet.absoluteFillObject, { backgroundColor: Platform.OS === 'android' ? colors.surface : 'transparent' }]} 
-          />
-        )}
         <TextInput
           style={[
             variant === 'default' ? styles.input : styles.minimalInput,
