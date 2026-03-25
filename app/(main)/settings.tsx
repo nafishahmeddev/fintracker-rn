@@ -75,9 +75,9 @@ export default function SettingsScreen() {
     const iconColor = color || (destructive ? colors.danger : colors.text);
 
     return (
-      <TouchableOpacity 
-        style={[styles.row, isLast && { borderBottomWidth: 0 }]} 
-        onPress={onPress} 
+      <TouchableOpacity
+        style={[styles.row, isLast && { borderBottomWidth: 0 }]}
+        onPress={onPress}
         activeOpacity={0.7}
       >
         <View style={[styles.iconBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
@@ -101,7 +101,7 @@ export default function SettingsScreen() {
     <SafeAreaView style={styles.container}>
       <BlurBackground />
 
-      <Header title="Settings" subtitle="SYSTEM PREFERENCES" showBack />
+      <Header title="Settings" subtitle="System preferences" showBack />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.heroPanel}>
@@ -212,7 +212,7 @@ export default function SettingsScreen() {
             <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={() => setShowEditNameModal(false)} />
             <View style={styles.modalCard}>
               <Text style={styles.modalTitle}>Display Name</Text>
-              <Text style={styles.modalSubtitle}>How you'll be greeted in the dashboard</Text>
+              <Text style={styles.modalSubtitle}>{"How you'll be greeted in the dashboard"}</Text>
               <TextInput
                 style={styles.modalInput}
                 value={nameInput}
@@ -279,7 +279,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginBottom: 4,
   },
   heroTitle: {
-    fontFamily: typography.fonts.heading,
+    fontFamily: typography.fonts.headingRegular,
     fontSize: 26,
     color: colors.text,
     letterSpacing: -0.5,
@@ -365,7 +365,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     flex: 1,
   },
   rowTitle: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: typography.fonts.headingRegular,
     fontSize: 16,
     color: colors.text,
   },
@@ -381,7 +381,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     gap: 8,
   },
   rowValue: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: typography.fonts.medium,
     fontSize: 11,
     color: colors.primary,
     letterSpacing: 1,
