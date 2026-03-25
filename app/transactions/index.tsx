@@ -16,13 +16,34 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
 import { MoneyText } from '../../src/components/ui/MoneyText';
-import { LedgerTransaction } from '../../src/features/transactions/components/TransactionEditModal';
 import { useDeleteTransaction, useTransactions } from '../../src/features/transactions/hooks/transactions';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 
 type TransactionTypeFilter = 'ALL' | 'CR' | 'DR';
+
+type LedgerTransaction = {
+  id: number;
+  accountId: number;
+  categoryId: number;
+  amount: number;
+  type: 'CR' | 'DR';
+  datetime: string;
+  note: string;
+  account: {
+    id: number;
+    name: string;
+    currency: string;
+    color: number;
+  };
+  category: {
+    id: number;
+    name: string;
+    icon: string;
+    color: number;
+  };
+};
 
 const toHexColor = (value: number) => `#${value.toString(16).padStart(6, '0')}`;
 
