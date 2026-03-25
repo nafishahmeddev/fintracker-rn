@@ -206,8 +206,8 @@ export default function AddTransactionScreen() {
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerTextWrap}>
-          <Text style={styles.headerTitle}>Add Transaction</Text>
-          <Text style={styles.headerSubtitle}>Capture it once, keep your ledger clean</Text>
+          <Text style={styles.headerTitle}>New Entry</Text>
+          <Text style={styles.headerSubtitle}>Record flow with precision</Text>
         </View>
         <View style={styles.headerButtonGhost} />
       </View>
@@ -217,17 +217,11 @@ export default function AddTransactionScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.amountPanel}>
-          <Text style={styles.panelLabel}>AMOUNT</Text>
-          <View style={styles.amountTopRow}>
-            <View style={styles.currencyPill}>
-              <Text style={styles.currencyPillText}>{resolvedCurrency}</Text>
-            </View>
-            <View style={[styles.typeSignalPill, type === 'CR' ? styles.typeSignalIncome : styles.typeSignalExpense]}>
-              <Ionicons name={typeMeta.icon} size={14} color={type === 'CR' ? colors.success : colors.danger} />
-              <Text style={[styles.typeSignalText, { color: type === 'CR' ? colors.success : colors.danger }]}>
-                {typeMeta.title}
-              </Text>
+        <View style={styles.heroCard}>
+          <View style={styles.heroTopRow}>
+            <Text style={styles.eyebrow}>AMOUNT</Text>
+            <View style={styles.currencyBadge}>
+              <Text style={styles.currencyBadgeText}>{resolvedCurrency}</Text>
             </View>
           </View>
 
@@ -254,35 +248,86 @@ export default function AddTransactionScreen() {
           {errors.amountInput && (
             <Text style={styles.fieldError}>{errors.amountInput.message}</Text>
           )}
-        </View>
 
-        <View style={styles.sectionWrap}>
-          <Text style={styles.sectionLabel}>FLOW TYPE</Text>
-          <View style={styles.segmentedWrap}>
+          <View style={styles.typeRow}>
             {(['DR', 'CR'] as const).map((option) => {
               const selected = option === type;
               const optionMeta = TYPE_META[option];
+              const isIncome = option === 'CR';
+              const accent = isIncome ? colors.success : colors.danger;
               return (
                 <TouchableOpacity
                   key={option}
-                  style={[styles.segmentButton, selected && styles.segmentButtonActive]}
+                  style={[
+                    styles.typeCard,
+                    selected
+                      ? { borderColor: accent, backgroundColor: accent + '1A' }
+                      : null,
+                  ]}
                   onPress={() => setType(option)}
                   activeOpacity={0.9}
                 >
-                  <Ionicons
-                    name={optionMeta.icon}
-                    size={16}
-                    color={selected ? colors.background : colors.textMuted}
-                  />
-                  <Text style={[styles.segmentText, selected && styles.segmentTextActive]}>{optionMeta.title}</Text>
+                  <View style={[styles.typeCardIconWrap, { backgroundColor: selected ? accent + '2A' : colors.surface }]}> 
+                    <Ionicons
+                      name={optionMeta.icon}
+                      size={16}
+                      color={selected ? accent : colors.textMuted}
+                    />
+                  </View>
+                  <Text style={[styles.typeCardTitle, selected && { color: colors.text }]}>{optionMeta.title}</Text>
+                  <Text style={[styles.typeCardSubtitle, selected && { color: colors.textMuted }]}>{optionMeta.subtitle}</Text>
                 </TouchableOpacity>
               );
             })}
           </View>
+
+          <Text style={styles.eyebrow}>WHEN</Text>
+          <View style={styles.dateTimeRow}>
+            <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowDatePicker(true)} activeOpacity={0.9}>
+              <Ionicons name="calendar-outline" size={15} color={colors.textMuted} />
+              <Text style={styles.dateTimeButtonText}>{formattedDate}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowTimePicker(true)} activeOpacity={0.9}>
+              <Ionicons name="time-outline" size={15} color={colors.textMuted} />
+              <Text style={styles.dateTimeButtonText}>{formattedTime}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {showDatePicker && (
+            <View style={styles.inlinePickerWrap}>
+              <DateTimePicker
+                value={transactionDateTime}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={onDatePicked}
+              />
+              {Platform.OS === 'ios' && (
+                <TouchableOpacity style={styles.inlinePickerDone} onPress={() => setShowDatePicker(false)}>
+                  <Text style={styles.inlinePickerDoneText}>Done</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {showTimePicker && (
+            <View style={styles.inlinePickerWrap}>
+              <DateTimePicker
+                value={transactionDateTime}
+                mode="time"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={onTimePicked}
+              />
+              {Platform.OS === 'ios' && (
+                <TouchableOpacity style={styles.inlinePickerDone} onPress={() => setShowTimePicker(false)}>
+                  <Text style={styles.inlinePickerDoneText}>Done</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
 
         <View style={styles.sectionWrap}>
-          <Text style={styles.sectionLabel}>ACCOUNT</Text>
+          <Text style={styles.sectionLabel}>SOURCE ACCOUNT</Text>
           {accounts.length === 0 ? (
             <View style={styles.emptyPanel}>
               <Text style={styles.emptyTitle}>No accounts available</Text>
@@ -290,7 +335,6 @@ export default function AddTransactionScreen() {
             </View>
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.choiceRow}>
-         
               {accounts.map((account) => {
                 const selected = account.id === selectedAccountId;
                 const accent = toHexColor(account.color);
@@ -325,6 +369,28 @@ export default function AddTransactionScreen() {
               })}
             </ScrollView>
           )}
+        </View>
+
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionLabel}>NOTE</Text>
+          <View style={styles.sectionCard}>
+            <Controller
+              control={control}
+              name="note"
+              render={({ field }) => (
+                <TextInput
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder="Optional context"
+                  placeholderTextColor={colors.textMuted + '88'}
+                  style={styles.noteInput}
+                  multiline
+                  textAlignVertical="top"
+                />
+              )}
+            />
+          </View>
         </View>
 
         <View style={styles.sectionWrap}>
@@ -376,76 +442,6 @@ export default function AddTransactionScreen() {
               })}
             </View>
           )}
-        </View>
-
-        <View style={styles.sectionWrap}>
-          <Text style={styles.sectionLabel}>DATE & TIME</Text>
-          <View style={styles.noteBox}>
-            <View style={styles.dateTimeRow}>
-              <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowDatePicker(true)} activeOpacity={0.9}>
-                <Ionicons name="calendar-outline" size={14} color={colors.textMuted} />
-                <Text style={styles.dateTimeButtonText}>{formattedDate}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowTimePicker(true)} activeOpacity={0.9}>
-                <Ionicons name="time-outline" size={14} color={colors.textMuted} />
-                <Text style={styles.dateTimeButtonText}>{formattedTime}</Text>
-              </TouchableOpacity>
-            </View>
-
-            {showDatePicker && (
-              <View style={styles.inlinePickerWrap}>
-                <DateTimePicker
-                  value={transactionDateTime}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={onDatePicked}
-                />
-                {Platform.OS === 'ios' && (
-                  <TouchableOpacity style={styles.inlinePickerDone} onPress={() => setShowDatePicker(false)}>
-                    <Text style={styles.emptyActionText}>Done</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
-
-            {showTimePicker && (
-              <View style={styles.inlinePickerWrap}>
-                <DateTimePicker
-                  value={transactionDateTime}
-                  mode="time"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={onTimePicked}
-                />
-                {Platform.OS === 'ios' && (
-                  <TouchableOpacity style={styles.inlinePickerDone} onPress={() => setShowTimePicker(false)}>
-                    <Text style={styles.emptyActionText}>Done</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
-          </View>
-        </View>
-
-        <View style={styles.sectionWrap}>
-          <Text style={styles.sectionLabel}>NOTE</Text>
-          <View style={styles.noteBox}>
-            <Controller
-              control={control}
-              name="note"
-              render={({ field }) => (
-                <TextInput
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  onBlur={field.onBlur}
-                  placeholder="Optional context"
-                  placeholderTextColor={colors.textMuted + '88'}
-                  style={styles.noteInput}
-                  multiline
-                  textAlignVertical="top"
-                />
-              )}
-            />
-          </View>
         </View>
       </ScrollView>
 
@@ -517,76 +513,54 @@ const createStyles = (colors: ThemeColors) =>
     content: {
       paddingHorizontal: 24,
       paddingBottom: 140,
-      gap: 20,
+      gap: 18,
     },
-    amountPanel: {
-      borderRadius: 18,
-      padding: 16,
+    heroCard: {
+      borderRadius: 24,
+      padding: 18,
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      marginTop: 2,
+      marginTop: 4,
+      gap: 12,
     },
-    panelLabel: {
-      fontFamily: typography.fonts.semibold,
-      fontSize: 10,
-      color: colors.textMuted,
-      letterSpacing: 1.3,
-      marginBottom: 10,
-    },
-    amountTopRow: {
+    heroTopRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: 12,
     },
-    currencyPill: {
+    eyebrow: {
+      fontFamily: typography.fonts.semibold,
+      fontSize: 10,
+      color: colors.textMuted,
+      letterSpacing: 1.25,
+    },
+    currencyBadge: {
+      height: 28,
       borderRadius: 999,
       paddingHorizontal: 12,
-      height: 30,
       justifyContent: 'center',
-      backgroundColor: colors.background,
+      alignItems: 'center',
       borderWidth: 1,
       borderColor: colors.border,
+      backgroundColor: colors.background,
     },
-    currencyPillText: {
+    currencyBadgeText: {
       fontFamily: typography.fonts.semibold,
       color: colors.text,
-      fontSize: 12,
-      letterSpacing: 0.3,
-    },
-    typeSignalPill: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-      borderRadius: 999,
-      paddingHorizontal: 10,
-      height: 30,
-      borderWidth: 1,
-    },
-    typeSignalIncome: {
-      backgroundColor: colors.success + '18',
-      borderColor: colors.success + '30',
-    },
-    typeSignalExpense: {
-      backgroundColor: colors.danger + '18',
-      borderColor: colors.danger + '30',
-    },
-    typeSignalText: {
-      fontFamily: typography.fonts.semibold,
       fontSize: 12,
     },
     amountInput: {
       fontFamily: typography.fonts.amountBold,
-      fontSize: 42,
-      lineHeight: 46,
+      fontSize: 48,
+      lineHeight: 52,
       color: colors.text,
-      letterSpacing: -1,
+      letterSpacing: -1.2,
       paddingVertical: 2,
       paddingHorizontal: 0,
     },
     amountHint: {
-      marginTop: 2,
+      marginTop: -4,
       color: colors.textMuted,
       fontFamily: typography.fonts.regular,
       fontSize: 12,
@@ -597,8 +571,40 @@ const createStyles = (colors: ThemeColors) =>
       fontFamily: typography.fonts.regular,
       fontSize: 12,
     },
+    typeRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: 4,
+    },
+    typeCard: {
+      flex: 1,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.background + 'A8',
+      padding: 10,
+      gap: 4,
+    },
+    typeCardIconWrap: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 2,
+    },
+    typeCardTitle: {
+      fontFamily: typography.fonts.semibold,
+      fontSize: 14,
+      color: colors.textMuted,
+    },
+    typeCardSubtitle: {
+      fontFamily: typography.fonts.regular,
+      fontSize: 11,
+      color: colors.textMuted + 'BB',
+    },
     sectionWrap: {
-      gap: 12,
+      gap: 10,
     },
     sectionLabel: {
       fontFamily: typography.fonts.semibold,
@@ -606,37 +612,13 @@ const createStyles = (colors: ThemeColors) =>
       color: colors.textMuted,
       letterSpacing: 1.25,
     },
-    segmentedWrap: {
-      flexDirection: 'row',
+    sectionCard: {
       borderRadius: 16,
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      overflow: 'hidden',
-      padding: 4,
-      gap: 6,
-    },
-    segmentButton: {
-      flex: 1,
-      borderRadius: 12,
-      height: 44,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'row',
-      gap: 8,
-      backgroundColor: 'transparent',
-    },
-    segmentButtonActive: {
-      backgroundColor: colors.text,
-    },
-    segmentText: {
-      fontFamily: typography.fonts.medium,
-      fontSize: 14,
-      color: colors.textMuted,
-    },
-    segmentTextActive: {
-      color: colors.background,
-      fontFamily: typography.fonts.semibold,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
     },
     choiceRow: {
       paddingRight: 10,
@@ -644,7 +626,7 @@ const createStyles = (colors: ThemeColors) =>
       gap: 10,
     },
     choiceCard: {
-      width: 126,
+      width: 156,
       borderRadius: 14,
       padding: 12,
       backgroundColor: colors.surface,
@@ -709,14 +691,6 @@ const createStyles = (colors: ThemeColors) =>
       fontSize: 13,
       textAlign: 'center',
     },
-    noteBox: {
-      borderRadius: 16,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-    },
     dateTimeRow: {
       flexDirection: 'row',
       gap: 8,
@@ -756,6 +730,11 @@ const createStyles = (colors: ThemeColors) =>
       height: 28,
       justifyContent: 'center',
       backgroundColor: colors.text,
+    },
+    inlinePickerDoneText: {
+      color: colors.background,
+      fontFamily: typography.fonts.semibold,
+      fontSize: 12,
     },
     noteInput: {
       minHeight: 80,
