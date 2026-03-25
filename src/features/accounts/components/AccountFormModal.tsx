@@ -3,7 +3,7 @@ import { BlurView } from '@sbaiahmed1/react-native-blur';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
-  Keyboard,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
@@ -40,7 +40,7 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const isEditing = !!account;
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const ModalWrapper = Platform.OS === 'ios' ? KeyboardAvoidingView : View;
 
   const { mutateAsync: createAccount } = useCreateAccount();
   const { mutateAsync: updateAccount } = useUpdateAccount();
@@ -49,7 +49,6 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [colorHex, setColorHex] = useState<string>(ACCOUNT_COLORS[0]);
   const [iconKey, setIconKey] = useState<string>(ACCOUNT_ICONS[0]);
-  const [footerHeight, setFooterHeight] = useState(96);
 
   const {
     control,
@@ -85,23 +84,6 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
     setIconKey(ACCOUNT_ICONS[0]);
   }, [account, visible, reset]);
 
-  useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
-    const showSub = Keyboard.addListener(showEvent, () => {
-      setIsKeyboardVisible(true);
-    });
-    const hideSub = Keyboard.addListener(hideEvent, () => {
-      setIsKeyboardVisible(false);
-    });
-
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
-
   const handleSave = handleSubmit(async (data) => {
     const payload = {
       name: data.name.trim(),
@@ -127,7 +109,10 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <ModalWrapper
+        style={styles.overlay}
+        {...(Platform.OS === 'ios' ? { behavior: 'padding' as const, keyboardVerticalOffset: 0 } : {})}
+      >
         <TouchableOpacity style={styles.backdrop} onPress={onClose} activeOpacity={1} />
 
         <View style={styles.sheet}>
@@ -164,10 +149,7 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
 
           <ScrollView
             style={styles.scroll}
-            contentContainerStyle={[
-              styles.content,
-              { paddingBottom: isKeyboardVisible ? 24 + insets.bottom : footerHeight + 12 },
-            ]}
+            contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
@@ -317,12 +299,7 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
           </ScrollView>
 
           <View
-            style={[
-              styles.footer,
-              { paddingBottom: Math.max(insets.bottom + 12, Platform.OS === 'ios' ? 36 : 22) },
-              isKeyboardVisible && styles.footerHidden,
-            ]}
-            onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
+            style={[styles.footer, { paddingBottom: Math.max(insets.bottom + 12, Platform.OS === 'ios' ? 36 : 22) }]}
           >
             <TouchableOpacity
               activeOpacity={0.9}
@@ -335,7 +312,7 @@ export function AccountFormModal({ visible, onClose, account }: AccountFormModal
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </ModalWrapper>
 
       <CurrencyPickerModal
         visible={showCurrencyPicker}
@@ -508,19 +485,12 @@ const createStyles = (colors: ThemeColors) =>
     },
     iconCellActive: {},
     footer: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      bottom: 0,
       paddingHorizontal: 24,
       paddingTop: 10,
       paddingBottom: Platform.OS === 'ios' ? 36 : 22,
       backgroundColor: colors.background + 'F2',
       borderTopWidth: 1,
       borderTopColor: colors.border,
-    },
-    footerHidden: {
-      display: 'none',
     },
     primaryBtn: {
       height: 56,
