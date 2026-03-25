@@ -269,7 +269,7 @@ export default function DashboardScreen() {
 
         {/* ── Quick actions ── */}
         <View style={styles.quickActions}>
-          <TouchableOpacity style={styles.quickActionPrimary} onPress={() => router.push('/add-transaction')} activeOpacity={0.85}>
+          <TouchableOpacity style={styles.quickActionPrimary} onPress={() => router.push('/transactions/create')} activeOpacity={0.85}>
             <Ionicons name="add" size={20} color={colors.background} />
             <Text style={styles.quickActionPrimaryText}>Add Transaction</Text>
           </TouchableOpacity>
@@ -407,7 +407,7 @@ export default function DashboardScreen() {
             <View style={styles.emptyActivity}>
               <Ionicons name="receipt-outline" size={28} color={colors.textMuted} />
               <Text style={styles.emptyActivityText}>No transactions yet</Text>
-              <TouchableOpacity style={styles.emptyActivityAction} onPress={() => router.push('/add-transaction')}>
+              <TouchableOpacity style={styles.emptyActivityAction} onPress={() => router.push('/transactions/create')}>
                 <Text style={styles.emptyActivityActionText}>Add one now</Text>
                 <Ionicons name="arrow-forward" size={12} color={colors.background} />
               </TouchableOpacity>
@@ -418,7 +418,7 @@ export default function DashboardScreen() {
       </ScrollView>
 
       {/* FAB */}
-      <TouchableOpacity style={styles.fab} onPress={() => router.push('/add-transaction')} activeOpacity={0.9}>
+      <TouchableOpacity style={styles.fab} onPress={() => router.push('/transactions/create')} activeOpacity={0.9}>
         <Ionicons name="add" size={28} color={colors.background} />
       </TouchableOpacity>
 

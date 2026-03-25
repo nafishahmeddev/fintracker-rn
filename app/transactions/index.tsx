@@ -331,7 +331,7 @@ export default function TransactionsScreen() {
 
   const handleEdit = React.useCallback(
     (tx: LedgerTransaction) => {
-      router.push({ pathname: '/add-transaction', params: { id: String(tx.id) } });
+      router.push(`/transactions/edit/${tx.id}`);
     },
     [router],
   );
@@ -469,7 +469,7 @@ export default function TransactionsScreen() {
                 ? 'No transactions match the active filters.'
                 : 'Add your first transaction to start tracking.'}
             </Text>
-            <TouchableOpacity style={styles.emptyAction} onPress={() => router.push('/add-transaction')}>
+            <TouchableOpacity style={styles.emptyAction} onPress={() => router.push('/transactions/create')}>
               <Text style={styles.emptyActionText}>Add Transaction</Text>
               <Ionicons name="arrow-forward" size={14} color={colors.background} />
             </TouchableOpacity>
@@ -522,7 +522,7 @@ export default function TransactionsScreen() {
       </ScrollView>
 
       {/* FAB */}
-      <TouchableOpacity style={styles.fab} onPress={() => router.push('/add-transaction')} activeOpacity={0.9}>
+      <TouchableOpacity style={styles.fab} onPress={() => router.push('/transactions/create')} activeOpacity={0.9}>
         <Ionicons name="add" size={28} color={colors.background} />
       </TouchableOpacity>
 

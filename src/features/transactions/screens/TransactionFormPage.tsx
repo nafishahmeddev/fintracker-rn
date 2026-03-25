@@ -1,32 +1,32 @@
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BlurBackground } from '../src/components/ui/BlurBackground';
-import { accounts as accountsTable, categories as categoriesTable } from '../src/db/schema';
-import { useAccounts } from '../src/features/accounts/hooks/accounts';
-import { useCategories } from '../src/features/categories/hooks/categories';
+import { BlurBackground } from '../../../components/ui/BlurBackground';
+import { accounts as accountsTable, categories as categoriesTable } from '../../../db/schema';
+import { useSettings } from '../../../providers/SettingsProvider';
+import { useTheme } from '../../../providers/ThemeProvider';
+import { ThemeColors } from '../../../theme/colors';
+import { typography } from '../../../theme/typography';
+import { useAccounts } from '../../accounts/hooks/accounts';
+import { useCategories } from '../../categories/hooks/categories';
 import {
-  useCreateTransaction,
-  useTransactions,
-  useUpdateTransaction,
-} from '../src/features/transactions/hooks/transactions';
-import { useSettings } from '../src/providers/SettingsProvider';
-import { useTheme } from '../src/providers/ThemeProvider';
-import { ThemeColors } from '../src/theme/colors';
-import { typography } from '../src/theme/typography';
+    useCreateTransaction,
+    useTransactions,
+    useUpdateTransaction,
+} from '../hooks/transactions';
 
 type TransactionType = 'CR' | 'DR';
 type Account = typeof accountsTable.$inferSelect;
@@ -41,6 +41,11 @@ type LedgerTransaction = {
   type: 'CR' | 'DR';
   datetime: string;
   note: string;
+};
+
+type Props = {
+  mode: 'create' | 'edit';
+  transactionId?: number | null;
 };
 
 const TYPE_META: Record<TransactionType, { title: string; subtitle: string; icon: IoniconName }> = {
@@ -61,18 +66,9 @@ const resolveIcon = (raw: string | null | undefined, fallback: IoniconName): Ion
   return raw in Ionicons.glyphMap ? (raw as IoniconName) : fallback;
 };
 
-const resolveParamNumber = (value: string | string[] | undefined): number | null => {
-  const raw = Array.isArray(value) ? value[0] : value;
-  if (!raw) return null;
-  const parsed = Number.parseInt(raw, 10);
-  return Number.isFinite(parsed) ? parsed : null;
-};
-
-export default function AddTransactionScreen() {
+export function TransactionFormPage({ mode, transactionId }: Props) {
   const router = useRouter();
-  const params = useLocalSearchParams<{ id?: string | string[] }>();
-  const editingId = React.useMemo(() => resolveParamNumber(params.id), [params.id]);
-  const isEditMode = editingId !== null;
+  const isEditMode = mode === 'edit';
 
   const { colors } = useTheme();
   const { profile } = useSettings();
@@ -89,9 +85,9 @@ export default function AddTransactionScreen() {
   const transactions = React.useMemo(() => (transactionsQuery.data ?? []) as LedgerTransaction[], [transactionsQuery.data]);
 
   const editingTransaction = React.useMemo(() => {
-    if (editingId === null) return null;
-    return transactions.find((tx) => tx.id === editingId) ?? null;
-  }, [transactions, editingId]);
+    if (!isEditMode || transactionId === null || transactionId === undefined) return null;
+    return transactions.find((tx) => tx.id === transactionId) ?? null;
+  }, [transactions, transactionId, isEditMode]);
 
   const [type, setType] = React.useState<TransactionType>('DR');
   const [selectedAccountId, setSelectedAccountId] = React.useState<number | null>(null);

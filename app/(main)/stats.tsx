@@ -34,7 +34,7 @@ const resolveIconName = (raw: string | null | undefined, fallback: IoniconName):
   return fallback;
 };
 
-const computeFlow = (items: Array<{ type: 'CR' | 'DR'; amount: number }>) =>
+const computeFlow = (items: { type: 'CR' | 'DR'; amount: number }[]) =>
   items.reduce(
     (accumulator, transaction) => {
       if (transaction.type === 'CR') accumulator.income += transaction.amount;
@@ -86,7 +86,7 @@ export default function StatsScreen() {
   }, [accounts, selectedCurrency]);
 
   const summary = React.useMemo(() => {
-    const totals = computeFlow(filteredTransactions as Array<{ type: 'CR' | 'DR'; amount: number }>);
+    const totals = computeFlow(filteredTransactions as { type: 'CR' | 'DR'; amount: number }[]);
 
     const balance = currencyAccounts.reduce((sum, account) => sum + account.balance, 0);
     const avgExpense = filteredTransactions.filter((transaction) => transaction.type === 'DR').length > 0
@@ -116,7 +116,7 @@ export default function StatsScreen() {
   }, [transactions, selectedCurrency, selectedRange, cutoffDate]);
 
   const previousSummary = React.useMemo(() => {
-    const totals = computeFlow(previousWindowTransactions as Array<{ type: 'CR' | 'DR'; amount: number }>);
+    const totals = computeFlow(previousWindowTransactions as { type: 'CR' | 'DR'; amount: number }[]);
     return {
       ...totals,
       net: totals.income - totals.expense,
