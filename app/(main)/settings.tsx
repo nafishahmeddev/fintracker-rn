@@ -5,6 +5,7 @@ import React from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
+import { ConfirmDialog } from '../../src/components/ui/ConfirmDialog';
 import { OptionsDialog } from '../../src/components/ui/OptionsDialog';
 import { db } from '../../src/db/client';
 import { accounts, categories, payments } from '../../src/db/schema';
@@ -19,6 +20,7 @@ export default function SettingsScreen() {
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const router = useRouter();
   const [showAppearanceDialog, setShowAppearanceDialog] = React.useState(false);
+  const [showResetConfirmDialog, setShowResetConfirmDialog] = React.useState(false);
 
   const themeOptions: { label: string; value: 'light' | 'dark' | 'system'; icon: keyof typeof Ionicons.glyphMap }[] = [
     { label: 'Light Mode', value: 'light', icon: 'sunny-outline' },
@@ -27,29 +29,20 @@ export default function SettingsScreen() {
   ];
 
   const handleResetData = () => {
-    Alert.alert(
-      "FACTORY RESET",
-      "THIS WILL PERMANENTLY WIPE ALL DATA. ACCOUNTS, CATEGORIES, AND PAYMENTS WILL BE DESTROYED.",
-      [
-        { text: "CANCEL", style: "cancel" },
-        {
-          text: "WIPE EVERYTHING",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await db.delete(payments);
-              await db.delete(categories);
-              await db.delete(accounts);
-              await AsyncStorage.clear();
-              Alert.alert("Wipe Complete", "Application state has been purged. Please restart the app.");
-              router.replace('/(onboarding)');
-            } catch {
-              Alert.alert("Critical Error", "Failed to clear physical storage.");
-            }
-          }
-        }
-      ]
-    );
+    setShowResetConfirmDialog(true);
+  };
+
+  const runResetData = async () => {
+    try {
+      await db.delete(payments);
+      await db.delete(categories);
+      await db.delete(accounts);
+      await AsyncStorage.clear();
+      Alert.alert("Wipe Complete", "Application state has been purged. Please restart the app.");
+      router.replace('/(onboarding)');
+    } catch {
+      Alert.alert("Critical Error", "Failed to clear physical storage.");
+    }
   };
 
   const handleThemeChange = () => setShowAppearanceDialog(true);
@@ -172,6 +165,15 @@ export default function SettingsScreen() {
           selected: (profile.theme || 'system') === option.value,
           onPress: () => updateProfile({ theme: option.value }),
         }))}
+      />
+
+      <ConfirmDialog
+        visible={showResetConfirmDialog}
+        onClose={() => setShowResetConfirmDialog(false)}
+        title="Factory Reset"
+        message="This will permanently wipe all data. Accounts, categories, and payments will be destroyed."
+        confirmLabel="Wipe Everything"
+        onConfirm={runResetData}
       />
 
     </SafeAreaView>

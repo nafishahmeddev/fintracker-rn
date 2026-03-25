@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ConfirmDialog } from '../../src/components/ui/ConfirmDialog';
 import { MoneyText } from '../../src/components/ui/MoneyText';
 import { OptionsDialog } from '../../src/components/ui/OptionsDialog';
 import { DEFAULT_CURRENCY } from '../../src/constants/currency';
@@ -452,24 +453,17 @@ export default function DashboardScreen() {
         options={accountOptions}
       />
 
-      <OptionsDialog
+      <ConfirmDialog
         visible={showDeleteAccountDialog}
         onClose={() => setShowDeleteAccountDialog(false)}
-        title="Confirm Delete"
-        subtitle={activeAccount ? `Delete ${activeAccount.name}?` : undefined}
-        closeLabel="Cancel"
-        options={activeAccount ? [
-          {
-            key: 'confirm-delete',
-            label: 'Delete permanently',
-            icon: 'trash-outline',
-            destructive: true,
-            onPress: () => {
-              deleteAccount(activeAccount.id);
-              setActiveAccount(undefined);
-            },
-          },
-        ] : []}
+        title="Delete Account"
+        message={activeAccount ? `Delete ${activeAccount.name}? This action cannot be undone.` : undefined}
+        confirmLabel="Delete"
+        onConfirm={() => {
+          if (!activeAccount) return;
+          deleteAccount(activeAccount.id);
+          setActiveAccount(undefined);
+        }}
       />
     </SafeAreaView>
   );

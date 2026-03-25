@@ -2,19 +2,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
+import { ConfirmDialog } from '../../src/components/ui/ConfirmDialog';
 import { MoneyText } from '../../src/components/ui/MoneyText';
 import { useDeleteTransaction, useTransactions } from '../../src/features/transactions/hooks/transactions';
 import { useTheme } from '../../src/providers/ThemeProvider';
@@ -259,6 +259,8 @@ export default function TransactionsScreen() {
   const [accountFilterId, setAccountFilterId] = React.useState<number | null>(null);
   const [categoryFilterId, setCategoryFilterId] = React.useState<number | null>(null);
   const [showFilterSheet, setShowFilterSheet] = React.useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
+  const [pendingDeleteTx, setPendingDeleteTx] = React.useState<LedgerTransaction | null>(null);
 
   React.useEffect(() => {
     if (initialAccountId !== null) {
@@ -348,16 +350,10 @@ export default function TransactionsScreen() {
 
   const handleDelete = React.useCallback(
     (tx: LedgerTransaction) => {
-      Alert.alert(
-        'Delete Transaction',
-        'This will remove the transaction and reverse its account balance impact.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Delete', style: 'destructive', onPress: () => deleteTransaction.mutate(tx.id) },
-        ],
-      );
+      setPendingDeleteTx(tx);
+      setShowDeleteDialog(true);
     },
-    [deleteTransaction],
+    [],
   );
 
   if (transactionsQuery.isLoading) {
@@ -514,6 +510,19 @@ export default function TransactionsScreen() {
       <TouchableOpacity style={styles.fab} onPress={() => router.push('/transactions/create')} activeOpacity={0.9}>
         <Ionicons name="add" size={28} color={colors.background} />
       </TouchableOpacity>
+
+      <ConfirmDialog
+        visible={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        title="Delete Transaction"
+        message="This will remove the transaction and reverse its account balance impact."
+        confirmLabel="Delete"
+        onConfirm={() => {
+          if (!pendingDeleteTx) return;
+          deleteTransaction.mutate(pendingDeleteTx.id);
+          setPendingDeleteTx(null);
+        }}
+      />
 
       {/* Filter bottom sheet */}
       <Modal visible={showFilterSheet} transparent animationType="slide" onRequestClose={() => setShowFilterSheet(false)}>

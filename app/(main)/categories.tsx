@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
+import { ConfirmDialog } from '../../src/components/ui/ConfirmDialog';
 import { Header } from '../../src/components/ui/Header';
 import { MoneyText } from '../../src/components/ui/MoneyText';
 import { OptionsDialog } from '../../src/components/ui/OptionsDialog';
@@ -238,24 +239,17 @@ export default function CategoriesScreen() {
         options={manageOptions}
       />
 
-      <OptionsDialog
+      <ConfirmDialog
         visible={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
         title="Delete Category"
-        subtitle="This will delete the category and associated transactions."
-        closeLabel="Cancel"
-        options={selectedCategory ? [
-          {
-            key: 'confirm-delete-category',
-            label: 'Delete permanently',
-            icon: 'trash-outline',
-            destructive: true,
-            onPress: () => {
-              handleDelete(selectedCategory.id);
-              setSelectedCategory(null);
-            },
-          },
-        ] : []}
+        message="This will delete the category and associated transactions."
+        confirmLabel="Delete"
+        onConfirm={() => {
+          if (!selectedCategory) return;
+          handleDelete(selectedCategory.id);
+          setSelectedCategory(null);
+        }}
       />
     </SafeAreaView>
   );
