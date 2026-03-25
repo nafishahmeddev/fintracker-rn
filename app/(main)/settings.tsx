@@ -263,8 +263,6 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     borderRadius: 24,
     padding: 24,
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
     marginBottom: 28,
   },
   heroHeader: {
@@ -294,8 +292,6 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     height: 24,
     borderRadius: 12,
     backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
   },
   heroBadgeDot: {
     width: 6,
@@ -333,7 +329,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   heroGridDivider: {
     width: 1,
     height: 24,
-    backgroundColor: colors.border,
+    backgroundColor: colors.text + '08',
   },
   section: {
     marginBottom: 28,
@@ -349,24 +345,20 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     borderRadius: 20,
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
     overflow: 'hidden',
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border + '40',
   },
   iconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
+    backgroundColor: colors.surface,
     marginRight: 14,
   },
   textDetails: {
@@ -424,8 +416,6 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.background,
     borderRadius: 24,
     padding: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.3,
@@ -448,8 +438,6 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     height: 54,
     borderRadius: 16,
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
     paddingHorizontal: 16,
     fontSize: 16,
     color: colors.text,
@@ -466,8 +454,6 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
   },
   modalBtnCancelText: {
     fontFamily: typography.fonts.semibold,
