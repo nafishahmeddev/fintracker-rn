@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1774324111481,
-      "tag": "0000_next_bloodscream",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1774404000000,
-      "tag": "0001_drop_category_budget_expense",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1774428070665,
-      "tag": "0002_friendly_mad_thinker",
+      "when": 1774453488244,
+      "tag": "0000_futuristic_ego",
       "breakpoints": true
     }
   ]

@@ -9,7 +9,9 @@ CREATE TABLE `accounts` (
 	`currency` text DEFAULT 'USD' NOT NULL,
 	`balance` real DEFAULT 0 NOT NULL,
 	`income` real DEFAULT 0 NOT NULL,
-	`expense` real DEFAULT 0 NOT NULL
+	`expense` real DEFAULT 0 NOT NULL,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `categories` (
@@ -17,7 +19,9 @@ CREATE TABLE `categories` (
 	`name` text NOT NULL,
 	`icon` text DEFAULT 'grid' NOT NULL,
 	`color` integer NOT NULL,
-	`type` text DEFAULT 'DR' NOT NULL
+	`type` text DEFAULT 'DR' NOT NULL,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `payments` (
@@ -28,6 +32,12 @@ CREATE TABLE `payments` (
 	`type` text NOT NULL,
 	`datetime` text NOT NULL,
 	`note` text NOT NULL,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	FOREIGN KEY (`account_id`) REFERENCES `accounts`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`category_id`) REFERENCES `categories`(`id`) ON UPDATE no action ON DELETE cascade
 );
+--> statement-breakpoint
+CREATE INDEX `payments_account_id_idx` ON `payments` (`account_id`);--> statement-breakpoint
+CREATE INDEX `payments_category_id_idx` ON `payments` (`category_id`);--> statement-breakpoint
+CREATE INDEX `payments_datetime_idx` ON `payments` (`datetime`);
