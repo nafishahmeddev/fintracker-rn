@@ -1,6 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -59,21 +60,23 @@ export default function RootLayout() {
   customizeText();
 
   return (
-    <QueryProvider>
-      <DatabaseProvider>
-        <SettingsProvider>
-          <OnboardingProvider>
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <CustomThemeProvider>
-              <Stack screenOptions={{ headerShown: false }}>
-                {/* Rely on auto-resolution for groups */}
-              </Stack>
-              <StatusBar style="auto" />
-            </CustomThemeProvider>
-          </ThemeProvider>
-        </OnboardingProvider>
-      </SettingsProvider>
-    </DatabaseProvider>
-    </QueryProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryProvider>
+        <DatabaseProvider>
+          <SettingsProvider>
+            <OnboardingProvider>
+              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+              <CustomThemeProvider>
+                <Stack screenOptions={{ headerShown: false }}>
+                  {/* Rely on auto-resolution for groups */}
+                </Stack>
+                <StatusBar style="auto" />
+              </CustomThemeProvider>
+            </ThemeProvider>
+          </OnboardingProvider>
+        </SettingsProvider>
+      </DatabaseProvider>
+      </QueryProvider>
+    </GestureHandlerRootView>
   );
 }

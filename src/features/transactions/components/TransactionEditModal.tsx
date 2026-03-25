@@ -2,24 +2,25 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import React from 'react';
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { accounts as accountsTable, categories as categoriesTable } from '../../../db/schema';
+import { useSettings } from '../../../providers/SettingsProvider';
 import { useTheme } from '../../../providers/ThemeProvider';
 import { ThemeColors } from '../../../theme/colors';
 import { typography } from '../../../theme/typography';
 import { useAccounts } from '../../accounts/hooks/accounts';
 import { useCategories } from '../../categories/hooks/categories';
-import { useUpdateTransaction } from '../hooks/transactions';
+import { useCreateTransaction, useUpdateTransaction } from '../hooks/transactions';
 
 type TransactionType = 'CR' | 'DR';
 type Account = typeof accountsTable.$inferSelect;
@@ -41,7 +42,10 @@ export type LedgerTransaction = {
 type Props = {
   visible: boolean;
   transaction: LedgerTransaction | null;
+  mode?: 'create' | 'edit';
+  presentation?: 'modal' | 'page';
   onClose: () => void;
+  onSaved?: () => void;
 };
 
 const toHexColor = (value: number) => `#${value.toString(16).padStart(6, '0')}`;
@@ -60,12 +64,21 @@ const TYPE_META: Record<TransactionType, { label: string; icon: IoniconName; col
   DR: { label: 'Expense', icon: 'trending-down-outline', color: '#EF4444' },
 };
 
-export function TransactionEditModal({ visible, transaction, onClose }: Props) {
+export function TransactionEditModal({
+  visible,
+  transaction,
+  mode = 'edit',
+  presentation = 'modal',
+  onClose,
+  onSaved,
+}: Props) {
   const { colors } = useTheme();
+  const { profile } = useSettings();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
 
   const accountsQuery = useAccounts();
   const categoriesQuery = useCategories();
+  const createTransaction = useCreateTransaction();
   const updateTransaction = useUpdateTransaction();
 
   const accounts = React.useMemo(
@@ -87,17 +100,61 @@ export function TransactionEditModal({ visible, transaction, onClose }: Props) {
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [showTimePicker, setShowTimePicker] = React.useState(false);
 
-  // Pre-fill when transaction prop changes
+  const isCreateMode = mode === 'create';
+
+  // Pre-fill when transaction prop changes or reset for create mode
   React.useEffect(() => {
-    if (transaction) {
+    if (!visible) return;
+    if (!isCreateMode && transaction) {
       setType(transaction.type);
       setAmountInput(transaction.amount.toString());
       setNote(transaction.note);
       setSelectedAccountId(transaction.accountId);
       setSelectedCategoryId(transaction.categoryId);
       setDatetime(new Date(transaction.datetime));
+      return;
     }
-  }, [transaction]);
+
+    setType('DR');
+    setAmountInput('');
+    setNote('');
+    setSelectedAccountId(null);
+    setSelectedCategoryId(null);
+    setDatetime(new Date());
+  }, [visible, transaction, isCreateMode]);
+
+  React.useEffect(() => {
+    if (!visible || !isCreateMode) return;
+    if (accounts.length === 0) {
+      setSelectedAccountId(null);
+      return;
+    }
+
+    if (selectedAccountId === null || !accounts.some((account) => account.id === selectedAccountId)) {
+      const preferred = accounts.find((account) => account.isDefault) ?? accounts[0];
+      setSelectedAccountId(preferred.id);
+    }
+  }, [visible, isCreateMode, accounts, selectedAccountId]);
+
+  const filteredCategories = React.useMemo(
+    () => categories.filter((c) => c.type === type),
+    [categories, type]
+  );
+
+  React.useEffect(() => {
+    if (!visible || !isCreateMode) return;
+    if (filteredCategories.length === 0) {
+      setSelectedCategoryId(null);
+      return;
+    }
+
+    if (
+      selectedCategoryId === null ||
+      !filteredCategories.some((category) => category.id === selectedCategoryId)
+    ) {
+      setSelectedCategoryId(filteredCategories[0].id);
+    }
+  }, [visible, isCreateMode, filteredCategories, selectedCategoryId]);
 
   // Reset category if type changes and current category doesn't match
   React.useEffect(() => {
@@ -107,13 +164,12 @@ export function TransactionEditModal({ visible, transaction, onClose }: Props) {
     }
   }, [type, categories, selectedCategoryId]);
 
-  const filteredCategories = React.useMemo(
-    () => categories.filter((c) => c.type === type),
-    [categories, type]
-  );
-
   const amountValue = React.useMemo(() => parseAmount(amountInput), [amountInput]);
-  const canSave = amountValue > 0 && selectedAccountId !== null && selectedCategoryId !== null;
+  const canSave =
+    amountValue > 0 &&
+    selectedAccountId !== null &&
+    selectedCategoryId !== null &&
+    accounts.length > 0;
 
   const selectedAccount = accounts.find((a) => a.id === selectedAccountId) ?? null;
 
@@ -155,249 +211,272 @@ export function TransactionEditModal({ visible, transaction, onClose }: Props) {
     }
   };
 
+  const isSubmitting = createTransaction.isPending || updateTransaction.isPending;
+
   const handleSave = () => {
-    if (!transaction || !canSave) return;
-    updateTransaction.mutate(
-      {
-        id: transaction.id,
-        data: {
-          accountId: selectedAccountId!,
-          categoryId: selectedCategoryId!,
-          amount: amountValue,
-          type,
-          datetime: datetime.toISOString(),
-          note,
-        },
-      },
-      { onSuccess: onClose }
-    );
+    if (!canSave) return;
+
+    const payload = {
+      accountId: selectedAccountId!,
+      categoryId: selectedCategoryId!,
+      amount: amountValue,
+      type,
+      datetime: datetime.toISOString(),
+      note: note.trim() || 'Transaction',
+    };
+
+    const onSuccess = () => {
+      onSaved?.();
+      onClose();
+    };
+
+    if (isCreateMode) {
+      createTransaction.mutate(payload, { onSuccess });
+      return;
+    }
+
+    if (!transaction) return;
+    updateTransaction.mutate({ id: transaction.id, data: payload }, { onSuccess });
   };
 
   const typeMeta = TYPE_META[type];
+
+  const isPage = presentation === 'page';
+
+  const sheetContent = (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={[styles.sheetContainer, isPage && styles.sheetContainerPage]}
+    >
+      <View style={[styles.sheet, isPage && styles.sheetPage]}>
+        {!isPage && <View style={styles.handle} />}
+
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.headerTitle}>{isCreateMode ? 'New Transaction' : 'Edit Transaction'}</Text>
+            <Text style={styles.headerSub}>
+              {isCreateMode
+                ? 'Use the same flow as edit for consistency'
+                : 'Changes will recalculate account balance'}
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.8}>
+            <Ionicons name={isPage ? 'chevron-back' : 'close'} size={18} color={colors.text} />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.body} contentContainerStyle={styles.bodyContent}>
+          {/* ── Type selector ── */}
+          <View style={styles.typeRow}>
+            {(['CR', 'DR'] as const).map((t) => {
+              const meta = TYPE_META[t];
+              const active = type === t;
+              const activeColor = t === 'CR' ? colors.success : colors.danger;
+              return (
+                <TouchableOpacity
+                  key={t}
+                  style={[
+                    styles.typeChip,
+                    active && { backgroundColor: activeColor + '18', borderColor: activeColor },
+                  ]}
+                  onPress={() => setType(t)}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons
+                    name={meta.icon}
+                    size={16}
+                    color={active ? activeColor : colors.textMuted}
+                  />
+                  <Text style={[styles.typeChipText, active && { color: activeColor }]}>
+                    {meta.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* ── Amount ── */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>AMOUNT</Text>
+            <View style={[styles.amountRow, { borderColor: amountValue > 0 ? typeMeta.color + '60' : colors.border }]}> 
+              <Text style={[styles.currencySymbol, { color: amountValue > 0 ? typeMeta.color : colors.textMuted }]}>
+                {selectedAccount?.currency ?? profile.defaultCurrency}
+              </Text>
+              <TextInput
+                style={[styles.amountInput, { color: amountValue > 0 ? typeMeta.color : colors.text }]}
+                value={amountInput}
+                onChangeText={setAmountInput}
+                placeholder="0.00"
+                placeholderTextColor={colors.textMuted}
+                keyboardType="decimal-pad"
+                returnKeyType="done"
+              />
+            </View>
+          </View>
+
+          {/* ── Account ── */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>ACCOUNT</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillsRow}>
+              {accounts.map((acc) => {
+                const selected = selectedAccountId === acc.id;
+                const accColor = toHexColor(acc.color);
+                return (
+                  <TouchableOpacity
+                    key={acc.id}
+                    style={[styles.pillCard, selected && { borderColor: accColor, backgroundColor: accColor + '14' }]}
+                    onPress={() => setSelectedAccountId(acc.id)}
+                    activeOpacity={0.85}
+                  >
+                    <View style={[styles.pillDot, { backgroundColor: accColor }]} />
+                    <View>
+                      <Text style={[styles.pillTitle, selected && { color: accColor }]}>{acc.name}</Text>
+                      <Text style={styles.pillSub}>{acc.currency}</Text>
+                    </View>
+                    {selected && <Ionicons name="checkmark-circle" size={14} color={accColor} />}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* ── Note ── */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>NOTE</Text>
+            <View style={styles.noteRow}>
+              <Ionicons name="create-outline" size={16} color={colors.textMuted} />
+              <TextInput
+                style={styles.noteInput}
+                value={note}
+                onChangeText={setNote}
+                placeholder="What was this for?"
+                placeholderTextColor={colors.textMuted}
+                returnKeyType="done"
+                maxLength={120}
+              />
+            </View>
+          </View>
+
+          {/* ── Category ── */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>CATEGORY</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillsRow}>
+              {filteredCategories.map((cat) => {
+                const selected = selectedCategoryId === cat.id;
+                const catColor = toHexColor(cat.color);
+                const iconName = resolveIconName(cat.icon, 'pricetag-outline');
+                return (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[styles.categoryPill, selected && { borderColor: catColor, backgroundColor: catColor + '14' }]}
+                    onPress={() => setSelectedCategoryId(cat.id)}
+                    activeOpacity={0.85}
+                  >
+                    <View style={[styles.categoryIconWrap, { backgroundColor: catColor + '20' }]}>
+                      <Ionicons name={iconName} size={15} color={catColor} />
+                    </View>
+                    <Text style={[styles.categoryPillText, selected && { color: catColor }]}>
+                      {cat.name}
+                    </Text>
+                    {selected && <Ionicons name="checkmark-circle" size={13} color={catColor} />}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* ── Date & Time ── */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>DATE & TIME</Text>
+            <View style={styles.dateTimeRow}>
+              <TouchableOpacity
+                style={styles.dateTimeBtn}
+                onPress={() => setShowDatePicker(true)}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="calendar-outline" size={15} color={colors.textMuted} />
+                <Text style={styles.dateTimeBtnText}>{formattedDate}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.dateTimeBtn}
+                onPress={() => setShowTimePicker(true)}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="time-outline" size={15} color={colors.textMuted} />
+                <Text style={styles.dateTimeBtnText}>{formattedTime}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {Platform.OS === 'ios' && showDatePicker && (
+            <DateTimePicker
+              value={datetime}
+              mode="date"
+              display="inline"
+              maximumDate={new Date()}
+              onChange={handleDateChange}
+              style={{ marginHorizontal: -4 }}
+            />
+          )}
+          {Platform.OS === 'android' && showDatePicker && (
+            <DateTimePicker
+              value={datetime}
+              mode="date"
+              display="default"
+              maximumDate={new Date()}
+              onChange={handleDateChange}
+            />
+          )}
+          {Platform.OS === 'ios' && showTimePicker && (
+            <DateTimePicker
+              value={datetime}
+              mode="time"
+              display="spinner"
+              onChange={handleTimeChange}
+            />
+          )}
+          {Platform.OS === 'android' && showTimePicker && (
+            <DateTimePicker
+              value={datetime}
+              mode="time"
+              display="default"
+              onChange={handleTimeChange}
+            />
+          )}
+        </ScrollView>
+
+        {/* ── Save button ── */}
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={[styles.saveBtn, (!canSave || isSubmitting) && styles.saveBtnDisabled]}
+            onPress={handleSave}
+            activeOpacity={0.9}
+            disabled={!canSave || isSubmitting}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color={colors.background} />
+            ) : (
+              <>
+                <Ionicons name="checkmark" size={18} color={colors.background} />
+                <Text style={styles.saveBtnText}>{isCreateMode ? 'Create Transaction' : 'Save Changes'}</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
+  );
+
+  if (isPage) {
+    return <View style={[styles.overlay, styles.overlayPage]}>{sheetContent}</View>;
+  }
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={onClose} />
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.sheetContainer}
-        >
-          <View style={styles.sheet}>
-            {/* Handle */}
-            <View style={styles.handle} />
-
-            {/* Header */}
-            <View style={styles.headerRow}>
-              <View>
-                <Text style={styles.headerTitle}>Edit Transaction</Text>
-                <Text style={styles.headerSub}>Changes will recalculate account balance</Text>
-              </View>
-              <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.8}>
-                <Ionicons name="close" size={18} color={colors.text} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView showsVerticalScrollIndicator={false} style={styles.body} contentContainerStyle={styles.bodyContent}>
-              {/* ── Type selector ── */}
-              <View style={styles.typeRow}>
-                {(['CR', 'DR'] as const).map((t) => {
-                  const meta = TYPE_META[t];
-                  const active = type === t;
-                  const activeColor = t === 'CR' ? colors.success : colors.danger;
-                  return (
-                    <TouchableOpacity
-                      key={t}
-                      style={[
-                        styles.typeChip,
-                        active && { backgroundColor: activeColor + '18', borderColor: activeColor },
-                      ]}
-                      onPress={() => setType(t)}
-                      activeOpacity={0.85}
-                    >
-                      <Ionicons
-                        name={meta.icon}
-                        size={16}
-                        color={active ? activeColor : colors.textMuted}
-                      />
-                      <Text style={[styles.typeChipText, active && { color: activeColor }]}>
-                        {meta.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-
-              {/* ── Amount ── */}
-              <View style={styles.section}>
-                <Text style={styles.sectionLabel}>AMOUNT</Text>
-                <View style={[styles.amountRow, { borderColor: amountValue > 0 ? typeMeta.color + '60' : colors.border }]}>
-                  <Text style={[styles.currencySymbol, { color: amountValue > 0 ? typeMeta.color : colors.textMuted }]}>
-                    {selectedAccount?.currency ?? ''}
-                  </Text>
-                  <TextInput
-                    style={[styles.amountInput, { color: amountValue > 0 ? typeMeta.color : colors.text }]}
-                    value={amountInput}
-                    onChangeText={setAmountInput}
-                    placeholder="0.00"
-                    placeholderTextColor={colors.textMuted}
-                    keyboardType="decimal-pad"
-                    returnKeyType="done"
-                  />
-                </View>
-              </View>
-
-              {/* ── Account ── */}
-              <View style={styles.section}>
-                <Text style={styles.sectionLabel}>ACCOUNT</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillsRow}>
-                  {accounts.map((acc) => {
-                    const selected = selectedAccountId === acc.id;
-                    const accColor = toHexColor(acc.color);
-                    return (
-                      <TouchableOpacity
-                        key={acc.id}
-                        style={[styles.pillCard, selected && { borderColor: accColor, backgroundColor: accColor + '14' }]}
-                        onPress={() => setSelectedAccountId(acc.id)}
-                        activeOpacity={0.85}
-                      >
-                        <View style={[styles.pillDot, { backgroundColor: accColor }]} />
-                        <View>
-                          <Text style={[styles.pillTitle, selected && { color: accColor }]}>{acc.name}</Text>
-                          <Text style={styles.pillSub}>{acc.currency}</Text>
-                        </View>
-                        {selected && <Ionicons name="checkmark-circle" size={14} color={accColor} />}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-              </View>
-
-              {/* ── Note ── */}
-              <View style={styles.section}>
-                <Text style={styles.sectionLabel}>NOTE</Text>
-                <View style={styles.noteRow}>
-                  <Ionicons name="create-outline" size={16} color={colors.textMuted} />
-                  <TextInput
-                    style={styles.noteInput}
-                    value={note}
-                    onChangeText={setNote}
-                    placeholder="What was this for?"
-                    placeholderTextColor={colors.textMuted}
-                    returnKeyType="done"
-                    maxLength={120}
-                  />
-                </View>
-              </View>
-
-              {/* ── Category ── */}
-              <View style={styles.section}>
-                <Text style={styles.sectionLabel}>CATEGORY</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillsRow}>
-                  {filteredCategories.map((cat) => {
-                    const selected = selectedCategoryId === cat.id;
-                    const catColor = toHexColor(cat.color);
-                    const iconName = resolveIconName(cat.icon, 'pricetag-outline');
-                    return (
-                      <TouchableOpacity
-                        key={cat.id}
-                        style={[styles.categoryPill, selected && { borderColor: catColor, backgroundColor: catColor + '14' }]}
-                        onPress={() => setSelectedCategoryId(cat.id)}
-                        activeOpacity={0.85}
-                      >
-                        <View style={[styles.categoryIconWrap, { backgroundColor: catColor + '20' }]}>
-                          <Ionicons name={iconName} size={15} color={catColor} />
-                        </View>
-                        <Text style={[styles.categoryPillText, selected && { color: catColor }]}>
-                          {cat.name}
-                        </Text>
-                        {selected && <Ionicons name="checkmark-circle" size={13} color={catColor} />}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-              </View>
-
-              {/* ── Date & Time ── */}
-              <View style={styles.section}>
-                <Text style={styles.sectionLabel}>DATE & TIME</Text>
-                <View style={styles.dateTimeRow}>
-                  <TouchableOpacity
-                    style={styles.dateTimeBtn}
-                    onPress={() => setShowDatePicker(true)}
-                    activeOpacity={0.85}
-                  >
-                    <Ionicons name="calendar-outline" size={15} color={colors.textMuted} />
-                    <Text style={styles.dateTimeBtnText}>{formattedDate}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.dateTimeBtn}
-                    onPress={() => setShowTimePicker(true)}
-                    activeOpacity={0.85}
-                  >
-                    <Ionicons name="time-outline" size={15} color={colors.textMuted} />
-                    <Text style={styles.dateTimeBtnText}>{formattedTime}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {Platform.OS === 'ios' && showDatePicker && (
-                <DateTimePicker
-                  value={datetime}
-                  mode="date"
-                  display="inline"
-                  maximumDate={new Date()}
-                  onChange={handleDateChange}
-                  style={{ marginHorizontal: -4 }}
-                />
-              )}
-              {Platform.OS === 'android' && showDatePicker && (
-                <DateTimePicker
-                  value={datetime}
-                  mode="date"
-                  display="default"
-                  maximumDate={new Date()}
-                  onChange={handleDateChange}
-                />
-              )}
-              {Platform.OS === 'ios' && showTimePicker && (
-                <DateTimePicker
-                  value={datetime}
-                  mode="time"
-                  display="spinner"
-                  onChange={handleTimeChange}
-                />
-              )}
-              {Platform.OS === 'android' && showTimePicker && (
-                <DateTimePicker
-                  value={datetime}
-                  mode="time"
-                  display="default"
-                  onChange={handleTimeChange}
-                />
-              )}
-            </ScrollView>
-
-            {/* ── Save button ── */}
-            <View style={styles.footer}>
-              <TouchableOpacity
-                style={[styles.saveBtn, (!canSave || updateTransaction.isPending) && styles.saveBtnDisabled]}
-                onPress={handleSave}
-                activeOpacity={0.9}
-                disabled={!canSave || updateTransaction.isPending}
-              >
-                {updateTransaction.isPending ? (
-                  <ActivityIndicator size="small" color={colors.background} />
-                ) : (
-                  <>
-                    <Ionicons name="checkmark" size={18} color={colors.background} />
-                    <Text style={styles.saveBtnText}>Save Changes</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
+        {sheetContent}
       </View>
     </Modal>
   );
@@ -410,8 +489,15 @@ const createStyles = (colors: ThemeColors) =>
       backgroundColor: 'rgba(0,0,0,0.5)',
       justifyContent: 'flex-end',
     },
+    overlayPage: {
+      backgroundColor: 'transparent',
+    },
     sheetContainer: {
       maxHeight: '92%',
+    },
+    sheetContainerPage: {
+      maxHeight: '100%',
+      flex: 1,
     },
     sheet: {
       backgroundColor: colors.background,
@@ -420,6 +506,13 @@ const createStyles = (colors: ThemeColors) =>
       borderTopWidth: 1,
       borderColor: colors.border,
       paddingTop: 12,
+    },
+    sheetPage: {
+      flex: 1,
+      borderTopLeftRadius: 0,
+      borderTopRightRadius: 0,
+      borderTopWidth: 0,
+      paddingTop: Platform.OS === 'ios' ? 60 : 22,
     },
     handle: {
       alignSelf: 'center',

@@ -12,37 +12,17 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
 import { MoneyText } from '../../src/components/ui/MoneyText';
+import { LedgerTransaction } from '../../src/features/transactions/components/TransactionEditModal';
 import { useDeleteTransaction, useTransactions } from '../../src/features/transactions/hooks/transactions';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 
 type TransactionTypeFilter = 'ALL' | 'CR' | 'DR';
-
-type LedgerTransaction = {
-  id: number;
-  accountId: number;
-  categoryId: number;
-  amount: number;
-  type: 'CR' | 'DR';
-  datetime: string;
-  note: string;
-  account: {
-    id: number;
-    name: string;
-    currency: string;
-    color: number;
-  };
-  category: {
-    id: number;
-    name: string;
-    icon: string;
-    color: number;
-  };
-};
 
 const toHexColor = (value: number) => `#${value.toString(16).padStart(6, '0')}`;
 
@@ -61,6 +41,172 @@ const getDateLabel = (iso: string) => {
     month: 'short',
   });
 };
+
+// ─── Swipeable row ───────────────────────────────────────────────────────────
+const SwipeableRow = React.memo(function SwipeableRow({
+  tx,
+  isFirst,
+  isLast,
+  colors,
+  onEdit,
+  onDelete,
+}: {
+  tx: LedgerTransaction;
+  isFirst: boolean;
+  isLast: boolean;
+  colors: ThemeColors;
+  onEdit: (tx: LedgerTransaction) => void;
+  onDelete: (tx: LedgerTransaction) => void;
+}) {
+  const swipeRef = React.useRef<Swipeable>(null);
+  const categoryColor = toHexColor(tx.category.color);
+  const iconName: keyof typeof Ionicons.glyphMap =
+    tx.category.icon in Ionicons.glyphMap
+      ? (tx.category.icon as keyof typeof Ionicons.glyphMap)
+      : 'pricetag-outline';
+
+  const handleEdit = React.useCallback(() => {
+    swipeRef.current?.close();
+    onEdit(tx);
+  }, [onEdit, tx]);
+
+  const handleDelete = React.useCallback(() => {
+    swipeRef.current?.close();
+    onDelete(tx);
+  }, [onDelete, tx]);
+
+  const renderRightActions = React.useCallback(
+    () => (
+      <View
+        style={{
+          flexDirection: 'row',
+          width: 152,
+          borderTopRightRadius: isFirst ? 18 : 0,
+          borderBottomRightRadius: isLast ? 18 : 0,
+          overflow: 'hidden',
+        }}
+      >
+        <TouchableOpacity
+          onPress={handleEdit}
+          activeOpacity={0.85}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 5,
+            backgroundColor: colors.primary,
+          }}
+        >
+          <Ionicons name="pencil-outline" size={20} color={colors.background} />
+          <Text style={{ color: colors.background, fontFamily: typography.fonts.semibold, fontSize: 11 }}>
+            Edit
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleDelete}
+          activeOpacity={0.85}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 5,
+            backgroundColor: colors.danger,
+          }}
+        >
+          <Ionicons name="trash-outline" size={20} color="#fff" />
+          <Text style={{ color: '#fff', fontFamily: typography.fonts.semibold, fontSize: 11 }}>
+            Delete
+          </Text>
+        </TouchableOpacity>
+      </View>
+    ),
+    [handleEdit, handleDelete, colors, isFirst, isLast],
+  );
+
+  return (
+    <Swipeable
+      ref={swipeRef}
+      renderRightActions={renderRightActions}
+      rightThreshold={40}
+      friction={2}
+      overshootRight={false}
+    >
+      <TouchableOpacity
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingVertical: 14,
+          paddingRight: 14,
+          gap: 10,
+          borderBottomWidth: isLast ? 0 : 1,
+          borderBottomColor: colors.border,
+          backgroundColor: colors.surface,
+        }}
+        activeOpacity={0.78}
+        onPress={handleEdit}
+      >
+        <View
+          style={{
+            width: 3,
+            alignSelf: 'stretch',
+            borderRadius: 999,
+            marginLeft: 4,
+            marginVertical: 6,
+            backgroundColor: tx.type === 'CR' ? colors.success : colors.danger,
+          }}
+        />
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: categoryColor + '20',
+          }}
+        >
+          <Ionicons name={iconName} size={18} color={categoryColor} />
+        </View>
+        <View style={{ flex: 1, gap: 3 }}>
+          <Text
+            style={{ color: colors.text, fontFamily: typography.fonts.semibold, fontSize: 14 }}
+            numberOfLines={1}
+          >
+            {tx.note || tx.category.name}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: categoryColor }} />
+            <Text
+              style={{ color: colors.textMuted, fontFamily: typography.fonts.regular, fontSize: 12 }}
+              numberOfLines={1}
+            >
+              {tx.category.name}
+            </Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12 }}>·</Text>
+            <Text
+              style={{ color: colors.textMuted, fontFamily: typography.fonts.regular, fontSize: 12 }}
+              numberOfLines={1}
+            >
+              {tx.account.name}
+            </Text>
+          </View>
+        </View>
+        <View style={{ alignItems: 'flex-end', gap: 3 }}>
+          <MoneyText
+            amount={tx.amount}
+            currency={tx.account.currency}
+            type={tx.type}
+            weight="bold"
+            style={{ fontSize: 14 }}
+          />
+          <Text style={{ color: colors.textMuted, fontFamily: typography.fonts.regular, fontSize: 11 }}>
+            {new Date(tx.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </Swipeable>
+  );
+});
 
 export default function TransactionsScreen() {
   const router = useRouter();
@@ -162,16 +308,26 @@ export default function TransactionsScreen() {
     setCategoryFilterId(null);
   };
 
-  const handleDelete = (tx: LedgerTransaction) => {
-    Alert.alert('Delete Transaction', 'This will remove the transaction and reverse its account balance impact.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => deleteTransaction.mutate(tx.id),
-      },
-    ]);
-  };
+  const handleEdit = React.useCallback(
+    (tx: LedgerTransaction) => {
+      router.push({ pathname: '/add-transaction', params: { id: String(tx.id) } });
+    },
+    [router],
+  );
+
+  const handleDelete = React.useCallback(
+    (tx: LedgerTransaction) => {
+      Alert.alert(
+        'Delete Transaction',
+        'This will remove the transaction and reverse its account balance impact.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Delete', style: 'destructive', onPress: () => deleteTransaction.mutate(tx.id) },
+        ],
+      );
+    },
+    [deleteTransaction],
+  );
 
   if (transactionsQuery.isLoading) {
     return (
@@ -325,67 +481,16 @@ export default function TransactionsScreen() {
                 {/* Rows */}
                 <View style={styles.dayCard}>
                   {items.map((tx, idx) => {
-                    const categoryColor = toHexColor(tx.category.color);
-                    const isLast = idx === items.length - 1;
                     return (
-                      <TouchableOpacity
+                      <SwipeableRow
                         key={tx.id}
-                        style={[styles.txRow, isLast && styles.txRowLast]}
-                        activeOpacity={0.85}
-                        onLongPress={() => handleDelete(tx)}
-                        delayLongPress={220}
-                      >
-                        {/* Left type accent */}
-                        <View
-                          style={[
-                            styles.txAccent,
-                            { backgroundColor: tx.type === 'CR' ? colors.success : colors.danger },
-                          ]}
-                        />
-
-                        {/* Icon */}
-                        <View style={[styles.txIconWrap, { backgroundColor: categoryColor + '20' }]}>
-                          <Ionicons
-                            name={(tx.category.icon as keyof typeof Ionicons.glyphMap) || 'pricetag-outline'}
-                            size={18}
-                            color={categoryColor}
-                          />
-                        </View>
-
-                        {/* Info */}
-                        <View style={styles.txInfo}>
-                          <Text style={styles.txTitle} numberOfLines={1}>
-                            {tx.note || tx.category.name}
-                          </Text>
-                          <View style={styles.txMetaRow}>
-                            <View style={[styles.txCategoryDot, { backgroundColor: categoryColor }]} />
-                            <Text style={styles.txMeta} numberOfLines={1}>
-                              {tx.category.name}
-                            </Text>
-                            <Text style={styles.txMetaDivider}>·</Text>
-                            <Text style={styles.txMeta} numberOfLines={1}>
-                              {tx.account.name}
-                            </Text>
-                          </View>
-                        </View>
-
-                        {/* Amount + time */}
-                        <View style={styles.txRight}>
-                          <MoneyText
-                            amount={tx.amount}
-                            currency={tx.account.currency}
-                            type={tx.type}
-                            weight="bold"
-                            style={styles.txAmount}
-                          />
-                          <Text style={styles.txTime}>
-                            {new Date(tx.datetime).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
+                        tx={tx}
+                        isFirst={idx === 0}
+                        isLast={idx === items.length - 1}
+                        colors={colors}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
                     );
                   })}
                 </View>
@@ -699,7 +804,6 @@ const createStyles = (colors: ThemeColors) =>
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      overflow: 'hidden',
     },
 
     /* ── Transaction row ── */

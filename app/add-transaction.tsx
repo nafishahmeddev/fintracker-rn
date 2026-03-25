@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { Controller, useForm } from 'react-hook-form';
 import {
+  ActivityIndicator,
   Alert,
   Platform,
   ScrollView,
@@ -11,14 +11,18 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../src/components/ui/BlurBackground';
 import { accounts as accountsTable, categories as categoriesTable } from '../src/db/schema';
 import { useAccounts } from '../src/features/accounts/hooks/accounts';
 import { useCategories } from '../src/features/categories/hooks/categories';
-import { useCreateTransaction } from '../src/features/transactions/hooks/transactions';
+import {
+  useCreateTransaction,
+  useTransactions,
+  useUpdateTransaction,
+} from '../src/features/transactions/hooks/transactions';
 import { useSettings } from '../src/providers/SettingsProvider';
 import { useTheme } from '../src/providers/ThemeProvider';
 import { ThemeColors } from '../src/theme/colors';
@@ -29,8 +33,13 @@ type Account = typeof accountsTable.$inferSelect;
 type Category = typeof categoriesTable.$inferSelect;
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
-type TransactionFormValues = {
-  amountInput: string;
+type LedgerTransaction = {
+  id: number;
+  accountId: number;
+  categoryId: number;
+  amount: number;
+  type: 'CR' | 'DR';
+  datetime: string;
   note: string;
 };
 
@@ -47,18 +56,42 @@ const parseAmount = (raw: string): number => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const resolveIcon = (raw: string | null | undefined, fallback: IoniconName): IoniconName => {
+  if (!raw) return fallback;
+  return raw in Ionicons.glyphMap ? (raw as IoniconName) : fallback;
+};
+
+const resolveParamNumber = (value: string | string[] | undefined): number | null => {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (!raw) return null;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 export default function AddTransactionScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const editingId = React.useMemo(() => resolveParamNumber(params.id), [params.id]);
+  const isEditMode = editingId !== null;
+
   const { colors } = useTheme();
   const { profile } = useSettings();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
 
   const accountsQuery = useAccounts();
   const categoriesQuery = useCategories();
+  const transactionsQuery = useTransactions();
   const createTransaction = useCreateTransaction();
+  const updateTransaction = useUpdateTransaction();
 
   const accounts = React.useMemo(() => (accountsQuery.data ?? []) as Account[], [accountsQuery.data]);
   const categories = React.useMemo(() => (categoriesQuery.data ?? []) as Category[], [categoriesQuery.data]);
+  const transactions = React.useMemo(() => (transactionsQuery.data ?? []) as LedgerTransaction[], [transactionsQuery.data]);
+
+  const editingTransaction = React.useMemo(() => {
+    if (editingId === null) return null;
+    return transactions.find((tx) => tx.id === editingId) ?? null;
+  }, [transactions, editingId]);
 
   const [type, setType] = React.useState<TransactionType>('DR');
   const [selectedAccountId, setSelectedAccountId] = React.useState<number | null>(null);
@@ -66,37 +99,68 @@ export default function AddTransactionScreen() {
   const [transactionDateTime, setTransactionDateTime] = React.useState<Date>(() => new Date());
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [showTimePicker, setShowTimePicker] = React.useState(false);
+  const [amountInput, setAmountInput] = React.useState('');
+  const [note, setNote] = React.useState('');
 
-  const {
-    control,
-    handleSubmit,
-    watch,
-    formState: { errors, isValid },
-  } = useForm<TransactionFormValues>({
-    mode: 'onChange',
-    defaultValues: { amountInput: '', note: '' },
-  });
-
-  const amountInput = watch('amountInput');
-  const amountValue = React.useMemo(() => parseAmount(amountInput), [amountInput]);
+  React.useEffect(() => {
+    if (!isEditMode || !editingTransaction) return;
+    setType(editingTransaction.type);
+    setSelectedAccountId(editingTransaction.accountId);
+    setSelectedCategoryId(editingTransaction.categoryId);
+    setTransactionDateTime(new Date(editingTransaction.datetime));
+    setAmountInput(String(editingTransaction.amount));
+    setNote(editingTransaction.note ?? '');
+  }, [isEditMode, editingTransaction]);
 
   const filteredCategories = React.useMemo(
     () => categories.filter((category) => category.type === type),
     [categories, type]
   );
 
+  React.useEffect(() => {
+    if (accounts.length === 0) {
+      setSelectedAccountId(null);
+      return;
+    }
+
+    if (selectedAccountId === null || !accounts.some((account) => account.id === selectedAccountId)) {
+      const preferred = accounts.find((account) => account.isDefault) ?? accounts[0];
+      setSelectedAccountId(preferred.id);
+    }
+  }, [accounts, selectedAccountId]);
+
+  React.useEffect(() => {
+    if (filteredCategories.length === 0) {
+      setSelectedCategoryId(null);
+      return;
+    }
+
+    if (
+      selectedCategoryId === null ||
+      !filteredCategories.some((category) => category.id === selectedCategoryId)
+    ) {
+      setSelectedCategoryId(filteredCategories[0].id);
+    }
+  }, [filteredCategories, selectedCategoryId]);
+
+  const amountValue = React.useMemo(() => parseAmount(amountInput), [amountInput]);
   const selectedAccount = React.useMemo(
     () => accounts.find((account) => account.id === selectedAccountId) ?? null,
     [accounts, selectedAccountId]
   );
-
   const selectedCategory = React.useMemo(
     () => categories.find((category) => category.id === selectedCategoryId) ?? null,
     [categories, selectedCategoryId]
   );
 
   const formattedDate = React.useMemo(
-    () => transactionDateTime.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
+    () =>
+      transactionDateTime.toLocaleDateString(undefined, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
     [transactionDateTime]
   );
 
@@ -139,63 +203,66 @@ export default function AddTransactionScreen() {
     }
   }, [applyTimePart]);
 
-  React.useEffect(() => {
-    if (accounts.length === 0) {
-      setSelectedAccountId(null);
-      return;
-    }
-
-    if (selectedAccountId === null || !accounts.some((account) => account.id === selectedAccountId)) {
-      const preferred = accounts.find((account) => account.isDefault) ?? accounts[0];
-      setSelectedAccountId(preferred.id);
-    }
-  }, [accounts, selectedAccountId]);
-
-  React.useEffect(() => {
-    if (filteredCategories.length === 0) {
-      setSelectedCategoryId(null);
-      return;
-    }
-
-    if (
-      selectedCategoryId === null ||
-      !filteredCategories.some((category) => category.id === selectedCategoryId)
-    ) {
-      setSelectedCategoryId(filteredCategories[0].id);
-    }
-  }, [filteredCategories, selectedCategoryId]);
-
+  const isSubmitting = createTransaction.isPending || updateTransaction.isPending;
   const canSubmit =
-    isValid &&
+    amountValue > 0 &&
     !!selectedAccountId &&
     !!selectedCategoryId &&
-    !createTransaction.isPending &&
+    !isSubmitting &&
     accounts.length > 0;
 
-  const handleSave = handleSubmit(async (data) => {
-    if (!selectedAccountId || !selectedCategoryId) {
+  const handleSave = async () => {
+    if (!selectedAccountId || !selectedCategoryId || amountValue <= 0) {
       Alert.alert('Missing details', 'Please select account, category, and a valid amount.');
       return;
     }
 
-    try {
-      await createTransaction.mutateAsync({
-        accountId: selectedAccountId,
-        categoryId: selectedCategoryId,
-        amount: parseAmount(data.amountInput),
-        type,
-        datetime: transactionDateTime.toISOString(),
-        note: data.note.trim() || selectedCategory?.name || 'Transaction',
-      });
+    const payload = {
+      accountId: selectedAccountId,
+      categoryId: selectedCategoryId,
+      amount: amountValue,
+      type,
+      datetime: transactionDateTime.toISOString(),
+      note: note.trim() || selectedCategory?.name || 'Transaction',
+    };
 
+    try {
+      if (isEditMode && editingTransaction) {
+        await updateTransaction.mutateAsync({ id: editingTransaction.id, data: payload });
+      } else {
+        await createTransaction.mutateAsync(payload);
+      }
       router.back();
     } catch {
-      Alert.alert('Unable to save', 'Could not create transaction. Please try again.');
+      Alert.alert('Unable to save', 'Could not save transaction. Please try again.');
     }
-  });
+  };
 
   const resolvedCurrency = selectedAccount?.currency || profile.defaultCurrency;
   const typeMeta = TYPE_META[type];
+
+  if ((accountsQuery.isLoading || categoriesQuery.isLoading || transactionsQuery.isLoading) && isEditMode) {
+    return (
+      <View style={styles.loadingWrap}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (isEditMode && !editingTransaction) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <BlurBackground />
+        <View style={styles.emptyPanelStandalone}>
+          <Text style={styles.emptyTitle}>Transaction not found</Text>
+          <Text style={styles.emptySubtitle}>It may have been deleted.</Text>
+          <TouchableOpacity style={styles.emptyAction} onPress={() => router.back()} activeOpacity={0.9}>
+            <Text style={styles.emptyActionText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -206,7 +273,7 @@ export default function AddTransactionScreen() {
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerTextWrap}>
-          <Text style={styles.headerTitle}>New Entry</Text>
+          <Text style={styles.headerTitle}>{isEditMode ? 'Edit Entry' : 'New Entry'}</Text>
           <Text style={styles.headerSubtitle}>Record flow with precision</Text>
         </View>
         <View style={styles.headerButtonGhost} />
@@ -225,28 +292,17 @@ export default function AddTransactionScreen() {
             </View>
           </View>
 
-          <Controller
-            control={control}
-            name="amountInput"
-            rules={{
-              required: 'Amount is required',
-              validate: (v) => parseAmount(v) > 0 || 'Enter a valid amount greater than 0',
-            }}
-            render={({ field }) => (
-              <TextInput
-                value={field.value}
-                onChangeText={field.onChange}
-                onBlur={field.onBlur}
-                placeholder="0.00"
-                placeholderTextColor={colors.textMuted + '85'}
-                keyboardType="decimal-pad"
-                style={styles.amountInput}
-              />
-            )}
+          <TextInput
+            value={amountInput}
+            onChangeText={setAmountInput}
+            placeholder="0.00"
+            placeholderTextColor={colors.textMuted + '85'}
+            keyboardType="decimal-pad"
+            style={styles.amountInput}
           />
           <Text style={styles.amountHint}>{typeMeta.subtitle}</Text>
-          {errors.amountInput && (
-            <Text style={styles.fieldError}>{errors.amountInput.message}</Text>
+          {amountInput.length > 0 && amountValue <= 0 && (
+            <Text style={styles.fieldError}>Enter a valid amount greater than 0</Text>
           )}
 
           <View style={styles.typeRow}>
@@ -350,14 +406,14 @@ export default function AddTransactionScreen() {
                     onPress={() => setSelectedAccountId(account.id)}
                     activeOpacity={0.85}
                   >
-                    <View style={[styles.choiceIconWrap, { backgroundColor: selected ? accent + '30' : accent + '18' }]}>
-                      <Ionicons name={(account.icon || 'wallet-outline') as IoniconName} size={17} color={accent} />
+                    <View style={[styles.choiceIconWrap, { backgroundColor: selected ? accent + '30' : accent + '18' }]}> 
+                      <Ionicons name={resolveIcon(account.icon, 'wallet-outline')} size={17} color={accent} />
                     </View>
                     <Text style={[styles.choiceTitle, selected && { color: colors.text }]} numberOfLines={1}>
                       {account.name}
                     </Text>
                     <View style={styles.choiceFooter}>
-                      <Text style={[styles.choiceMeta, selected && { color: accent, fontFamily: typography.fonts.semibold }]}>
+                      <Text style={[styles.choiceMeta, selected && { color: accent, fontFamily: typography.fonts.semibold }]}> 
                         {account.currency}
                       </Text>
                       {selected ? (
@@ -374,21 +430,14 @@ export default function AddTransactionScreen() {
         <View style={styles.sectionWrap}>
           <Text style={styles.sectionLabel}>NOTE</Text>
           <View style={styles.sectionCard}>
-            <Controller
-              control={control}
-              name="note"
-              render={({ field }) => (
-                <TextInput
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  onBlur={field.onBlur}
-                  placeholder="Optional context"
-                  placeholderTextColor={colors.textMuted + '88'}
-                  style={styles.noteInput}
-                  multiline
-                  textAlignVertical="top"
-                />
-              )}
+            <TextInput
+              value={note}
+              onChangeText={setNote}
+              placeholder="Optional context"
+              placeholderTextColor={colors.textMuted + '88'}
+              style={styles.noteInput}
+              multiline
+              textAlignVertical="top"
             />
           </View>
         </View>
@@ -429,7 +478,7 @@ export default function AddTransactionScreen() {
                       ]}
                     >
                       <Ionicons
-                        name={(category.icon || 'pricetag-outline') as IoniconName}
+                        name={resolveIcon(category.icon, 'pricetag-outline')}
                         size={14}
                         color={selected ? accent : colors.textMuted}
                       />
@@ -452,9 +501,14 @@ export default function AddTransactionScreen() {
           activeOpacity={0.92}
           disabled={!canSubmit}
         >
-          <Text style={styles.saveButtonText}>
-            {createTransaction.isPending ? 'Saving...' : `Save ${typeMeta.title}`}
-          </Text>
+          {isSubmitting ? (
+            <View style={styles.saveBusyWrap}>
+              <ActivityIndicator size="small" color={colors.background} />
+              <Text style={styles.saveButtonText}>Saving...</Text>
+            </View>
+          ) : (
+            <Text style={styles.saveButtonText}>{isEditMode ? 'Save Changes' : `Save ${typeMeta.title}`}</Text>
+          )}
           <Text style={styles.saveAmountText}>{`${resolvedCurrency} ${amountValue > 0 ? amountValue.toFixed(2) : '0.00'}`}</Text>
         </TouchableOpacity>
       </View>
@@ -469,9 +523,11 @@ const createStyles = (colors: ThemeColors) =>
       backgroundColor: colors.background,
       overflow: 'hidden',
     },
-    bgCircle: {
-      position: 'absolute',
-      borderRadius: 999,
+    loadingWrap: {
+      flex: 1,
+      backgroundColor: colors.background,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     header: {
       marginTop: 12,
@@ -634,7 +690,6 @@ const createStyles = (colors: ThemeColors) =>
       borderColor: colors.border,
       gap: 8,
     },
-    choiceCardActive: {},
     choiceFooter: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -653,14 +708,12 @@ const createStyles = (colors: ThemeColors) =>
       fontSize: 13,
       color: colors.text,
     },
-    choiceTitleActive: {},
     choiceMeta: {
       fontFamily: typography.fonts.regular,
       color: colors.textMuted,
       fontSize: 12,
       marginTop: -2,
     },
-    choiceMetaActive: {},
     categoryChipsWrap: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -750,6 +803,16 @@ const createStyles = (colors: ThemeColors) =>
       borderWidth: 1,
       borderColor: colors.border,
     },
+    emptyPanelStandalone: {
+      margin: 24,
+      borderRadius: 14,
+      padding: 14,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'flex-start',
+      gap: 4,
+    },
     emptyTitle: {
       color: colors.text,
       fontFamily: typography.fonts.semibold,
@@ -795,6 +858,11 @@ const createStyles = (colors: ThemeColors) =>
     },
     saveButtonDisabled: {
       opacity: 0.55,
+    },
+    saveBusyWrap: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
     },
     saveButtonText: {
       color: colors.background,
