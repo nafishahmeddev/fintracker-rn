@@ -404,7 +404,7 @@ export function TransactionsScreen() {
         <View style={styles.sheetOverlay}>
           <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={() => setShowFilterSheet(false)} />
           <View style={styles.sheetCard}>
-            <div style={styles.sheetHandle} />
+            <View style={styles.sheetHandle} />
 
             <View style={styles.sheetHeadRow}>
               <Text style={styles.sheetTitle}>Filters</Text>
