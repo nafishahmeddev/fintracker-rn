@@ -9,6 +9,8 @@ import { DEFAULT_CURRENCY } from '../../src/constants/currency';
 import type { Account } from '../../src/features/accounts/api/accounts';
 import { AccountFormModal } from '../../src/features/accounts/components/AccountFormModal';
 import { useAccounts, useDeleteAccount } from '../../src/features/accounts/hooks/accounts';
+import { SectionHeader } from '../../src/features/dashboard/components/SectionHeader';
+import { TopExpenseCategoriesCard } from '../../src/features/dashboard/components/TopExpenseCategoriesCard';
 import { useTransactions } from '../../src/features/transactions/hooks/transactions';
 import { useSettings } from '../../src/providers/SettingsProvider';
 import { useTheme } from '../../src/providers/ThemeProvider';
@@ -144,22 +146,19 @@ export default function DashboardScreen() {
       setSelectedTopCategoryCurrency(selectedCurrency);
       return;
     }
-    if (topCategoryCurrencies.includes(selectedCurrency)) {
-      setSelectedTopCategoryCurrency(selectedCurrency);
-      return;
-    }
+
     if (!topCategoryCurrencies.includes(selectedTopCategoryCurrency)) {
-      setSelectedTopCategoryCurrency(topCategoryCurrencies[0]);
+      setSelectedTopCategoryCurrency(
+        topCategoryCurrencies.includes(selectedCurrency)
+          ? selectedCurrency
+          : topCategoryCurrencies[0]
+      );
     }
   }, [topCategoryCurrencies, selectedCurrency, selectedTopCategoryCurrency]);
 
   const topExpenseCategories = React.useMemo(
     () => topExpenseCategoriesByCurrency[selectedTopCategoryCurrency] ?? [],
     [topExpenseCategoriesByCurrency, selectedTopCategoryCurrency]
-  );
-  const topCategoryMaxAmount = React.useMemo(
-    () => topExpenseCategories.reduce((max, item) => (item.amount > max ? item.amount : max), 0),
-    [topExpenseCategories]
   );
 
   const handleAccountLongPress = (acc: Account) => {
@@ -281,17 +280,11 @@ export default function DashboardScreen() {
         </View>
 
         {/* ── Accounts section ── */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>ACCOUNTS</Text>
-          <TouchableOpacity
-            style={styles.sectionAction}
-            onPress={() => { setEditingAccount(undefined); setShowAccountForm(true); }}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="add" size={14} color={colors.primary} />
-            <Text style={styles.sectionActionText}>New</Text>
-          </TouchableOpacity>
-        </View>
+        <SectionHeader
+          title="ACCOUNTS"
+          rightText="New"
+          onPressRight={() => { setEditingAccount(undefined); setShowAccountForm(true); }}
+        />
 
         <ScrollView
           horizontal
@@ -371,83 +364,16 @@ export default function DashboardScreen() {
         </ScrollView>
 
         {/* ── Top expense categories ── */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>TOP EXPENSE CATEGORIES</Text>
-          <Text style={styles.sectionLink}>{selectedTopCategoryCurrency}</Text>
-        </View>
-
-        <View style={styles.topCategoriesCard}>
-          {topCategoryCurrencies.length > 1 && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.topCategoryTabsRow}>
-              {topCategoryCurrencies.map((curr) => (
-                <TouchableOpacity
-                  key={curr}
-                  style={[styles.topCategoryTab, selectedTopCategoryCurrency === curr && styles.topCategoryTabActive]}
-                  onPress={() => setSelectedTopCategoryCurrency(curr)}
-                  activeOpacity={0.85}
-                >
-                  <Text style={[styles.topCategoryTabText, selectedTopCategoryCurrency === curr && styles.topCategoryTabTextActive]}>{curr}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
-
-          {topExpenseCategories.length > 0 && (
-            <View style={styles.topCategoryHeaderRow}>
-              <Text style={styles.topCategoryHeaderLabel}>Most spent in {selectedTopCategoryCurrency}</Text>
-              <Text style={styles.topCategoryHeaderLabel}>Ranked</Text>
-            </View>
-          )}
-
-          {topExpenseCategories.length > 0 ? (
-            topExpenseCategories.map((category, idx) => {
-              const isLast = idx === topExpenseCategories.length - 1;
-              const accent = '#' + category.color.toString(16).padStart(6, '0');
-              const ratio = topCategoryMaxAmount > 0 ? category.amount / topCategoryMaxAmount : 0;
-              return (
-                <View key={`${category.name}-${idx}`} style={[styles.topCategoryRow, isLast && styles.topCategoryRowLast]}>
-                  <View style={styles.topCategoryLeft}>
-                    <View style={styles.topCategoryRankBadge}>
-                      <Text style={styles.topCategoryRankText}>{idx + 1}</Text>
-                    </View>
-                    <View style={[styles.topCategoryIconWrap, { backgroundColor: accent + '22' }]}> 
-                      <Ionicons name={resolveIconName(category.icon, 'pricetag-outline')} size={14} color={accent} />
-                    </View>
-                    <View style={styles.topCategoryMeta}>
-                      <Text style={styles.topCategoryName} numberOfLines={1}>{category.name}</Text>
-                      <View style={styles.topCategoryBarTrack}>
-                        <View style={[styles.topCategoryBarFill, { width: `${Math.max(8, ratio * 100)}%`, backgroundColor: accent }]} />
-                      </View>
-                    </View>
-                  </View>
-                  <View style={styles.topCategoryRight}>
-                    <MoneyText
-                      amount={category.amount}
-                      currency={selectedTopCategoryCurrency}
-                      type="DR"
-                      weight="bold"
-                      style={styles.topCategoryAmount}
-                    />
-                    <Text style={styles.topCategoryPercent}>{`${(ratio * 100).toFixed(0)}%`}</Text>
-                  </View>
-                </View>
-              );
-            })
-          ) : (
-            <View style={styles.topCategoryEmpty}>
-              <Ionicons name="pie-chart-outline" size={18} color={colors.textMuted} />
-              <Text style={styles.topCategoryEmptyText}>No expense data yet for {selectedTopCategoryCurrency}</Text>
-            </View>
-          )}
-        </View>
+        <SectionHeader title="TOP EXPENSE CATEGORIES" rightText={selectedTopCategoryCurrency} />
+        <TopExpenseCategoriesCard
+          currencies={topCategoryCurrencies}
+          selectedCurrency={selectedTopCategoryCurrency}
+          onSelectCurrency={setSelectedTopCategoryCurrency}
+          categories={topExpenseCategories}
+        />
 
         {/* ── Recent activity ── */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>RECENT</Text>
-          <TouchableOpacity onPress={() => router.push('/transactions')} activeOpacity={0.8}>
-            <Text style={styles.sectionLink}>See all</Text>
-          </TouchableOpacity>
-        </View>
+        <SectionHeader title="RECENT" rightText="See all" onPressRight={() => router.push('/transactions')} />
 
         <View style={styles.activityCard}>
           {transactions && transactions.length > 0 ? (
