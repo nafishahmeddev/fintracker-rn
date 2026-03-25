@@ -114,16 +114,33 @@ export default function TransactionsScreen() {
     });
   }, [transactions, typeFilter, accountFilterId, categoryFilterId]);
 
-  const totals = React.useMemo(() => {
-    return filteredTransactions.reduce(
-      (acc, item) => {
-        if (item.type === 'CR') acc.income += item.amount;
-        if (item.type === 'DR') acc.expense += item.amount;
-        return acc;
-      },
-      { income: 0, expense: 0 }
-    );
+  const totalsByCurrency = React.useMemo(() => {
+    const map: Record<string, { income: number; expense: number }> = {};
+    filteredTransactions.forEach((item) => {
+      const cur = item.account.currency;
+      if (!map[cur]) map[cur] = { income: 0, expense: 0 };
+      if (item.type === 'CR') map[cur].income += item.amount;
+      if (item.type === 'DR') map[cur].expense += item.amount;
+    });
+    return map;
   }, [filteredTransactions]);
+
+  const kpiCurrencies = React.useMemo(() => Object.keys(totalsByCurrency), [totalsByCurrency]);
+
+  const [selectedKpiCurrency, setSelectedKpiCurrency] = React.useState<string | null>(null);
+
+  // Keep selectedKpiCurrency in sync when filtered set changes
+  React.useEffect(() => {
+    if (kpiCurrencies.length === 0) {
+      setSelectedKpiCurrency(null);
+    } else if (!selectedKpiCurrency || !kpiCurrencies.includes(selectedKpiCurrency)) {
+      setSelectedKpiCurrency(kpiCurrencies[0]);
+    }
+  }, [kpiCurrencies, selectedKpiCurrency]);
+
+  const activeTotals = selectedKpiCurrency
+    ? (totalsByCurrency[selectedKpiCurrency] ?? { income: 0, expense: 0 })
+    : { income: 0, expense: 0 };
 
   const groupedByDate = React.useMemo(() => {
     const map = new Map<string, LedgerTransaction[]>();
@@ -215,22 +232,37 @@ export default function TransactionsScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
         {/* KPI strip */}
+        {kpiCurrencies.length > 1 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.currencyTabsRow}>
+            {kpiCurrencies.map((cur) => (
+              <TouchableOpacity
+                key={cur}
+                style={[styles.currencyTab, selectedKpiCurrency === cur && styles.currencyTabActive]}
+                onPress={() => setSelectedKpiCurrency(cur)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.currencyTabText, selectedKpiCurrency === cur && styles.currencyTabTextActive]}>{cur}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
         <View style={styles.kpiStrip}>
           <View style={styles.kpiCell}>
             <Text style={styles.kpiLabel}>IN</Text>
-            <MoneyText amount={totals.income} type="CR" weight="bold" style={styles.kpiValue} />
+            <MoneyText amount={activeTotals.income} currency={selectedKpiCurrency ?? undefined} type="CR" weight="bold" style={styles.kpiValue} />
           </View>
           <View style={styles.kpiSep} />
           <View style={styles.kpiCell}>
             <Text style={styles.kpiLabel}>OUT</Text>
-            <MoneyText amount={totals.expense} type="DR" weight="bold" style={styles.kpiValue} />
+            <MoneyText amount={activeTotals.expense} currency={selectedKpiCurrency ?? undefined} type="DR" weight="bold" style={styles.kpiValue} />
           </View>
           <View style={styles.kpiSep} />
           <View style={styles.kpiCell}>
             <Text style={styles.kpiLabel}>NET</Text>
             <MoneyText
-              amount={Math.abs(totals.income - totals.expense)}
-              type={totals.income >= totals.expense ? 'CR' : 'DR'}
+              amount={Math.abs(activeTotals.income - activeTotals.expense)}
+              currency={selectedKpiCurrency ?? undefined}
+              type={activeTotals.income >= activeTotals.expense ? 'CR' : 'DR'}
               weight="bold"
               style={styles.kpiValue}
             />
@@ -551,6 +583,34 @@ const createStyles = (colors: ThemeColors) =>
       paddingHorizontal: 24,
       paddingBottom: 120,
       gap: 16,
+    },
+
+    /* ── Currency tabs ── */
+    currencyTabsRow: {
+      flexDirection: 'row',
+      gap: 8,
+      marginBottom: 8,
+    },
+    currencyTab: {
+      paddingHorizontal: 14,
+      paddingVertical: 6,
+      borderRadius: 100,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    currencyTabActive: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    currencyTabText: {
+      fontFamily: typography.fonts.semibold,
+      fontSize: 12,
+      color: colors.textMuted,
+      letterSpacing: 0.3,
+    },
+    currencyTabTextActive: {
+      color: colors.background,
     },
 
     /* ── KPI strip ── */

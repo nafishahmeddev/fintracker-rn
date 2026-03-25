@@ -160,13 +160,13 @@ export default function DashboardScreen() {
             <View style={styles.splitItem}>
               <View style={[styles.splitDot, { backgroundColor: colors.success }]} />
               <Text style={styles.splitLabel}>IN</Text>
-              <MoneyText amount={totals.income} type="CR" weight="bold" style={styles.splitValue} />
+              <MoneyText amount={totals.income} currency={selectedCurrency} type="CR" weight="bold" style={styles.splitValue} />
             </View>
             <View style={styles.splitDivider} />
             <View style={styles.splitItem}>
               <View style={[styles.splitDot, { backgroundColor: colors.danger }]} />
               <Text style={styles.splitLabel}>OUT</Text>
-              <MoneyText amount={totals.expense} type="DR" weight="bold" style={styles.splitValue} />
+              <MoneyText amount={totals.expense} currency={selectedCurrency} type="DR" weight="bold" style={styles.splitValue} />
             </View>
           </View>
 

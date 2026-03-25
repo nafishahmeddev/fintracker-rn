@@ -6,7 +6,6 @@ import { Alert, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
 import { Button } from '../../src/components/ui/Button';
-import { CurrencyPickerModal } from '../../src/components/ui/CurrencyPickerModal';
 import { db } from '../../src/db/client';
 import { accounts, categories, payments } from '../../src/db/schema';
 import { useSettings } from '../../src/providers/SettingsProvider';
@@ -20,7 +19,6 @@ export default function SettingsScreen() {
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const router = useRouter();
   const [showAppearanceDialog, setShowAppearanceDialog] = React.useState(false);
-  const [showCurrencyPicker, setShowCurrencyPicker] = React.useState(false);
 
   const themeOptions: { label: string; value: 'light' | 'dark' | 'system'; icon: keyof typeof Ionicons.glyphMap }[] = [
     { label: 'Light Mode', value: 'light', icon: 'sunny-outline' },
@@ -55,7 +53,6 @@ export default function SettingsScreen() {
   };
 
   const handleThemeChange = () => setShowAppearanceDialog(true);
-  const handleCurrencyChange = () => setShowCurrencyPicker(true);
 
   type PreferenceRowProps = {
     icon: any;
@@ -119,10 +116,6 @@ export default function SettingsScreen() {
               <Text style={styles.heroStatValue}>{activeTheme}</Text>
             </View>
             <View style={styles.heroStatItem}>
-              <Text style={styles.heroStatLabel}>CURRENCY</Text>
-              <Text style={styles.heroStatValue}>{profile.defaultCurrency}</Text>
-            </View>
-            <View style={styles.heroStatItem}>
               <Text style={styles.heroStatLabel}>STORAGE</Text>
               <Text style={styles.heroStatValue}>LOCAL</Text>
             </View>
@@ -138,13 +131,6 @@ export default function SettingsScreen() {
               value={activeTheme}
               subtitle="Light, dark, or system color mode"
               onPress={handleThemeChange}
-            />
-            <PreferenceRow
-              icon="cash-outline"
-              title="Primary Currency"
-              value={profile.defaultCurrency}
-              subtitle="Default currency for new records"
-              onPress={handleCurrencyChange}
             />
             <PreferenceRow
               icon="grid-outline"
@@ -216,12 +202,6 @@ export default function SettingsScreen() {
         </View>
       </Modal>
 
-      <CurrencyPickerModal
-        visible={showCurrencyPicker}
-        onClose={() => setShowCurrencyPicker(false)}
-        value={profile.defaultCurrency}
-        onChange={(code) => updateProfile({ defaultCurrency: code })}
-      />
     </SafeAreaView>
   );
 }
