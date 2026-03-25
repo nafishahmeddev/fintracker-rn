@@ -71,6 +71,78 @@ export default function DashboardScreen() {
     );
   }, [transactions, accounts, selectedCurrency]);
 
+  const accountFlowById = React.useMemo(() => {
+    const flowMap: Record<number, { income: number; expense: number }> = {};
+    (transactions ?? []).forEach((tx) => {
+      if (!flowMap[tx.accountId]) {
+        flowMap[tx.accountId] = { income: 0, expense: 0 };
+      }
+      if (tx.type === 'CR') flowMap[tx.accountId].income += tx.amount;
+      if (tx.type === 'DR') flowMap[tx.accountId].expense += tx.amount;
+    });
+    return flowMap;
+  }, [transactions]);
+
+  const topExpenseCategoriesByCurrency = React.useMemo(() => {
+    const accountCurrencyMap = new Map<number, string>();
+    (accounts ?? []).forEach((acc) => accountCurrencyMap.set(acc.id, acc.currency));
+
+    const spendByCurrencyAndCategory = new Map<string, Map<number, { name: string; icon: string; color: number; amount: number }>>();
+
+    (transactions ?? []).forEach((tx) => {
+      if (tx.type !== 'DR') return;
+      const currency = accountCurrencyMap.get(tx.accountId);
+      if (!currency) return;
+
+      if (!spendByCurrencyAndCategory.has(currency)) {
+        spendByCurrencyAndCategory.set(currency, new Map());
+      }
+
+      const spendByCategory = spendByCurrencyAndCategory.get(currency)!;
+
+      const prev = spendByCategory.get(tx.category.id);
+      if (prev) {
+        prev.amount += tx.amount;
+        return;
+      }
+
+      spendByCategory.set(tx.category.id, {
+        name: tx.category.name,
+        icon: tx.category.icon || 'pricetag-outline',
+        color: tx.category.color,
+        amount: tx.amount,
+      });
+    });
+
+    const rankedByCurrency: Record<string, { name: string; icon: string; color: number; amount: number }[]> = {};
+    for (const [currency, spendByCategory] of spendByCurrencyAndCategory.entries()) {
+      rankedByCurrency[currency] = [...spendByCategory.values()]
+        .sort((a, b) => b.amount - a.amount)
+        .slice(0, 5);
+    }
+
+    return rankedByCurrency;
+  }, [transactions, accounts]);
+
+  const topCategoryCurrencies = React.useMemo(() => Object.keys(topExpenseCategoriesByCurrency), [topExpenseCategoriesByCurrency]);
+  const [selectedTopCategoryCurrency, setSelectedTopCategoryCurrency] = React.useState<string>(selectedCurrency);
+
+  React.useEffect(() => {
+    if (topCategoryCurrencies.length === 0) {
+      setSelectedTopCategoryCurrency(selectedCurrency);
+      return;
+    }
+    if (topCategoryCurrencies.includes(selectedCurrency)) {
+      setSelectedTopCategoryCurrency(selectedCurrency);
+      return;
+    }
+    if (!topCategoryCurrencies.includes(selectedTopCategoryCurrency)) {
+      setSelectedTopCategoryCurrency(topCategoryCurrencies[0]);
+    }
+  }, [topCategoryCurrencies, selectedCurrency, selectedTopCategoryCurrency]);
+
+  const topExpenseCategories = topExpenseCategoriesByCurrency[selectedTopCategoryCurrency] ?? [];
+
   const handleAccountLongPress = (acc: any) => {
     Alert.alert('Manage Account', acc.name, [
       { text: 'Cancel', style: 'cancel' },
@@ -210,6 +282,9 @@ export default function DashboardScreen() {
         >
           {accounts?.map(acc => {
             const accColor = '#' + acc.color.toString(16).padStart(6, '0');
+            const cardFlow = accountFlowById[acc.id] ?? { income: 0, expense: 0 };
+            const openingBalanceEstimate = acc.balance - (acc.income - acc.expense);
+            const cardAvailable = openingBalanceEstimate + (cardFlow.income - cardFlow.expense);
             return (
               <TouchableOpacity
                 key={acc.id}
@@ -242,17 +317,17 @@ export default function DashboardScreen() {
                   </View>
 
                   <Text style={styles.accountBalanceLabel}>AVAILABLE</Text>
-                  <MoneyText amount={acc.balance} currency={acc.currency} style={styles.accountCardBalance} weight="bold" />
+                  <MoneyText amount={cardAvailable} currency={acc.currency} style={styles.accountCardBalance} weight="bold" />
 
                   <View style={styles.accountCardStats}>
                     <View style={styles.accountCardStatCol}>
                       <Text style={styles.accountCardStatLabel}>IN</Text>
-                      <MoneyText amount={acc.income} currency={acc.currency} style={styles.accountCardStatValue} type="CR" />
+                      <MoneyText amount={cardFlow.income} currency={acc.currency} style={styles.accountCardStatValue} type="CR" />
                     </View>
                     <View style={styles.accountCardStatDivider} />
                     <View style={styles.accountCardStatCol}>
                       <Text style={styles.accountCardStatLabel}>OUT</Text>
-                      <MoneyText amount={acc.expense} currency={acc.currency} style={styles.accountCardStatValue} type="DR" />
+                      <MoneyText amount={cardFlow.expense} currency={acc.currency} style={styles.accountCardStatValue} type="DR" />
                     </View>
                   </View>
                 </View>
@@ -277,6 +352,58 @@ export default function DashboardScreen() {
             </View>
           </TouchableOpacity>
         </ScrollView>
+
+        {/* ── Top expense categories ── */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>TOP EXPENSE CATEGORIES</Text>
+          <Text style={styles.sectionLink}>{selectedTopCategoryCurrency}</Text>
+        </View>
+
+        <View style={styles.topCategoriesCard}>
+          {topCategoryCurrencies.length > 1 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.topCategoryTabsRow}>
+              {topCategoryCurrencies.map((curr) => (
+                <TouchableOpacity
+                  key={curr}
+                  style={[styles.topCategoryTab, selectedTopCategoryCurrency === curr && styles.topCategoryTabActive]}
+                  onPress={() => setSelectedTopCategoryCurrency(curr)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={[styles.topCategoryTabText, selectedTopCategoryCurrency === curr && styles.topCategoryTabTextActive]}>{curr}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+
+          {topExpenseCategories.length > 0 ? (
+            topExpenseCategories.map((category, idx) => {
+              const isLast = idx === topExpenseCategories.length - 1;
+              const accent = '#' + category.color.toString(16).padStart(6, '0');
+              return (
+                <View key={`${category.name}-${idx}`} style={[styles.topCategoryRow, isLast && styles.topCategoryRowLast]}>
+                  <View style={styles.topCategoryLeft}>
+                    <View style={[styles.topCategoryIconWrap, { backgroundColor: accent + '1F' }]}>
+                      <Ionicons name={(category.icon as any) || 'pricetag-outline'} size={15} color={accent} />
+                    </View>
+                    <Text style={styles.topCategoryName} numberOfLines={1}>{category.name}</Text>
+                  </View>
+                  <MoneyText
+                    amount={category.amount}
+                    currency={selectedTopCategoryCurrency}
+                    type="DR"
+                    weight="bold"
+                    style={styles.topCategoryAmount}
+                  />
+                </View>
+              );
+            })
+          ) : (
+            <View style={styles.topCategoryEmpty}>
+              <Ionicons name="pie-chart-outline" size={18} color={colors.textMuted} />
+              <Text style={styles.topCategoryEmptyText}>No expense data yet for {selectedTopCategoryCurrency}</Text>
+            </View>
+          )}
+        </View>
 
         {/* ── Recent activity ── */}
         <View style={styles.sectionHeader}>
@@ -715,6 +842,93 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     marginBottom: 3,
   },
   accountCardStatValue: {
+    fontSize: 12,
+  },
+
+  /* ── Top categories ── */
+  topCategoriesCard: {
+    marginHorizontal: 24,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+    marginBottom: 22,
+  },
+  topCategoryTabsRow: {
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 6,
+  },
+  topCategoryTab: {
+    height: 26,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.background + 'AA',
+    paddingHorizontal: 10,
+    justifyContent: 'center',
+  },
+  topCategoryTabActive: {
+    backgroundColor: colors.text,
+    borderColor: colors.text,
+  },
+  topCategoryTabText: {
+    fontFamily: typography.fonts.semibold,
+    color: colors.textMuted,
+    fontSize: 11,
+    letterSpacing: 0.4,
+  },
+  topCategoryTabTextActive: {
+    color: colors.background,
+  },
+  topCategoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  topCategoryRowLast: {
+    borderBottomWidth: 0,
+  },
+  topCategoryLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+  },
+  topCategoryIconWrap: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topCategoryName: {
+    flex: 1,
+    fontFamily: typography.fonts.semibold,
+    color: colors.text,
+    fontSize: 13,
+  },
+  topCategoryAmount: {
+    fontSize: 13,
+  },
+  topCategoryEmpty: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  topCategoryEmptyText: {
+    fontFamily: typography.fonts.regular,
+    color: colors.textMuted,
     fontSize: 12,
   },
 
