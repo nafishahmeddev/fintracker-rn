@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../../theme/colors';
@@ -13,34 +12,29 @@ type Props = {
 export const TransactionTypePicker = ({ value, onChange, colors }: Props) => {
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.textMuted }]}>TYPE</Text>
-      <View style={styles.pickerRow}>
-        <TouchableOpacity
-          style={[
-            styles.chip,
-            value === 'DR' && { backgroundColor: colors.danger, borderColor: colors.danger },
-            { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
-          onPress={() => onChange('DR')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="arrow-up" size={14} color={value === 'DR' ? colors.background : colors.danger} />
-          <Text style={[styles.chipText, { color: value === 'DR' ? colors.background : colors.text }]}>Expense</Text>
-        </TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          styles.pill,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+          value === 'DR' && { backgroundColor: colors.danger, borderColor: colors.danger },
+        ]}
+        onPress={() => onChange('DR')}
+        activeOpacity={0.8}
+      >
+        <Text style={[styles.pillText, { color: value === 'DR' ? colors.background : colors.textMuted }]}>Expense</Text>
+      </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[
-            styles.chip,
-            value === 'CR' && { backgroundColor: colors.success, borderColor: colors.success },
-            { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
-          onPress={() => onChange('CR')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="arrow-down" size={14} color={value === 'CR' ? colors.background : colors.success} />
-          <Text style={[styles.chipText, { color: value === 'CR' ? colors.background : colors.text }]}>Income</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={[
+          styles.pill,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+          value === 'CR' && { backgroundColor: colors.success, borderColor: colors.success },
+        ]}
+        onPress={() => onChange('CR')}
+        activeOpacity={0.8}
+      >
+        <Text style={[styles.pillText, { color: value === 'CR' ? colors.background : colors.textMuted }]}>Income</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -48,30 +42,21 @@ export const TransactionTypePicker = ({ value, onChange, colors }: Props) => {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 24,
-    paddingVertical: 12,
-  },
-  label: {
-    fontFamily: typography.fonts.semibold,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    marginBottom: 12,
-  },
-  pickerRow: {
+    paddingTop: 16,
+    paddingBottom: 8,
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
-  chip: {
-    flex: 1,
-    flexDirection: 'row',
+  pill: {
+    paddingHorizontal: 16,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    height: 48,
-    borderRadius: 16,
     borderWidth: 1,
   },
-  chipText: {
+  pillText: {
     fontFamily: typography.fonts.semibold,
-    fontSize: 14,
+    fontSize: 13,
   },
 });

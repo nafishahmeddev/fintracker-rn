@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../../theme/colors';
 import { typography } from '../../../theme/typography';
 import type { Category } from '../../categories/api/categories';
@@ -23,7 +23,7 @@ export const TransactionCategoryPicker = ({ categories, selectedId, onSelect, co
   return (
     <View style={styles.container}>
       <Text style={[styles.label, { color: colors.textMuted }]}>CATEGORY</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <View style={styles.grid}>
         {categories.map((cat) => {
           const selected = selectedId === cat.id;
           const catColor = toHexColor(cat.color);
@@ -31,22 +31,31 @@ export const TransactionCategoryPicker = ({ categories, selectedId, onSelect, co
             <TouchableOpacity
               key={cat.id}
               style={[
-                styles.item,
+                styles.pill,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+                selected && { backgroundColor: catColor, borderColor: catColor },
               ]}
               onPress={() => onSelect(cat.id)}
               activeOpacity={0.8}
             >
-              <View style={[
-                styles.iconBox,
-                { backgroundColor: selected ? catColor : colors.surface, borderColor: selected ? catColor : colors.border }
-              ]}>
-                <Ionicons name={resolveIconName(cat.icon)} size={20} color={selected ? colors.background : catColor} />
-              </View>
-              <Text style={[styles.name, { color: selected ? colors.text : colors.textMuted }]} numberOfLines={1}>{cat.name}</Text>
+              <Ionicons
+                name={resolveIconName(cat.icon)}
+                size={14}
+                color={selected ? colors.background : catColor}
+              />
+              <Text
+                style={[
+                  styles.name,
+                  { color: selected ? colors.background : colors.text },
+                ]}
+                numberOfLines={1}
+              >
+                {cat.name}
+              </Text>
             </TouchableOpacity>
           );
         })}
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -54,34 +63,30 @@ export const TransactionCategoryPicker = ({ categories, selectedId, onSelect, co
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 12,
+    paddingHorizontal: 24,
   },
   label: {
     fontFamily: typography.fonts.semibold,
     fontSize: 10,
     letterSpacing: 1.5,
     marginBottom: 12,
-    paddingHorizontal: 24,
   },
-  scrollContent: {
-    paddingHorizontal: 24,
-    gap: 16,
-  },
-  item: {
-    width: 60,
-    alignItems: 'center',
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
-  iconBox: {
-    width: 50,
-    height: 50,
-    borderRadius: 16,
+  pill: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
+    gap: 8,
+    paddingHorizontal: 12,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
   },
   name: {
     fontFamily: typography.fonts.medium,
-    fontSize: 11,
-    textAlign: 'center',
+    fontSize: 13,
   },
 });

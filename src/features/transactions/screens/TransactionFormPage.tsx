@@ -197,6 +197,8 @@ export function TransactionFormPage({ mode, transactionId }: Props) {
       <Header title={isEditMode ? 'Edit Entry' : 'New Entry'} subtitle="Record flow with precision" showBack />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <TransactionTypePicker value={type} onChange={setType} colors={colors} />
+
         <TransactionAmountInput
           value={amountInput}
           onChange={setAmountInput}
@@ -205,7 +207,6 @@ export function TransactionFormPage({ mode, transactionId }: Props) {
         />
 
         <View style={styles.formBody}>
-          <TransactionTypePicker value={type} onChange={setType} colors={colors} />
           
           <TransactionAccountPicker
             accounts={accounts}
