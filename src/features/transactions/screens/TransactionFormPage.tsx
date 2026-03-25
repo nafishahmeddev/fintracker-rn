@@ -16,7 +16,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../../components/ui/BlurBackground';
 import { Header } from '../../../components/ui/Header';
-import { accounts as accountsTable, categories as categoriesTable } from '../../../db/schema';
 import { useSettings } from '../../../providers/SettingsProvider';
 import { useTheme } from '../../../providers/ThemeProvider';
 import { ThemeColors } from '../../../theme/colors';
@@ -25,24 +24,12 @@ import { useAccounts } from '../../accounts/hooks/accounts';
 import { useCategories } from '../../categories/hooks/categories';
 import {
   useCreateTransaction,
-  useTransactions,
+  useTransactionById,
   useUpdateTransaction,
 } from '../hooks/transactions';
 
 type TransactionType = 'CR' | 'DR';
-type Account = typeof accountsTable.$inferSelect;
-type Category = typeof categoriesTable.$inferSelect;
 type IoniconName = keyof typeof Ionicons.glyphMap;
-
-type LedgerTransaction = {
-  id: number;
-  accountId: number;
-  categoryId: number;
-  amount: number;
-  type: 'CR' | 'DR';
-  datetime: string;
-  note: string;
-};
 
 type Props = {
   mode: 'create' | 'edit';
@@ -77,18 +64,16 @@ export function TransactionFormPage({ mode, transactionId }: Props) {
 
   const accountsQuery = useAccounts();
   const categoriesQuery = useCategories();
-  const transactionsQuery = useTransactions();
+  const transactionByIdQuery = useTransactionById(isEditMode ? transactionId ?? null : null);
   const createTransaction = useCreateTransaction();
   const updateTransaction = useUpdateTransaction();
 
-  const accounts = React.useMemo(() => (accountsQuery.data ?? []) as Account[], [accountsQuery.data]);
-  const categories = React.useMemo(() => (categoriesQuery.data ?? []) as Category[], [categoriesQuery.data]);
-  const transactions = React.useMemo(() => (transactionsQuery.data ?? []) as LedgerTransaction[], [transactionsQuery.data]);
-
+  const accounts = React.useMemo(() => accountsQuery.data ?? [], [accountsQuery.data]);
+  const categories = React.useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
   const editingTransaction = React.useMemo(() => {
-    if (!isEditMode || transactionId === null || transactionId === undefined) return null;
-    return transactions.find((tx) => tx.id === transactionId) ?? null;
-  }, [transactions, transactionId, isEditMode]);
+    if (!isEditMode) return null;
+    return transactionByIdQuery.data ?? null;
+  }, [transactionByIdQuery.data, isEditMode]);
 
   const [type, setType] = React.useState<TransactionType>('DR');
   const [selectedAccountId, setSelectedAccountId] = React.useState<number | null>(null);
@@ -238,7 +223,7 @@ export function TransactionFormPage({ mode, transactionId }: Props) {
   const resolvedCurrency = selectedAccount?.currency || profile.defaultCurrency;
   const typeMeta = TYPE_META[type];
 
-  if ((accountsQuery.isLoading || categoriesQuery.isLoading || transactionsQuery.isLoading) && isEditMode) {
+  if ((accountsQuery.isLoading || categoriesQuery.isLoading || transactionByIdQuery.isLoading) && isEditMode) {
     return (
       <View style={styles.loadingWrap}>
         <ActivityIndicator size="large" color={colors.primary} />

@@ -14,6 +14,50 @@ export type TransactionFilters = {
   categoryId?: number;
 };
 
+export type TransactionListItem = {
+  id: number;
+  accountId: number;
+  categoryId: number;
+  amount: number;
+  type: 'CR' | 'DR';
+  datetime: string;
+  note: string;
+  account: {
+    id: number;
+    name: string;
+    currency: string;
+    color: number;
+  };
+  category: {
+    id: number;
+    name: string;
+    icon: string;
+    color: number;
+  };
+};
+
+const TRANSACTION_LIST_SELECT = {
+  id: payments.id,
+  accountId: payments.accountId,
+  categoryId: payments.categoryId,
+  amount: payments.amount,
+  type: payments.type,
+  datetime: payments.datetime,
+  note: payments.note,
+  account: {
+    id: accounts.id,
+    name: accounts.name,
+    currency: accounts.currency,
+    color: accounts.color,
+  },
+  category: {
+    id: categories.id,
+    name: categories.name,
+    icon: categories.icon,
+    color: categories.color,
+  },
+} as const;
+
 const buildWhere = (filters: TransactionFilters): SQL | undefined => {
   const conditions: SQL[] = [];
   if (filters.type) conditions.push(eq(payments.type, filters.type));
@@ -25,11 +69,11 @@ const buildWhere = (filters: TransactionFilters): SQL | undefined => {
 export const getTransactionsPaged = async (
   page: number,
   filters: TransactionFilters = {},
-) => {
+) : Promise<TransactionListItem[]> => {
   const where = buildWhere(filters);
 
   const rows = await db
-    .select({ payment: payments, account: accounts, category: categories })
+    .select(TRANSACTION_LIST_SELECT)
     .from(payments)
     .innerJoin(accounts, eq(payments.accountId, accounts.id))
     .innerJoin(categories, eq(payments.categoryId, categories.id))
@@ -38,7 +82,7 @@ export const getTransactionsPaged = async (
     .limit(PAGE_SIZE)
     .offset(page * PAGE_SIZE);
 
-  return rows.map((row) => ({ ...row.payment, account: row.account, category: row.category }));
+  return rows;
 };
 
 export const getTransactionsCount = async (filters: TransactionFilters = {}) => {
@@ -48,15 +92,33 @@ export const getTransactionsCount = async (filters: TransactionFilters = {}) => 
 };
 
 /** Keep the original full-fetch for use outside the paginated list (stats, etc.) */
-export const getTransactions = async () => {
+export const getTransactions = async (): Promise<TransactionListItem[]> => {
   const result = await db
-    .select({ payment: payments, account: accounts, category: categories })
+    .select(TRANSACTION_LIST_SELECT)
     .from(payments)
     .innerJoin(accounts, eq(payments.accountId, accounts.id))
     .innerJoin(categories, eq(payments.categoryId, categories.id))
     .orderBy(desc(payments.datetime));
 
-  return result.map((row) => ({ ...row.payment, account: row.account, category: row.category }));
+  return result;
+};
+
+export const getTransactionById = async (id: number): Promise<Payment | null> => {
+  const [payment] = await db
+    .select({
+      id: payments.id,
+      accountId: payments.accountId,
+      categoryId: payments.categoryId,
+      amount: payments.amount,
+      type: payments.type,
+      datetime: payments.datetime,
+      note: payments.note,
+    })
+    .from(payments)
+    .where(eq(payments.id, id))
+    .limit(1);
+
+  return payment ?? null;
 };
 
 export const createTransaction = async (data: InsertPayment) => {

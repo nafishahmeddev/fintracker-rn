@@ -20,7 +20,12 @@ import { Header } from '../../src/components/ui/Header';
 import { MoneyText } from '../../src/components/ui/MoneyText';
 import { useAccounts } from '../../src/features/accounts/hooks/accounts';
 import { useCategories } from '../../src/features/categories/hooks/categories';
-import { useDeleteTransaction, useInfiniteTransactions } from '../../src/features/transactions/hooks/transactions';
+import type { TransactionListItem } from '../../src/features/transactions/api/transactions';
+import {
+  useDeleteTransaction,
+  useInfiniteTransactions,
+  useTransactionsCount,
+} from '../../src/features/transactions/hooks/transactions';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
@@ -31,27 +36,7 @@ const SWIPE_ACTION_WIDTH = 44;
 type SwipeableInstance = React.ElementRef<typeof Swipeable>;
 let openSwipeRow: SwipeableInstance | null = null;
 
-type LedgerTransaction = {
-  id: number;
-  accountId: number;
-  categoryId: number;
-  amount: number;
-  type: 'CR' | 'DR';
-  datetime: string;
-  note: string;
-  account: {
-    id: number;
-    name: string;
-    currency: string;
-    color: number;
-  };
-  category: {
-    id: number;
-    name: string;
-    icon: string;
-    color: number;
-  };
-};
+type LedgerTransaction = TransactionListItem;
 
 const toHexColor = (value: number) => `#${value.toString(16).padStart(6, '0')}`;
 
@@ -273,13 +258,14 @@ export default function TransactionsScreen() {
   );
 
   const txQuery = useInfiniteTransactions(filters);
+  const txCountQuery = useTransactionsCount(filters);
   const accountsQuery = useAccounts();
   const categoriesQuery = useCategories();
   const deleteTransaction = useDeleteTransaction();
 
   // Flatten all pages into a single list
   const transactions = React.useMemo(
-    () => (txQuery.data?.pages.flat() ?? []) as LedgerTransaction[],
+    () => txQuery.data?.pages.flat() ?? [],
     [txQuery.data],
   );
 
@@ -368,7 +354,7 @@ export default function TransactionsScreen() {
 
       <Header
         title="Transactions"
-        subtitle={`${transactions.length}+ records`}
+        subtitle={`${txCountQuery.data ?? 0} records`}
         showBack
         rightAction={(
           <TouchableOpacity style={styles.filterActionBtn} onPress={() => setShowFilterSheet(true)} activeOpacity={0.9}>
