@@ -2,9 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MoneyText } from '../../src/components/ui/MoneyText';
+import { OptionsDialog } from '../../src/components/ui/OptionsDialog';
 import { DEFAULT_CURRENCY } from '../../src/constants/currency';
 import type { Account } from '../../src/features/accounts/api/accounts';
 import { AccountFormModal } from '../../src/features/accounts/components/AccountFormModal';
@@ -48,6 +49,9 @@ export default function DashboardScreen() {
 
   const [showAccountForm, setShowAccountForm] = React.useState(false);
   const [editingAccount, setEditingAccount] = React.useState<Account | undefined>(undefined);
+  const [showAccountOptionsDialog, setShowAccountOptionsDialog] = React.useState(false);
+  const [showDeleteAccountDialog, setShowDeleteAccountDialog] = React.useState(false);
+  const [activeAccount, setActiveAccount] = React.useState<Account | undefined>(undefined);
 
   const balancesByCurrency = React.useMemo(() => {
     return accounts?.reduce((acc, account) => {
@@ -162,19 +166,31 @@ export default function DashboardScreen() {
   );
 
   const handleAccountLongPress = (acc: Account) => {
-    Alert.alert('Manage Account', acc.name, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Edit', onPress: () => { setEditingAccount(acc); setShowAccountForm(true); } },
+    setActiveAccount(acc);
+    setShowAccountOptionsDialog(true);
+  };
+
+  const accountOptions = React.useMemo(() => {
+    if (!activeAccount) return [];
+    return [
       {
-        text: 'Delete', style: 'destructive', onPress: () => {
-          Alert.alert('Confirm Delete', `Delete ${acc.name}?`, [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Delete', style: 'destructive', onPress: () => deleteAccount(acc.id) },
-          ]);
+        key: 'edit-account',
+        label: 'Edit account',
+        icon: 'create-outline' as const,
+        onPress: () => {
+          setEditingAccount(activeAccount);
+          setShowAccountForm(true);
         },
       },
-    ]);
-  };
+      {
+        key: 'delete-account',
+        label: 'Delete account',
+        icon: 'trash-outline' as const,
+        destructive: true,
+        onPress: () => setShowDeleteAccountDialog(true),
+      },
+    ];
+  }, [activeAccount]);
 
   if (txLoading || accountsLoading) {
     return (
@@ -426,6 +442,34 @@ export default function DashboardScreen() {
         visible={showAccountForm}
         onClose={() => setShowAccountForm(false)}
         account={editingAccount}
+      />
+
+      <OptionsDialog
+        visible={showAccountOptionsDialog}
+        onClose={() => setShowAccountOptionsDialog(false)}
+        title="Manage Account"
+        subtitle={activeAccount?.name}
+        options={accountOptions}
+      />
+
+      <OptionsDialog
+        visible={showDeleteAccountDialog}
+        onClose={() => setShowDeleteAccountDialog(false)}
+        title="Confirm Delete"
+        subtitle={activeAccount ? `Delete ${activeAccount.name}?` : undefined}
+        closeLabel="Cancel"
+        options={activeAccount ? [
+          {
+            key: 'confirm-delete',
+            label: 'Delete permanently',
+            icon: 'trash-outline',
+            destructive: true,
+            onPress: () => {
+              deleteAccount(activeAccount.id);
+              setActiveAccount(undefined);
+            },
+          },
+        ] : []}
       />
     </SafeAreaView>
   );

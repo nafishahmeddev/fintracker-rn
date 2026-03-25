@@ -2,10 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
-import { Button } from '../../src/components/ui/Button';
+import { OptionsDialog } from '../../src/components/ui/OptionsDialog';
 import { db } from '../../src/db/client';
 import { accounts, categories, payments } from '../../src/db/schema';
 import { useSettings } from '../../src/providers/SettingsProvider';
@@ -160,47 +160,19 @@ export default function SettingsScreen() {
         </View>
       </ScrollView>
 
-      <Modal
+      <OptionsDialog
         visible={showAppearanceDialog}
-        transparent
-        animationType="fade"
-        presentationStyle="overFullScreen"
-        statusBarTranslucent
-        onRequestClose={() => setShowAppearanceDialog(false)}
-      >
-        <View style={styles.dialogOverlay}>
-          <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={() => setShowAppearanceDialog(false)} />
-          <View style={styles.dialogCard}>
-            <Text style={styles.dialogTitle}>Appearance</Text>
-            <Text style={styles.dialogSubtitle}>Choose how FinTracker should look</Text>
-
-            <View style={styles.dialogOptionsWrap}>
-              {themeOptions.map((option) => {
-                const selected = (profile.theme || 'system') === option.value;
-                return (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={[styles.dialogOptionRow, selected && styles.dialogOptionRowActive]}
-                    onPress={() => {
-                      updateProfile({ theme: option.value });
-                      setShowAppearanceDialog(false);
-                    }}
-                    activeOpacity={0.9}
-                  >
-                    <View style={[styles.dialogOptionIconWrap, selected && styles.dialogOptionIconWrapActive]}>
-                      <Ionicons name={option.icon} size={16} color={selected ? colors.background : colors.textMuted} />
-                    </View>
-                    <Text style={[styles.dialogOptionText, selected && styles.dialogOptionTextActive]}>{option.label}</Text>
-                    {selected && <Ionicons name="checkmark" size={16} color={colors.background} />}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            <Button title="Close" variant="secondary" onPress={() => setShowAppearanceDialog(false)} style={styles.dialogCloseButton} />
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setShowAppearanceDialog(false)}
+        title="Appearance"
+        subtitle="Choose how FinTracker should look"
+        options={themeOptions.map((option) => ({
+          key: option.value,
+          label: option.label,
+          icon: option.icon,
+          selected: (profile.theme || 'system') === option.value,
+          onPress: () => updateProfile({ theme: option.value }),
+        }))}
+      />
 
     </SafeAreaView>
   );
@@ -402,83 +374,5 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     opacity: 0.72,
     marginBottom: 2,
     textAlign: 'center',
-  },
-  dialogOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.52)',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 24,
-    paddingBottom: 42,
-  },
-  dialogCard: {
-    alignSelf: 'stretch',
-    borderRadius: 22,
-    backgroundColor: Platform.OS === 'ios' ? colors.background + 'F2' : colors.background,
-    borderWidth: 1,
-    borderColor: colors.text + '18',
-    padding: 18,
-    shadowColor: '#000000',
-    shadowOpacity: 0.22,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 10,
-  },
-  dialogTitle: {
-    fontFamily: typography.fonts.headingRegular,
-    fontSize: 24,
-    color: colors.text,
-    letterSpacing: -0.6,
-  },
-  dialogSubtitle: {
-    fontFamily: typography.fonts.regular,
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 4,
-    marginBottom: 16,
-  },
-  dialogOptionsWrap: {
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  dialogOptionRow: {
-    height: 48,
-    borderRadius: 12,
-    marginBottom: 8,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.text + '10',
-    paddingHorizontal: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  dialogOptionRowActive: {
-    backgroundColor: colors.text,
-    borderColor: colors.text,
-  },
-  dialogOptionIconWrap: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: colors.background + 'CC',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  dialogOptionIconWrapActive: {
-    backgroundColor: colors.background + '66',
-  },
-  dialogOptionText: {
-    flex: 1,
-    fontFamily: typography.fonts.semibold,
-    fontSize: 13,
-    color: colors.text,
-  },
-  dialogOptionTextActive: {
-    color: colors.background,
-  },
-  dialogCloseButton: {
-    marginTop: 8,
-    height: 44,
-    borderRadius: 12,
   },
 });
