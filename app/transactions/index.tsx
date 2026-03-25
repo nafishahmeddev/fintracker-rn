@@ -393,41 +393,45 @@ export default function TransactionsScreen() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-        {/* KPI strip */}
-        {kpiCurrencies.length > 1 && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.currencyTabsRow}>
-            {kpiCurrencies.map((cur) => (
-              <TouchableOpacity
-                key={cur}
-                style={[styles.currencyTab, selectedKpiCurrency === cur && styles.currencyTabActive]}
-                onPress={() => setSelectedKpiCurrency(cur)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.currencyTabText, selectedKpiCurrency === cur && styles.currencyTabTextActive]}>{cur}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-        <View style={styles.kpiStrip}>
-          <View style={styles.kpiCell}>
-            <Text style={styles.kpiLabel}>IN</Text>
-            <MoneyText amount={activeTotals.income} currency={selectedKpiCurrency ?? undefined} type="CR" weight="bold" style={styles.kpiValue} />
-          </View>
-          <View style={styles.kpiSep} />
-          <View style={styles.kpiCell}>
-            <Text style={styles.kpiLabel}>OUT</Text>
-            <MoneyText amount={activeTotals.expense} currency={selectedKpiCurrency ?? undefined} type="DR" weight="bold" style={styles.kpiValue} />
-          </View>
-          <View style={styles.kpiSep} />
-          <View style={styles.kpiCell}>
-            <Text style={styles.kpiLabel}>NET</Text>
-            <MoneyText
-              amount={Math.abs(activeTotals.income - activeTotals.expense)}
-              currency={selectedKpiCurrency ?? undefined}
-              type={activeTotals.income >= activeTotals.expense ? 'CR' : 'DR'}
-              weight="bold"
-              style={styles.kpiValue}
-            />
+        {/* KPI card */}
+        <View style={styles.kpiCard}>
+          {kpiCurrencies.length > 1 && (
+            <View style={styles.kpiTabsWrap}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.currencyTabsRow}>
+                {kpiCurrencies.map((cur) => (
+                  <TouchableOpacity
+                    key={cur}
+                    style={[styles.currencyTab, selectedKpiCurrency === cur && styles.currencyTabActive]}
+                    onPress={() => setSelectedKpiCurrency(cur)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.currencyTabText, selectedKpiCurrency === cur && styles.currencyTabTextActive]}>{cur}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+          <View style={styles.kpiStrip}>
+            <View style={styles.kpiCell}>
+              <Text style={styles.kpiLabel}>IN</Text>
+              <MoneyText amount={activeTotals.income} currency={selectedKpiCurrency ?? undefined} type="CR" weight="bold" style={styles.kpiValue} />
+            </View>
+            <View style={styles.kpiSep} />
+            <View style={styles.kpiCell}>
+              <Text style={styles.kpiLabel}>OUT</Text>
+              <MoneyText amount={activeTotals.expense} currency={selectedKpiCurrency ?? undefined} type="DR" weight="bold" style={styles.kpiValue} />
+            </View>
+            <View style={styles.kpiSep} />
+            <View style={styles.kpiCell}>
+              <Text style={styles.kpiLabel}>NET</Text>
+              <MoneyText
+                amount={Math.abs(activeTotals.income - activeTotals.expense)}
+                currency={selectedKpiCurrency ?? undefined}
+                type={activeTotals.income >= activeTotals.expense ? 'CR' : 'DR'}
+                weight="bold"
+                style={styles.kpiValue}
+              />
+            </View>
           </View>
         </View>
 
@@ -689,17 +693,30 @@ const createStyles = (colors: ThemeColors) =>
       gap: 16,
     },
 
-    /* ── Currency tabs ── */
+    /* ── KPI card + currency tabs ── */
+    kpiCard: {
+      borderRadius: 18,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      overflow: 'hidden',
+    },
+    kpiTabsWrap: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      paddingVertical: 8,
+      paddingLeft: 12,
+    },
     currencyTabsRow: {
       flexDirection: 'row',
       gap: 8,
-      marginBottom: 8,
+      paddingRight: 12,
     },
     currencyTab: {
-      paddingHorizontal: 14,
+      paddingHorizontal: 12,
       paddingVertical: 6,
       borderRadius: 100,
-      backgroundColor: colors.surface,
+      backgroundColor: colors.background,
       borderWidth: 1,
       borderColor: colors.border,
     },
@@ -720,11 +737,6 @@ const createStyles = (colors: ThemeColors) =>
     /* ── KPI strip ── */
     kpiStrip: {
       flexDirection: 'row',
-      borderRadius: 18,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      overflow: 'hidden',
     },
     kpiCell: {
       flex: 1,
