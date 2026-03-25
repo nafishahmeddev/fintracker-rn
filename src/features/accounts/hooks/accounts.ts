@@ -18,6 +18,7 @@ export const useCreateAccount = () => {
     mutationFn: api.createAccount,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ACCOUNTS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 };
@@ -29,6 +30,7 @@ export const useUpdateAccount = () => {
       api.updateAccount(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ACCOUNTS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 };
@@ -39,6 +41,7 @@ export const useDeleteAccount = () => {
     mutationFn: api.deleteAccount,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ACCOUNTS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 };

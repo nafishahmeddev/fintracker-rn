@@ -18,6 +18,7 @@ export const useCreateCategory = () => {
     mutationFn: api.createCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CATEGORIES_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 };
@@ -29,6 +30,7 @@ export const useUpdateCategory = () => {
       api.updateCategory(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CATEGORIES_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 };
@@ -39,6 +41,7 @@ export const useDeleteCategory = () => {
     mutationFn: api.deleteCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CATEGORIES_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 };
