@@ -1,4 +1,4 @@
-import { desc, eq } from 'drizzle-orm';
+import { SQL, and, count, desc, eq } from 'drizzle-orm';
 import { db } from '../../../db/client';
 import { accounts, categories, payments } from '../../../db/schema';
 
@@ -6,23 +6,57 @@ export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = typeof payments.$inferInsert;
 export type UpdatePayment = Omit<InsertPayment, 'id'>;
 
+export const PAGE_SIZE = 20;
+
+export type TransactionFilters = {
+  type?: 'CR' | 'DR';
+  accountId?: number;
+  categoryId?: number;
+};
+
+const buildWhere = (filters: TransactionFilters): SQL | undefined => {
+  const conditions: SQL[] = [];
+  if (filters.type) conditions.push(eq(payments.type, filters.type));
+  if (filters.accountId != null) conditions.push(eq(payments.accountId, filters.accountId));
+  if (filters.categoryId != null) conditions.push(eq(payments.categoryId, filters.categoryId));
+  return conditions.length > 0 ? and(...conditions) : undefined;
+};
+
+export const getTransactionsPaged = async (
+  page: number,
+  filters: TransactionFilters = {},
+) => {
+  const where = buildWhere(filters);
+
+  const rows = await db
+    .select({ payment: payments, account: accounts, category: categories })
+    .from(payments)
+    .innerJoin(accounts, eq(payments.accountId, accounts.id))
+    .innerJoin(categories, eq(payments.categoryId, categories.id))
+    .where(where)
+    .orderBy(desc(payments.datetime))
+    .limit(PAGE_SIZE)
+    .offset(page * PAGE_SIZE);
+
+  return rows.map((row) => ({ ...row.payment, account: row.account, category: row.category }));
+};
+
+export const getTransactionsCount = async (filters: TransactionFilters = {}) => {
+  const where = buildWhere(filters);
+  const [row] = await db.select({ total: count() }).from(payments).where(where);
+  return row?.total ?? 0;
+};
+
+/** Keep the original full-fetch for use outside the paginated list (stats, etc.) */
 export const getTransactions = async () => {
   const result = await db
-    .select({
-      payment: payments,
-      account: accounts,
-      category: categories,
-    })
+    .select({ payment: payments, account: accounts, category: categories })
     .from(payments)
     .innerJoin(accounts, eq(payments.accountId, accounts.id))
     .innerJoin(categories, eq(payments.categoryId, categories.id))
     .orderBy(desc(payments.datetime));
 
-  return result.map((row) => ({
-    ...row.payment,
-    account: row.account,
-    category: row.category,
-  }));
+  return result.map((row) => ({ ...row.payment, account: row.account, category: row.category }));
 };
 
 export const createTransaction = async (data: InsertPayment) => {

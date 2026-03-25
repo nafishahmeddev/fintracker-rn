@@ -2,14 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-    ActivityIndicator,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,7 +18,9 @@ import { BlurBackground } from '../../src/components/ui/BlurBackground';
 import { ConfirmDialog } from '../../src/components/ui/ConfirmDialog';
 import { Header } from '../../src/components/ui/Header';
 import { MoneyText } from '../../src/components/ui/MoneyText';
-import { useDeleteTransaction, useTransactions } from '../../src/features/transactions/hooks/transactions';
+import { useAccounts } from '../../src/features/accounts/hooks/accounts';
+import { useCategories } from '../../src/features/categories/hooks/categories';
+import { useDeleteTransaction, useInfiniteTransactions } from '../../src/features/transactions/hooks/transactions';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
@@ -248,14 +251,6 @@ export default function TransactionsScreen() {
   const { colors } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
 
-  const transactionsQuery = useTransactions();
-  const deleteTransaction = useDeleteTransaction();
-
-  const transactions = React.useMemo(
-    () => (transactionsQuery.data ?? []) as LedgerTransaction[],
-    [transactionsQuery.data]
-  );
-
   const [typeFilter, setTypeFilter] = React.useState<TransactionTypeFilter>('ALL');
   const [accountFilterId, setAccountFilterId] = React.useState<number | null>(null);
   const [categoryFilterId, setCategoryFilterId] = React.useState<number | null>(null);
@@ -264,74 +259,76 @@ export default function TransactionsScreen() {
   const [pendingDeleteTx, setPendingDeleteTx] = React.useState<LedgerTransaction | null>(null);
 
   React.useEffect(() => {
-    if (initialAccountId !== null) {
-      setAccountFilterId(initialAccountId);
-    }
+    if (initialAccountId !== null) setAccountFilterId(initialAccountId);
   }, [initialAccountId]);
 
-  const accountOptions = React.useMemo(() => {
-    const map = new Map<number, LedgerTransaction['account']>();
-    transactions.forEach((item) => {
-      if (!map.has(item.account.id)) map.set(item.account.id, item.account);
-    });
-    return [...map.values()];
-  }, [transactions]);
+  // Build filter object for the query — derived state, stable reference via useMemo
+  const filters = React.useMemo(
+    () => ({
+      ...(typeFilter !== 'ALL' ? { type: typeFilter as 'CR' | 'DR' } : {}),
+      ...(accountFilterId !== null ? { accountId: accountFilterId } : {}),
+      ...(categoryFilterId !== null ? { categoryId: categoryFilterId } : {}),
+    }),
+    [typeFilter, accountFilterId, categoryFilterId],
+  );
 
-  const categoryOptions = React.useMemo(() => {
-    const map = new Map<number, LedgerTransaction['category']>();
-    transactions.forEach((item) => {
-      if (!map.has(item.category.id)) map.set(item.category.id, item.category);
-    });
-    return [...map.values()];
-  }, [transactions]);
+  const txQuery = useInfiniteTransactions(filters);
+  const accountsQuery = useAccounts();
+  const categoriesQuery = useCategories();
+  const deleteTransaction = useDeleteTransaction();
 
-  const filteredTransactions = React.useMemo(() => {
-    return transactions.filter((item) => {
-      if (typeFilter !== 'ALL' && item.type !== typeFilter) return false;
-      if (accountFilterId !== null && item.account.id !== accountFilterId) return false;
-      if (categoryFilterId !== null && item.category.id !== categoryFilterId) return false;
-      return true;
-    });
-  }, [transactions, typeFilter, accountFilterId, categoryFilterId]);
+  // Flatten all pages into a single list
+  const transactions = React.useMemo(
+    () => (txQuery.data?.pages.flat() ?? []) as LedgerTransaction[],
+    [txQuery.data],
+  );
 
-  const totalsByCurrency = React.useMemo(() => {
-    const map: Record<string, { income: number; expense: number }> = {};
-    filteredTransactions.forEach((item) => {
-      const cur = item.account.currency;
-      if (!map[cur]) map[cur] = { income: 0, expense: 0 };
-      if (item.type === 'CR') map[cur].income += item.amount;
-      if (item.type === 'DR') map[cur].expense += item.amount;
-    });
-    return map;
-  }, [filteredTransactions]);
-
-  const kpiCurrencies = React.useMemo(() => Object.keys(totalsByCurrency), [totalsByCurrency]);
-
-  const [selectedKpiCurrency, setSelectedKpiCurrency] = React.useState<string | null>(null);
-
-  // Keep selectedKpiCurrency in sync when filtered set changes
-  React.useEffect(() => {
-    if (kpiCurrencies.length === 0) {
-      setSelectedKpiCurrency(null);
-    } else if (!selectedKpiCurrency || !kpiCurrencies.includes(selectedKpiCurrency)) {
-      setSelectedKpiCurrency(kpiCurrencies[0]);
-    }
-  }, [kpiCurrencies, selectedKpiCurrency]);
-
-  const activeTotals = selectedKpiCurrency
-    ? (totalsByCurrency[selectedKpiCurrency] ?? { income: 0, expense: 0 })
-    : { income: 0, expense: 0 };
-
+  // Group by date label for display
   const groupedByDate = React.useMemo(() => {
     const map = new Map<string, LedgerTransaction[]>();
-    filteredTransactions.forEach((item) => {
+    transactions.forEach((item) => {
       const key = getDateLabel(item.datetime);
       const prev = map.get(key) ?? [];
       prev.push(item);
       map.set(key, prev);
     });
     return [...map.entries()];
-  }, [filteredTransactions]);
+  }, [transactions]);
+
+  const loadMore = React.useCallback(() => {
+    if (txQuery.hasNextPage && !txQuery.isFetchingNextPage) {
+      txQuery.fetchNextPage();
+    }
+  }, [txQuery]);
+
+  // KPI totals from stored account balances — cheap O(accounts)
+  const kpiTotalsByCurrency = React.useMemo(() => {
+    const source =
+      accountFilterId !== null
+        ? (accountsQuery.data ?? []).filter((a) => a.id === accountFilterId)
+        : (accountsQuery.data ?? []);
+    const map: Record<string, { income: number; expense: number }> = {};
+    source.forEach((acc) => {
+      const cur = acc.currency;
+      if (!map[cur]) map[cur] = { income: 0, expense: 0 };
+      map[cur].income += acc.income;
+      map[cur].expense += acc.expense;
+    });
+    return map;
+  }, [accountsQuery.data, accountFilterId]);
+
+  const kpiCurrencies = React.useMemo(() => Object.keys(kpiTotalsByCurrency), [kpiTotalsByCurrency]);
+
+  const [selectedKpiCurrency, setSelectedKpiCurrency] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    if (kpiCurrencies.length === 0) setSelectedKpiCurrency(null);
+    else if (!selectedKpiCurrency || !kpiCurrencies.includes(selectedKpiCurrency))
+      setSelectedKpiCurrency(kpiCurrencies[0]);
+  }, [kpiCurrencies, selectedKpiCurrency]);
+
+  const activeTotals = selectedKpiCurrency
+    ? (kpiTotalsByCurrency[selectedKpiCurrency] ?? { income: 0, expense: 0 })
+    : { income: 0, expense: 0 };
 
   const activeFilterCount =
     (typeFilter !== 'ALL' ? 1 : 0) + (accountFilterId !== null ? 1 : 0) + (categoryFilterId !== null ? 1 : 0);
@@ -357,7 +354,7 @@ export default function TransactionsScreen() {
     [],
   );
 
-  if (transactionsQuery.isLoading) {
+  if (txQuery.isLoading) {
     return (
       <View style={styles.loadingWrap}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -371,7 +368,7 @@ export default function TransactionsScreen() {
 
       <Header
         title="Transactions"
-        subtitle={`${filteredTransactions.length} records`}
+        subtitle={`${transactions.length}+ records`}
         showBack
         rightAction={(
           <TouchableOpacity style={styles.filterActionBtn} onPress={() => setShowFilterSheet(true)} activeOpacity={0.9}>
@@ -385,63 +382,71 @@ export default function TransactionsScreen() {
         )}
       />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <FlatList
+        data={groupedByDate}
+        keyExtractor={(item) => item[0]}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.4}
+        ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        ListHeaderComponent={(
+          <View style={styles.listHeader}>
+            {/* KPI card */}
+            <View style={styles.kpiCard}>
+              {kpiCurrencies.length > 1 && (
+                <View style={styles.kpiTabsWrap}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.currencyTabsRow}>
+                    {kpiCurrencies.map((cur) => (
+                      <TouchableOpacity
+                        key={cur}
+                        style={[styles.currencyTab, selectedKpiCurrency === cur && styles.currencyTabActive]}
+                        onPress={() => setSelectedKpiCurrency(cur)}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={[styles.currencyTabText, selectedKpiCurrency === cur && styles.currencyTabTextActive]}>{cur}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+              <View style={styles.kpiStrip}>
+                <View style={styles.kpiCell}>
+                  <Text style={styles.kpiLabel}>IN</Text>
+                  <MoneyText amount={activeTotals.income} currency={selectedKpiCurrency ?? undefined} type="CR" weight="bold" style={styles.kpiValue} />
+                </View>
+                <View style={styles.kpiSep} />
+                <View style={styles.kpiCell}>
+                  <Text style={styles.kpiLabel}>OUT</Text>
+                  <MoneyText amount={activeTotals.expense} currency={selectedKpiCurrency ?? undefined} type="DR" weight="bold" style={styles.kpiValue} />
+                </View>
+                <View style={styles.kpiSep} />
+                <View style={styles.kpiCell}>
+                  <Text style={styles.kpiLabel}>NET</Text>
+                  <MoneyText
+                    amount={Math.abs(activeTotals.income - activeTotals.expense)}
+                    currency={selectedKpiCurrency ?? undefined}
+                    type={activeTotals.income >= activeTotals.expense ? 'CR' : 'DR'}
+                    weight="bold"
+                    style={styles.kpiValue}
+                  />
+                </View>
+              </View>
+            </View>
 
-        {/* KPI card */}
-        <View style={styles.kpiCard}>
-          {kpiCurrencies.length > 1 && (
-            <View style={styles.kpiTabsWrap}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.currencyTabsRow}>
-                {kpiCurrencies.map((cur) => (
-                  <TouchableOpacity
-                    key={cur}
-                    style={[styles.currencyTab, selectedKpiCurrency === cur && styles.currencyTabActive]}
-                    onPress={() => setSelectedKpiCurrency(cur)}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={[styles.currencyTabText, selectedKpiCurrency === cur && styles.currencyTabTextActive]}>{cur}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-          <View style={styles.kpiStrip}>
-            <View style={styles.kpiCell}>
-              <Text style={styles.kpiLabel}>IN</Text>
-              <MoneyText amount={activeTotals.income} currency={selectedKpiCurrency ?? undefined} type="CR" weight="bold" style={styles.kpiValue} />
-            </View>
-            <View style={styles.kpiSep} />
-            <View style={styles.kpiCell}>
-              <Text style={styles.kpiLabel}>OUT</Text>
-              <MoneyText amount={activeTotals.expense} currency={selectedKpiCurrency ?? undefined} type="DR" weight="bold" style={styles.kpiValue} />
-            </View>
-            <View style={styles.kpiSep} />
-            <View style={styles.kpiCell}>
-              <Text style={styles.kpiLabel}>NET</Text>
-              <MoneyText
-                amount={Math.abs(activeTotals.income - activeTotals.expense)}
-                currency={selectedKpiCurrency ?? undefined}
-                type={activeTotals.income >= activeTotals.expense ? 'CR' : 'DR'}
-                weight="bold"
-                style={styles.kpiValue}
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Active filter chips */}
-        {activeFilterCount > 0 && (
-          <View style={styles.activeFiltersRow}>
-            <Text style={styles.activeFiltersLabel}>FILTERS</Text>
-            <TouchableOpacity style={styles.clearChip} onPress={clearFilters}>
-              <Ionicons name="close" size={11} color={colors.background} />
-              <Text style={styles.clearChipText}>Clear all</Text>
-            </TouchableOpacity>
+            {/* Active filter chips */}
+            {activeFilterCount > 0 && (
+              <View style={styles.activeFiltersRow}>
+                <Text style={styles.activeFiltersLabel}>FILTERS</Text>
+                <TouchableOpacity style={styles.clearChip} onPress={clearFilters}>
+                  <Ionicons name="close" size={11} color={colors.background} />
+                  <Text style={styles.clearChipText}>Clear all</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         )}
-
-        {/* Grouped transaction list */}
-        {groupedByDate.length === 0 ? (
+        ListEmptyComponent={(
           <View style={styles.emptyWrap}>
             <View style={styles.emptyIconBox}>
               <Ionicons name="receipt-outline" size={32} color={colors.textMuted} />
@@ -457,52 +462,52 @@ export default function TransactionsScreen() {
               <Ionicons name="arrow-forward" size={14} color={colors.background} />
             </TouchableOpacity>
           </View>
-        ) : (
-          groupedByDate.map(([dateLabel, items]) => {
-            const dayTotal = items.reduce(
-              (acc, tx) => {
-                if (tx.type === 'CR') acc.in += tx.amount;
-                else acc.out += tx.amount;
-                return acc;
-              },
-              { in: 0, out: 0 }
-            );
-            return (
-              <View key={dateLabel} style={styles.daySection}>
-                {/* Date header row */}
-                <View style={styles.dayHeaderRow}>
-                  <Text style={styles.dayTitle}>{dateLabel}</Text>
-                  <View style={styles.dayTotals}>
-                    {dayTotal.in > 0 && (
-                      <MoneyText amount={dayTotal.in} type="CR" weight="bold" style={styles.dayTotalValue} />
-                    )}
-                    {dayTotal.out > 0 && (
-                      <MoneyText amount={dayTotal.out} type="DR" weight="bold" style={styles.dayTotalValue} />
-                    )}
-                  </View>
-                </View>
-
-                {/* Rows */}
-                <View style={styles.dayCard}>
-                  {items.map((tx, idx) => {
-                    return (
-                      <SwipeableRow
-                        key={tx.id}
-                        tx={tx}
-                        isFirst={idx === 0}
-                        isLast={idx === items.length - 1}
-                        colors={colors}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                      />
-                    );
-                  })}
+        )}
+        ListFooterComponent={txQuery.isFetchingNextPage ? (
+          <View style={styles.loadMoreWrap}>
+            <ActivityIndicator size="small" color={colors.primary} />
+          </View>
+        ) : null}
+        renderItem={({ item }) => {
+          const [dateLabel, items] = item;
+          const dayTotal = items.reduce(
+            (acc, tx) => {
+              if (tx.type === 'CR') acc.in += tx.amount;
+              else acc.out += tx.amount;
+              return acc;
+            },
+            { in: 0, out: 0 },
+          );
+          return (
+            <View style={styles.daySection}>
+              <View style={styles.dayHeaderRow}>
+                <Text style={styles.dayTitle}>{dateLabel}</Text>
+                <View style={styles.dayTotals}>
+                  {dayTotal.in > 0 && (
+                    <MoneyText amount={dayTotal.in} type="CR" weight="bold" style={styles.dayTotalValue} />
+                  )}
+                  {dayTotal.out > 0 && (
+                    <MoneyText amount={dayTotal.out} type="DR" weight="bold" style={styles.dayTotalValue} />
+                  )}
                 </View>
               </View>
-            );
-          })
-        )}
-      </ScrollView>
+              <View style={styles.dayCard}>
+                {items.map((tx, idx) => (
+                  <SwipeableRow
+                    key={tx.id}
+                    tx={tx}
+                    isFirst={idx === 0}
+                    isLast={idx === items.length - 1}
+                    colors={colors}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </View>
+            </View>
+          );
+        }}
+      />
 
       {/* FAB */}
       <TouchableOpacity style={styles.fab} onPress={() => router.push('/transactions/create')} activeOpacity={0.9}>
@@ -574,7 +579,7 @@ export default function TransactionsScreen() {
                 >
                   <Text style={[styles.sheetChipText, accountFilterId === null && styles.sheetChipTextActive]}>All</Text>
                 </TouchableOpacity>
-                {accountOptions.map((account) => {
+                {(accountsQuery.data ?? []).map((account) => {
                   const selected = accountFilterId === account.id;
                   const accColor = toHexColor(account.color);
                   return (
@@ -598,7 +603,7 @@ export default function TransactionsScreen() {
                 >
                   <Text style={[styles.sheetChipText, categoryFilterId === null && styles.sheetChipTextActive]}>All</Text>
                 </TouchableOpacity>
-                {categoryOptions.map((category) => {
+                {(categoriesQuery.data ?? []).map((category) => {
                   const selected = categoryFilterId === category.id;
                   return (
                     <TouchableOpacity
@@ -675,7 +680,14 @@ const createStyles = (colors: ThemeColors) =>
     content: {
       paddingHorizontal: 24,
       paddingBottom: 120,
+    },
+    listHeader: {
       gap: 16,
+      paddingBottom: 16,
+    },
+    loadMoreWrap: {
+      paddingVertical: 20,
+      alignItems: 'center',
     },
 
     /* ── KPI card + currency tabs ── */
