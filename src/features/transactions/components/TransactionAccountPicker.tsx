@@ -69,6 +69,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 24,
     gap: 12,
+    paddingVertical: 4
   },
   card: {
     minWidth: 100,
