@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as api from '../api/transactions';
 
 export const TRANSACTIONS_KEYS = {
@@ -30,6 +30,7 @@ export const useDeleteTransaction = () => {
     mutationFn: api.deleteTransaction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TRANSACTIONS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
     },
   });
 };

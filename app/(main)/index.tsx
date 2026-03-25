@@ -6,6 +6,7 @@ import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, Touch
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MoneyText } from '../../src/components/ui/MoneyText';
 import { DEFAULT_CURRENCY } from '../../src/constants/currency';
+import type { Account } from '../../src/features/accounts/api/accounts';
 import { AccountFormModal } from '../../src/features/accounts/components/AccountFormModal';
 import { useAccounts, useDeleteAccount } from '../../src/features/accounts/hooks/accounts';
 import { useTransactions } from '../../src/features/transactions/hooks/transactions';
@@ -21,6 +22,17 @@ const getGreeting = () => {
   return 'Good evening';
 };
 
+type IoniconName = keyof typeof Ionicons.glyphMap;
+
+const resolveIconName = (raw: string | null | undefined, fallback: IoniconName): IoniconName => {
+  if (raw && raw in Ionicons.glyphMap) return raw as IoniconName;
+  if (raw) {
+    const outlined = `${raw}-outline`;
+    if (outlined in Ionicons.glyphMap) return outlined as IoniconName;
+  }
+  return fallback;
+};
+
 export default function DashboardScreen() {
   const { colors, isDark } = useTheme();
   const { profile } = useSettings();
@@ -33,7 +45,7 @@ export default function DashboardScreen() {
   const { mutateAsync: deleteAccount } = useDeleteAccount();
 
   const [showAccountForm, setShowAccountForm] = React.useState(false);
-  const [editingAccount, setEditingAccount] = React.useState<any>(undefined);
+  const [editingAccount, setEditingAccount] = React.useState<Account | undefined>(undefined);
 
   const balancesByCurrency = React.useMemo(() => {
     return accounts?.reduce((acc, account) => {
@@ -143,7 +155,7 @@ export default function DashboardScreen() {
 
   const topExpenseCategories = topExpenseCategoriesByCurrency[selectedTopCategoryCurrency] ?? [];
 
-  const handleAccountLongPress = (acc: any) => {
+  const handleAccountLongPress = (acc: Account) => {
     Alert.alert('Manage Account', acc.name, [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Edit', onPress: () => { setEditingAccount(acc); setShowAccountForm(true); } },
@@ -283,8 +295,6 @@ export default function DashboardScreen() {
           {accounts?.map(acc => {
             const accColor = '#' + acc.color.toString(16).padStart(6, '0');
             const cardFlow = accountFlowById[acc.id] ?? { income: 0, expense: 0 };
-            const openingBalanceEstimate = acc.balance - (acc.income - acc.expense);
-            const cardAvailable = openingBalanceEstimate + (cardFlow.income - cardFlow.expense);
             return (
               <TouchableOpacity
                 key={acc.id}
@@ -300,7 +310,7 @@ export default function DashboardScreen() {
                   <View style={styles.accountCardTop}>
                     <View style={styles.accountCardLead}>
                       <View style={[styles.accountIconBox, { backgroundColor: accColor + '20' }]}>
-                        <Ionicons name={(acc.icon as any) || 'wallet-outline'} size={18} color={accColor} />
+                        <Ionicons name={resolveIconName(acc.icon, 'wallet-outline')} size={18} color={accColor} />
                       </View>
                       <View style={styles.accountCardMeta}>
                         <Text style={styles.accountCardName} numberOfLines={1}>{acc.name}</Text>
@@ -317,7 +327,7 @@ export default function DashboardScreen() {
                   </View>
 
                   <Text style={styles.accountBalanceLabel}>AVAILABLE</Text>
-                  <MoneyText amount={cardAvailable} currency={acc.currency} style={styles.accountCardBalance} weight="bold" />
+                  <MoneyText amount={acc.balance} currency={acc.currency} style={styles.accountCardBalance} weight="bold" />
 
                   <View style={styles.accountCardStats}>
                     <View style={styles.accountCardStatCol}>
@@ -383,7 +393,7 @@ export default function DashboardScreen() {
                 <View key={`${category.name}-${idx}`} style={[styles.topCategoryRow, isLast && styles.topCategoryRowLast]}>
                   <View style={styles.topCategoryLeft}>
                     <View style={[styles.topCategoryIconWrap, { backgroundColor: accent + '1F' }]}>
-                      <Ionicons name={(category.icon as any) || 'pricetag-outline'} size={15} color={accent} />
+                      <Ionicons name={resolveIconName(category.icon, 'pricetag-outline')} size={15} color={accent} />
                     </View>
                     <Text style={styles.topCategoryName} numberOfLines={1}>{category.name}</Text>
                   </View>
@@ -425,7 +435,7 @@ export default function DashboardScreen() {
                   {/* Left accent */}
                   <View style={[styles.txAccent, { backgroundColor: tx.type === 'CR' ? colors.success : colors.danger }]} />
                   <View style={[styles.txIconBox, { backgroundColor: catColor + '18' }]}>
-                    <Ionicons name={(tx.category.icon as any) || 'pricetag-outline'} size={18} color={catColor} />
+                    <Ionicons name={resolveIconName(tx.category.icon, 'pricetag-outline')} size={18} color={catColor} />
                   </View>
                   <View style={styles.txInfo}>
                     <Text style={styles.txTitle} numberOfLines={1}>{tx.note || tx.category.name}</Text>
