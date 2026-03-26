@@ -15,7 +15,7 @@ export function WelcomeStep() {
         <Text style={styles.badgeText}>LOCAL-FIRST MONEY OS</Text>
       </View>
 
-      <Text style={styles.title}>FINTRACKER.</Text>
+      <Text style={styles.title}>LUNO.</Text>
       <Text style={styles.body}>
         Clean structure, fast capture, and calm control. This setup gives you a complete first account and a clear taxonomy to start with.
       </Text>

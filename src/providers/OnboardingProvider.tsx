@@ -23,7 +23,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       try {
-        const value = await AsyncStorage.getItem('@fintracker_onboarded');
+        const value = await AsyncStorage.getItem('@luno_onboarded');
         if (value === 'true') {
           setHasOnboarded(true);
         }
@@ -39,7 +39,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
   const completeOnboarding = async () => {
     try {
-      await AsyncStorage.setItem('@fintracker_onboarded', 'true');
+      await AsyncStorage.setItem('@luno_onboarded', 'true');
       setHasOnboarded(true);
     } catch (e) {
       console.error('Error setting onboarding status', e);

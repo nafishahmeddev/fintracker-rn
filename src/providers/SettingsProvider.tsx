@@ -38,7 +38,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const storedProfile = await AsyncStorage.getItem('@fintracker_profile');
+        const storedProfile = await AsyncStorage.getItem('@luno_profile');
         if (storedProfile) {
           const parsed = JSON.parse(storedProfile);
           setProfile(prev => ({ ...prev, ...parsed }));
@@ -55,7 +55,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = async (updates: Partial<UserProfile>) => {
     try {
       const newProfile = { ...profile, ...updates };
-      await AsyncStorage.setItem('@fintracker_profile', JSON.stringify(newProfile));
+      await AsyncStorage.setItem('@luno_profile', JSON.stringify(newProfile));
       setProfile(newProfile);
     } catch (e) {
       console.error('Failed to save profile settings', e);

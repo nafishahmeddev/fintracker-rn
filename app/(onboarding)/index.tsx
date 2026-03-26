@@ -218,7 +218,7 @@ export default function OnboardingScreen() {
               <View style={styles.headerBackPlaceholder} />
             )}
 
-            <Text style={styles.brand}>FINTRACKER.</Text>
+            <Text style={styles.brand}>LUNO.</Text>
 
             <View style={styles.stepPill}>
               <Text style={styles.stepPillText}>{stepIndex + 1}/{ONBOARDING_STEPS.length}</Text>
@@ -244,7 +244,7 @@ export default function OnboardingScreen() {
 
         <View style={styles.footer}>
           <Button
-            title={stepIndex === ONBOARDING_STEPS.length - 1 ? 'Launch Fintracker' : 'Continue'}
+            title={stepIndex === ONBOARDING_STEPS.length - 1 ? 'Launch Luno' : 'Continue'}
             onPress={handleContinue}
             size="lg"
             isLoading={isPending}

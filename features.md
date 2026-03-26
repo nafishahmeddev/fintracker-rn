@@ -1,6 +1,6 @@
-# 💎 Fintracker - Features Overview
+# 💎 Luno - Features Overview
 
-Fintracker is a premium, privacy-focused personal finance manager built for precision and clarity. It combines a sophisticated "Editorial Brutalist" aesthetic with powerful local-first tracking capabilities.
+Luno is a premium, privacy-focused personal finance manager built for precision and clarity. It combines a sophisticated "Editorial Brutalist" aesthetic with powerful local-first tracking capabilities.
 
 ---
 

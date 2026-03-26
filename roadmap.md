@@ -1,4 +1,4 @@
-# 🧭 Fintracker Roadmap
+# 🧭 Luno Roadmap
 
 ## ✅ Phase 1 — Current (Completed)
 - [x] Onboarding flow (Welcome → Profile → Account)

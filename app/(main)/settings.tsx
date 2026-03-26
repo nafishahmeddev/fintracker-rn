@@ -178,7 +178,7 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerBrand}>FINTRACKER / CORE</Text>
+          <Text style={styles.footerBrand}>LUNO / CORE</Text>
           <Text style={styles.footerCopy}>ALL DATA IS ENCRYPTED AND STORED LOCALLY BY DEFAULT.</Text>
         </View>
       </ScrollView>
