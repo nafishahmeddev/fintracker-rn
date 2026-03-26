@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../../providers/ThemeProvider';
 import { typography } from '../../../theme/typography';
-import { ONBOARDING_CURRENCIES } from '../constants';
+import { CURRENCIES } from '../../../constants/currency';
 
 type CurrencyStepProps = {
   currency: string;
@@ -12,7 +12,7 @@ type CurrencyStepProps = {
 export function CurrencyStep({ currency, onCurrencyChange }: CurrencyStepProps) {
   const { colors } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
-  const selectedCurrency = ONBOARDING_CURRENCIES.find((item) => item.code === currency);
+  const selectedCurrency = CURRENCIES.find((item) => item.code === currency);
 
   return (
     <View style={styles.wrapper}>
@@ -24,7 +24,7 @@ export function CurrencyStep({ currency, onCurrencyChange }: CurrencyStepProps) 
       </View>
 
       <View style={styles.chipsWrap}>
-        {ONBOARDING_CURRENCIES.map((item) => {
+        {CURRENCIES.map((item) => {
           const selected = currency === item.code;
           return (
             <TouchableOpacity

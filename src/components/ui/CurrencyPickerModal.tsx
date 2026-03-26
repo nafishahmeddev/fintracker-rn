@@ -12,7 +12,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { ONBOARDING_CURRENCIES } from '../../features/onboarding/constants';
+import { CURRENCIES } from '../../constants/currency';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
@@ -31,8 +31,8 @@ export function CurrencyPickerModal({ visible, onClose, value, onChange }: Curre
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return ONBOARDING_CURRENCIES;
-    return ONBOARDING_CURRENCIES.filter(
+    if (!q) return CURRENCIES;
+    return CURRENCIES.filter(
       (c) => c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)
     );
   }, [query]);
@@ -79,7 +79,7 @@ export function CurrencyPickerModal({ visible, onClose, value, onChange }: Curre
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>Select Currency</Text>
-              <Text style={styles.subtitle}>{ONBOARDING_CURRENCIES.length} currencies worldwide</Text>
+              <Text style={styles.subtitle}>{CURRENCIES.length} currencies worldwide</Text>
             </View>
             <TouchableOpacity onPress={handleClose} style={styles.closeBtn}>
               <Ionicons name="close" size={18} color={colors.text} />
