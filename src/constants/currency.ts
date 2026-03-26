@@ -189,5 +189,5 @@ export const CURRENCY_SYMBOLS: Record<string, string> = CURRENCIES.reduce((acc, 
 }, {} as Record<string, string>);
 
 export const getCurrencySymbol = (currencyCode: string): string => {
-  return CURRENCY_SYMBOLS[currencyCode?.toUpperCase()] || '$';
+  return CURRENCY_SYMBOLS[currencyCode?.toUpperCase()] || '';
 };
