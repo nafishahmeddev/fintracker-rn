@@ -14,7 +14,6 @@ import { useSettings } from '../../src/providers/SettingsProvider';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { TYPOGRAPHY } from '../../src/theme/typography';
-import { seedDummyData } from '../../src/utils/seed';
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
@@ -24,9 +23,8 @@ export default function SettingsScreen() {
   const [showAppearanceDialog, setShowAppearanceDialog] = React.useState(false);
   const [showResetConfirmDialog, setShowResetConfirmDialog] = React.useState(false);
   const [showEditNameModal, setShowEditNameModal] = React.useState(false);
-  const [showSeedConfirmDialog, setShowSeedConfirmDialog] = React.useState(false);
-  const [isSeeding, setIsSeeding] = React.useState(false);
   const [nameInput, setNameInput] = React.useState('');
+  const [devClickCount, setDevClickCount] = React.useState(0);
 
   const themeOptions: { label: string; value: 'light' | 'dark' | 'system'; icon: keyof typeof Ionicons.glyphMap }[] = [
     { label: 'Light Mode', value: 'light', icon: 'sunny-outline' },
@@ -63,20 +61,13 @@ export default function SettingsScreen() {
     setShowEditNameModal(false);
   };
 
-  const handleSeedData = () => {
-    setShowSeedConfirmDialog(true);
-  };
-
-  const runSeedData = async () => {
-    try {
-      setIsSeeding(true);
-      const count = await seedDummyData();
-      Alert.alert("Success", `Generated ${count} transactions across the last 12 months.`);
-      setShowSeedConfirmDialog(false);
-    } catch (e: any) {
-      Alert.alert("Error", e.message || "Failed to generate seed data.");
-    } finally {
-      setIsSeeding(false);
+  const handleFooterClick = () => {
+    const nextCount = devClickCount + 1;
+    if (nextCount === 7) {
+      router.push('/developer' as any);
+      setDevClickCount(0);
+    } else {
+      setDevClickCount(nextCount);
     }
   };
 
@@ -192,35 +183,15 @@ export default function SettingsScreen() {
               destructive
               subtitle="Permanently wipe all local data"
               onPress={handleResetData}
-              isLast={!__DEV__}
+              isLast
             />
-            {__DEV__ && (
-              <PreferenceRow
-                icon="flask-outline"
-                title="Seed Dummy Data"
-                color={colors.primary}
-                subtitle="Generate 12 months of test data"
-                onPress={handleSeedData}
-                isLast
-              />
-            )}
           </View>
         </View>
 
-        {__DEV__ && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>DEVELOPER</Text>
-            <View style={styles.card}>
-              <View style={styles.devCard}>
-                <Ionicons name="construct-outline" size={20} color={colors.primary} />
-                <Text style={styles.devText}>Development Mode Active</Text>
-              </View>
-            </View>
-          </View>
-        )}
-
         <View style={styles.footer}>
-          <Text style={styles.footerBrand}>LUNO / CORE</Text>
+          <TouchableOpacity onPress={handleFooterClick} activeOpacity={1}>
+            <Text style={styles.footerBrand}>LUNO / CORE</Text>
+          </TouchableOpacity>
           <Text style={styles.footerCopy}>ALL DATA IS ENCRYPTED AND STORED LOCALLY BY DEFAULT.</Text>
         </View>
       </ScrollView>
@@ -286,16 +257,6 @@ export default function SettingsScreen() {
         confirmLabel="Wipe Data"
         destructive
         onConfirm={runResetData}
-      />
-
-      <ConfirmDialog
-        visible={showSeedConfirmDialog}
-        onClose={() => setShowSeedConfirmDialog(false)}
-        title="Seed Test Data"
-        message="This will add 12 months of transactions to your default account. Are you sure?"
-        confirmLabel="Generate"
-        isLoading={isSeeding}
-        onConfirm={runSeedData}
       />
     </SafeAreaView>
   );
