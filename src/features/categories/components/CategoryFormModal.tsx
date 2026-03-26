@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '../../../constants/picker';
 import { useTheme } from '../../../providers/ThemeProvider';
 import { ThemeColors } from '../../../theme/colors';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 import { Category } from '../api/categories';
 import { useCreateCategory, useUpdateCategory } from '../hooks/categories';
 
@@ -289,13 +289,13 @@ const createStyles = (colors: ThemeColors) =>
       alignItems: 'flex-start',
     },
     title: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 30,
       color: colors.text,
       letterSpacing: -1,
     },
     subtitle: {
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 12,
       color: colors.textMuted,
       marginTop: 3,
@@ -330,14 +330,14 @@ const createStyles = (colors: ThemeColors) =>
       paddingBottom: 0,
     },
     label: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 13,
       color: colors.textMuted,
       letterSpacing: 0.1,
       marginBottom: 6,
     },
     answerInput: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 28,
       lineHeight: 34,
       color: colors.text,
@@ -374,7 +374,7 @@ const createStyles = (colors: ThemeColors) =>
       borderColor: colors.text,
     },
     typeTabText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 11,
       color: colors.textMuted,
       letterSpacing: 0.4,
@@ -384,7 +384,7 @@ const createStyles = (colors: ThemeColors) =>
     },
     lockHint: {
       marginTop: 8,
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 12,
       color: colors.textMuted,
     },
@@ -447,7 +447,7 @@ const createStyles = (colors: ThemeColors) =>
       opacity: 0.45,
     },
     primaryBtnText: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 14,
       color: '#FFFFFF',
       letterSpacing: 0.3,

@@ -1,8 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, TextProps } from 'react-native';
-import { DEFAULT_CURRENCY, getCurrencySymbol } from '../../constants/currency';
+import { formatCurrency } from '../../utils/format';
 import { useTheme } from '../../providers/ThemeProvider';
-import { typography } from '../../theme/typography';
+import { TYPOGRAPHY } from '../../theme/typography';
 
 interface MoneyTextProps extends TextProps {
   amount: number;
@@ -13,7 +13,7 @@ interface MoneyTextProps extends TextProps {
 
 export function MoneyText({ 
   amount, 
-  currency = DEFAULT_CURRENCY, 
+  currency, 
   type = 'NONE', 
   weight = 'bold',
   style, 
@@ -21,8 +21,7 @@ export function MoneyText({
 }: MoneyTextProps) {
   const { colors } = useTheme();
   
-  const symbol = getCurrencySymbol(currency);
-  const formattedAmount = `${symbol}${amount.toFixed(2)}`;
+  const formattedAmount = formatCurrency(amount, currency);
   
   let prefix = '';
   let color = colors.text;
@@ -36,8 +35,8 @@ export function MoneyText({
   }
 
   const fontFamily = weight === 'regular' || weight === 'medium'
-    ? typography.fonts.amountRegular
-    : typography.fonts.amountBold;
+    ? TYPOGRAPHY.fonts.amountRegular
+    : TYPOGRAPHY.fonts.amountBold;
 
   return (
     <Text 
@@ -59,7 +58,7 @@ export function MoneyText({
 
 const styles = StyleSheet.create({
   base: {
-    fontSize: typography.sizes.md,
+    fontSize: TYPOGRAPHY.sizes.md,
     flexShrink: 1,
   }
 });

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../../theme/colors';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 import { Category } from '../api/categories';
 
 interface CategoryCardProps {
@@ -116,7 +116,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.success + '18',
   },
   typeBadgeText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 9,
     letterSpacing: 0.7,
   },
@@ -135,14 +135,14 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     flex: 1,
   },
   categoryName: {
-    fontFamily: typography.fonts.headingRegular,
+    fontFamily: TYPOGRAPHY.fonts.headingRegular,
     color: colors.text,
     fontSize: 20,
     letterSpacing: -0.5,
     lineHeight: 23,
   },
   categorySubtext: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     color: colors.textMuted,
     fontSize: 11,
     marginTop: 6,
@@ -155,7 +155,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     alignItems: 'center',
   },
   cardFooterText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 10,
     letterSpacing: 0.6,
     textTransform: 'uppercase',

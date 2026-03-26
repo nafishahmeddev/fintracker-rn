@@ -20,8 +20,8 @@ import { useCreateCategory } from '../../src/features/categories/hooks/categorie
 import { AccountStep } from '../../src/features/onboarding/components/AccountStep';
 import { ProfileStep } from '../../src/features/onboarding/components/ProfileStep';
 import { WelcomeStep } from '../../src/features/onboarding/components/WelcomeStep';
+import { getDeviceCurrencyCode } from '../../src/constants/currency';
 import {
-  getDeviceCurrencyCode,
   ONBOARDING_STEPS,
 } from '../../src/features/onboarding/constants';
 import { createOnboardingStyles } from '../../src/features/onboarding/styles';

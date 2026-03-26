@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { TYPOGRAPHY } from '../../theme/typography';
 
 type ConfirmDialogProps = {
   visible: boolean;
@@ -91,7 +91,7 @@ const createStyles = (colors: ThemeColors) =>
       elevation: 10,
     },
     title: {
-      fontFamily: typography.fonts.headingRegular,
+      fontFamily: TYPOGRAPHY.fonts.headingRegular,
       fontSize: 24,
       color: colors.text,
       letterSpacing: -0.6,
@@ -99,7 +99,7 @@ const createStyles = (colors: ThemeColors) =>
     message: {
       marginTop: 6,
       marginBottom: 16,
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 13,
       lineHeight: 18,
       color: colors.textMuted,
@@ -119,7 +119,7 @@ const createStyles = (colors: ThemeColors) =>
       justifyContent: 'center',
     },
     cancelText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 14,
       color: colors.text,
     },
@@ -137,7 +137,7 @@ const createStyles = (colors: ThemeColors) =>
       backgroundColor: colors.primary,
     },
     confirmText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 14,
       color: '#FFFFFF',
     },

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../../../providers/ThemeProvider';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 
 export function WelcomeStep() {
   const { colors } = useTheme();
@@ -52,14 +52,14 @@ const createStyles = (colors: { [key: string]: string }) =>
       gap: 8,
     },
     badgeText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 11,
       color: colors.background,
       letterSpacing: 0.8,
     },
     title: {
       marginTop: 18,
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 44,
       lineHeight: 46,
       color: colors.text,
@@ -67,7 +67,7 @@ const createStyles = (colors: { [key: string]: string }) =>
     },
     body: {
       marginTop: 14,
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 15,
       lineHeight: 24,
       color: colors.textMuted,
@@ -83,14 +83,14 @@ const createStyles = (colors: { [key: string]: string }) =>
       paddingVertical: 6,
     },
     statLabel: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 10,
       color: colors.textMuted,
       letterSpacing: 1.1,
       marginBottom: 8,
     },
     statValue: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 13,
       color: colors.text,
       lineHeight: 18,

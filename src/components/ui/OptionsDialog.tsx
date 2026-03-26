@@ -3,7 +3,7 @@ import React from 'react';
 import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { TYPOGRAPHY } from '../../theme/typography';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -132,13 +132,13 @@ const createStyles = (colors: ThemeColors) =>
       elevation: 10,
     },
     title: {
-      fontFamily: typography.fonts.headingRegular,
+      fontFamily: TYPOGRAPHY.fonts.headingRegular,
       fontSize: 24,
       color: colors.text,
       letterSpacing: -0.6,
     },
     subtitle: {
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 12,
       color: colors.textMuted,
       marginTop: 4,
@@ -181,7 +181,7 @@ const createStyles = (colors: ThemeColors) =>
     },
     optionText: {
       flex: 1,
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 13,
       color: colors.text,
     },
@@ -202,7 +202,7 @@ const createStyles = (colors: ThemeColors) =>
       alignItems: 'center',
     },
     closeButtonText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 14,
       color: colors.text,
     },

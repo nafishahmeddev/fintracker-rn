@@ -10,7 +10,7 @@ import { useAccounts } from '../../src/features/accounts/hooks/accounts';
 import { useTransactions } from '../../src/features/transactions/hooks/transactions';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { TYPOGRAPHY } from '../../src/theme/typography';
 
 const RANGE_OPTIONS = [
   { label: '7D', value: 7 },
@@ -599,14 +599,14 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     paddingHorizontal: 14,
   },
   headerKicker: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.textMuted,
     fontSize: 10,
     letterSpacing: 1.5,
     marginBottom: 4,
   },
   headerTitle: {
-    fontFamily: typography.fonts.headingRegular,
+    fontFamily: TYPOGRAPHY.fonts.headingRegular,
     color: colors.text,
     fontSize: 30,
     lineHeight: 34,
@@ -640,7 +640,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     gap: 12,
   },
   snapshotKicker: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.textMuted,
     fontSize: 9,
     letterSpacing: 1.4,
@@ -662,13 +662,13 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     borderColor: colors.border,
   },
   rangeBadgeText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.textMuted,
     fontSize: 10,
     letterSpacing: 1,
   },
   cardLabel: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.textMuted,
     fontSize: 10,
     letterSpacing: 1.2,
@@ -692,7 +692,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.text,
   },
   segmentText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.textMuted,
     fontSize: 11,
     letterSpacing: 0.6,
@@ -715,7 +715,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     justifyContent: 'space-between',
   },
   snapshotLabel: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.textMuted,
     fontSize: 9,
     letterSpacing: 1,
@@ -730,13 +730,13 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.text,
     fontSize: 10,
     letterSpacing: 1.2,
   },
   sectionHint: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     color: colors.textMuted,
     fontSize: 11,
   },
@@ -764,7 +764,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     justifyContent: 'space-between',
   },
   metricLabel: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.textMuted,
     fontSize: 9,
     letterSpacing: 1,
@@ -773,7 +773,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     fontSize: 13,
   },
   metricPlainValue: {
-    fontFamily: typography.fonts.amountBold,
+    fontFamily: TYPOGRAPHY.fonts.amountBold,
     color: colors.text,
     fontSize: 14,
   },
@@ -797,7 +797,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     gap: 7,
   },
   deltaLabel: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.textMuted,
     fontSize: 11,
     letterSpacing: 0.8,
@@ -821,7 +821,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     borderRadius: 7,
   },
   legendText: {
-    fontFamily: typography.fonts.medium,
+    fontFamily: TYPOGRAPHY.fonts.medium,
     color: colors.textMuted,
     fontSize: 11,
   },
@@ -835,12 +835,12 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginRight: 10,
   },
   trendDay: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.text,
     fontSize: 13,
   },
   trendDate: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     color: colors.textMuted,
     fontSize: 11,
     marginTop: 2,
@@ -896,7 +896,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   listTitle: {
     flex: 1,
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.text,
     fontSize: 14,
   },
@@ -915,7 +915,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     borderRadius: 999,
   },
   listMeta: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     color: colors.textMuted,
     fontSize: 11,
   },
@@ -930,14 +930,14 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     paddingVertical: 14,
   },
   emptyTitle: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.text,
     fontSize: 15,
     marginTop: 10,
     marginBottom: 4,
   },
   emptyText: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     color: colors.textMuted,
     fontSize: 12,
     textAlign: 'center',

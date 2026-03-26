@@ -1,6 +1,6 @@
 import { Platform, StyleSheet } from 'react-native';
 import { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { TYPOGRAPHY } from '../../theme/typography';
 
 export const createOnboardingStyles = (colors: ThemeColors) =>
   StyleSheet.create({
@@ -41,7 +41,7 @@ export const createOnboardingStyles = (colors: ThemeColors) =>
       height: 42,
     },
     brand: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 30,
       color: colors.text,
       letterSpacing: -1,
@@ -59,7 +59,7 @@ export const createOnboardingStyles = (colors: ThemeColors) =>
       borderColor: colors.primary + '22',
     },
     stepPillText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 11,
       color: colors.text,
       letterSpacing: 0.4,
@@ -87,14 +87,14 @@ export const createOnboardingStyles = (colors: ThemeColors) =>
       marginBottom: 20,
     },
     eyebrow: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 11,
       color: colors.primary,
       letterSpacing: 1.5,
       marginBottom: 12,
     },
     stepTitle: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 34,
       lineHeight: 36,
       color: colors.text,
@@ -102,7 +102,7 @@ export const createOnboardingStyles = (colors: ThemeColors) =>
     },
     stepSubtitle: {
       marginTop: 10,
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 14,
       lineHeight: 22,
       color: colors.textMuted,

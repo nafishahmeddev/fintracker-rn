@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../../providers/ThemeProvider';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 import { CURRENCIES } from '../../../constants/currency';
 
 type CurrencyStepProps = {
@@ -51,28 +51,28 @@ const createStyles = (colors: { [key: string]: string }) =>
       paddingVertical: 4,
     },
     heroLabel: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 10,
       color: colors.textMuted,
       letterSpacing: 1.2,
       marginBottom: 8,
     },
     heroValue: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 24,
       color: colors.text,
       letterSpacing: -0.8,
     },
     heroCode: {
       marginTop: 4,
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 12,
       color: colors.textMuted,
       letterSpacing: 0.6,
     },
     heroSubtext: {
       marginTop: 6,
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 12,
       lineHeight: 18,
       color: colors.textMuted,
@@ -99,7 +99,7 @@ const createStyles = (colors: { [key: string]: string }) =>
       borderColor: colors.primary,
     },
     chipText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 13,
       color: colors.text,
       textAlign: 'center',

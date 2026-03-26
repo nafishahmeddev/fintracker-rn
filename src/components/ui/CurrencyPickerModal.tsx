@@ -15,7 +15,7 @@ import {
 import { CURRENCIES } from '../../constants/currency';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { TYPOGRAPHY } from '../../theme/typography';
 
 export type CurrencyPickerModalProps = {
   visible: boolean;
@@ -186,13 +186,13 @@ const createStyles = (colors: ThemeColors) =>
       justifyContent: 'space-between',
     },
     title: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 28,
       color: colors.text,
       letterSpacing: -0.8,
     },
     subtitle: {
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 12,
       color: colors.textMuted,
       marginTop: 2,
@@ -225,7 +225,7 @@ const createStyles = (colors: ThemeColors) =>
     },
     searchInput: {
       flex: 1,
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 14,
       color: colors.text,
       paddingVertical: 0,
@@ -261,7 +261,7 @@ const createStyles = (colors: ThemeColors) =>
       borderColor: colors.primary + '50',
     },
     code: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 11,
       color: colors.textMuted,
       letterSpacing: 0.5,
@@ -271,12 +271,12 @@ const createStyles = (colors: ThemeColors) =>
     },
     name: {
       flex: 1,
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 14,
       color: colors.text,
     },
     nameSelected: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       color: colors.text,
     },
     emptyWrap: {
@@ -284,7 +284,7 @@ const createStyles = (colors: ThemeColors) =>
       alignItems: 'center',
     },
     emptyText: {
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 14,
       color: colors.textMuted,
     },

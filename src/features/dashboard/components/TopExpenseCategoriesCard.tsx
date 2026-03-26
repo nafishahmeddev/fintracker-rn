@@ -3,7 +3,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MoneyText } from '../../../components/ui/MoneyText';
 import { useTheme } from '../../../providers/ThemeProvider';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
@@ -131,7 +131,7 @@ const createStyles = (colors: { [key: string]: string }) =>
       borderColor: colors.text,
     },
     tabText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       color: colors.textMuted,
       fontSize: 11,
       letterSpacing: 0.4,
@@ -169,7 +169,7 @@ const createStyles = (colors: { [key: string]: string }) =>
       borderColor: colors.border,
     },
     rankText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       color: colors.textMuted,
       fontSize: 10,
     },
@@ -184,7 +184,7 @@ const createStyles = (colors: { [key: string]: string }) =>
       flex: 1,
     },
     name: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       color: colors.text,
       fontSize: 12,
       marginBottom: 5,
@@ -210,7 +210,7 @@ const createStyles = (colors: { [key: string]: string }) =>
     },
     percent: {
       marginTop: 3,
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       color: colors.textMuted,
       fontSize: 10,
     },
@@ -222,7 +222,7 @@ const createStyles = (colors: { [key: string]: string }) =>
       paddingVertical: 14,
     },
     emptyText: {
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       color: colors.textMuted,
       fontSize: 12,
     },

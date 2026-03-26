@@ -19,7 +19,7 @@ import { Header } from '../../../components/ui/Header';
 import { useSettings } from '../../../providers/SettingsProvider';
 import { useTheme } from '../../../providers/ThemeProvider';
 import { ThemeColors } from '../../../theme/colors';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 import { useAccounts } from '../../accounts/hooks/accounts';
 import { useCategories } from '../../categories/hooks/categories';
 import {
@@ -299,7 +299,7 @@ const createStyles = (colors: ThemeColors) =>
       gap: 12,
     },
     sectionLabel: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 10,
       color: colors.textMuted,
       letterSpacing: 1.5,
@@ -321,7 +321,7 @@ const createStyles = (colors: ThemeColors) =>
       gap: 8,
     },
     dateTimeText: {
-      fontFamily: typography.fonts.medium,
+      fontFamily: TYPOGRAPHY.fonts.medium,
       fontSize: 13,
       color: colors.text,
     },
@@ -334,7 +334,7 @@ const createStyles = (colors: ThemeColors) =>
       minHeight: 100,
     },
     noteInput: {
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 15,
       color: colors.text,
       textAlignVertical: 'top',
@@ -356,7 +356,7 @@ const createStyles = (colors: ThemeColors) =>
       opacity: 0.5,
     },
     saveBtnText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 16,
       color: colors.background,
     },

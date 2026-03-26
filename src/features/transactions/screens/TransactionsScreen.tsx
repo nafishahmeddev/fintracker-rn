@@ -19,7 +19,7 @@ import { MoneyText } from '../../../components/ui/MoneyText';
 import { TransactionRow } from '../../../components/ui/TransactionRow';
 import { useTheme } from '../../../providers/ThemeProvider';
 import { ThemeColors } from '../../../theme/colors';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 import { useAccounts } from '../../accounts/hooks/accounts';
 import { useCategories } from '../../categories/hooks/categories';
 import type { TransactionListItem } from '../api/transactions';
@@ -452,7 +452,7 @@ const createStyles = (colors: ThemeColors) =>
     },
     filterBadgeText: {
       color: colors.background,
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 10,
     },
     content: {
@@ -470,7 +470,7 @@ const createStyles = (colors: ThemeColors) =>
       justifyContent: 'space-between',
     },
     activeFiltersLabel: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 10,
       color: colors.textMuted,
       letterSpacing: 1.5,
@@ -484,7 +484,7 @@ const createStyles = (colors: ThemeColors) =>
       justifyContent: 'center',
     },
     clearChipText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 11,
       color: colors.danger,
     },
@@ -497,7 +497,7 @@ const createStyles = (colors: ThemeColors) =>
     },
     dayTitle: {
       color: colors.textMuted,
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 11,
       letterSpacing: 1.2,
       textTransform: 'uppercase',
@@ -507,7 +507,7 @@ const createStyles = (colors: ThemeColors) =>
       gap: 12,
     },
     dayTotalValue: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 12,
     },
     dayCard: {
@@ -530,12 +530,12 @@ const createStyles = (colors: ThemeColors) =>
       borderColor: colors.border,
     },
     emptyTitle: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       color: colors.text,
       fontSize: 18,
     },
     emptySubtitle: {
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       color: colors.textMuted,
       fontSize: 14,
       textAlign: 'center',
@@ -553,7 +553,7 @@ const createStyles = (colors: ThemeColors) =>
       marginTop: 8,
     },
     emptyActionText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       color: colors.background,
       fontSize: 15,
     },

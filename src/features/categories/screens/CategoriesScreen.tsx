@@ -8,7 +8,7 @@ import { Header } from '../../../components/ui/Header';
 import { OptionsDialog } from '../../../components/ui/OptionsDialog';
 import { useTheme } from '../../../providers/ThemeProvider';
 import { ThemeColors } from '../../../theme/colors';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 import { Category } from '../api/categories';
 import { CategoryCard } from '../components/CategoryCard';
 import { CategoryFormModal } from '../components/CategoryFormModal';
@@ -214,7 +214,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   searchInput: {
     flex: 1,
     height: '100%',
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     fontSize: 14,
     color: colors.text,
   },
@@ -226,7 +226,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   },
 
   filterMetaText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 10,
     letterSpacing: 0.4,
     color: colors.textMuted,
@@ -239,7 +239,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   },
 
   emptyTitle: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.text,
     fontSize: 20,
     marginTop: 10,
@@ -247,7 +247,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   },
 
   emptyText: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     color: colors.textMuted,
     fontSize: 13,
     marginTop: 4,
@@ -267,7 +267,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     alignItems: 'center',
   },
   emptyBtnText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 12,
     color: colors.text,
   },

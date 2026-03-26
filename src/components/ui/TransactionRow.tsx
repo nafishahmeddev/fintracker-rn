@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { MoneyText } from './MoneyText';
 
 type TransactionData = {
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   title: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 14,
   },
   metaRow: {
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   meta: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     fontSize: 12,
   },
   right: {
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   date: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     fontSize: 11,
   },
 });

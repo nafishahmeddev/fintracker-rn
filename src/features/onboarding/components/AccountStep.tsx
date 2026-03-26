@@ -5,7 +5,7 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 import { CurrencyPickerModal } from '../../../components/ui/CurrencyPickerModal';
 import { ACCOUNT_COLORS, ACCOUNT_ICONS } from '../../../constants/picker';
 import { useTheme } from '../../../providers/ThemeProvider';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 import { OnboardingFormValues } from '../types';
 
 type AccountStepProps = {
@@ -226,19 +226,19 @@ const createStyles = (colors: { [key: string]: string }) =>
       paddingRight: 10,
     },
     previewName: {
-      fontFamily: typography.fonts.headingRegular,
+      fontFamily: TYPOGRAPHY.fonts.headingRegular,
       fontSize: 17,
       color: colors.text,
       letterSpacing: -0.3,
     },
     previewMeta: {
       marginTop: 2,
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 12,
       color: colors.textMuted,
     },
     previewBalance: {
-      fontFamily: typography.fonts.amountBold,
+      fontFamily: TYPOGRAPHY.fonts.amountBold,
       fontSize: 16,
       color: colors.text,
     },
@@ -246,19 +246,19 @@ const createStyles = (colors: { [key: string]: string }) =>
       paddingBottom: 22,
     },
     question: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 13,
       color: colors.textMuted,
       letterSpacing: 0.1,
       marginBottom: 6,
     },
     questionHint: {
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 12,
       color: colors.textMuted + 'AA',
     },
     answerInput: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 28,
       lineHeight: 34,
       color: colors.text,
@@ -267,7 +267,7 @@ const createStyles = (colors: { [key: string]: string }) =>
       paddingVertical: 4,
     },
     answerInputAmount: {
-      fontFamily: typography.fonts.amountBold,
+      fontFamily: TYPOGRAPHY.fonts.amountBold,
       letterSpacing: 0,
     },
     answerLine: {
@@ -286,7 +286,7 @@ const createStyles = (colors: { [key: string]: string }) =>
       paddingVertical: 6,
     },
     currencyValue: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 28,
       lineHeight: 34,
       color: colors.text,
@@ -296,7 +296,7 @@ const createStyles = (colors: { [key: string]: string }) =>
       paddingBottom: 18,
     },
     selectorLabel: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 10,
       color: colors.textMuted,
       letterSpacing: 1.3,

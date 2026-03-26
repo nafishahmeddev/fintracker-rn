@@ -18,7 +18,7 @@ import { CurrencyPickerModal } from '../../../components/ui/CurrencyPickerModal'
 import { ACCOUNT_COLORS, ACCOUNT_ICONS } from '../../../constants/picker';
 import { useTheme } from '../../../providers/ThemeProvider';
 import { ThemeColors } from '../../../theme/colors';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 import { Account } from '../api/accounts';
 import { useCreateAccount, useUpdateAccount } from '../hooks/accounts';
 import { parseAmount, toDbColor } from '../../../utils/format';
@@ -366,13 +366,13 @@ const createStyles = (colors: ThemeColors) =>
       alignItems: 'flex-start',
     },
     title: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 30,
       color: colors.text,
       letterSpacing: -1,
     },
     subtitle: {
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 12,
       color: colors.textMuted,
       marginTop: 3,
@@ -407,7 +407,7 @@ const createStyles = (colors: ThemeColors) =>
       paddingBottom: 0,
     },
     label: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 13,
       color: colors.textMuted,
       letterSpacing: 0.1,
@@ -417,7 +417,7 @@ const createStyles = (colors: ThemeColors) =>
       marginTop: 16,
     },
     answerInput: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 28,
       lineHeight: 34,
       color: colors.text,
@@ -426,7 +426,7 @@ const createStyles = (colors: ThemeColors) =>
       paddingVertical: 4,
     },
     answerInputAmount: {
-      fontFamily: typography.fonts.amountBold,
+      fontFamily: TYPOGRAPHY.fonts.amountBold,
       letterSpacing: 0,
     },
     answerLine: {
@@ -445,7 +445,7 @@ const createStyles = (colors: ThemeColors) =>
       paddingVertical: 6,
     },
     currencyValue: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 28,
       lineHeight: 34,
       color: colors.text,
@@ -510,7 +510,7 @@ const createStyles = (colors: ThemeColors) =>
       opacity: 0.45,
     },
     primaryBtnText: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 14,
       color: '#FFFFFF',
       letterSpacing: 0.3,

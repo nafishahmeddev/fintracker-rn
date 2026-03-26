@@ -3,7 +3,7 @@ import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTheme } from '../../../providers/ThemeProvider';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 import { OnboardingFormValues } from '../types';
 
 export function ProfileStep() {
@@ -47,13 +47,13 @@ const createStyles = (colors: { [key: string]: string }) =>
       gap: 12,
     },
     prompt: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 14,
       color: colors.textMuted,
       letterSpacing: 0.2,
     },
     nameInput: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 44,
       lineHeight: 48,
       color: colors.text,
@@ -87,7 +87,7 @@ const createStyles = (colors: { [key: string]: string }) =>
     },
     noteText: {
       flex: 1,
-      fontFamily: typography.fonts.regular,
+      fontFamily: TYPOGRAPHY.fonts.regular,
       fontSize: 12,
       lineHeight: 18,
       color: colors.text,

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../../theme/colors';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 import type { Category } from '../../categories/api/categories';
 
 type Props = {
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   label: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 10,
     letterSpacing: 1.5,
     marginBottom: 12,
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   name: {
-    fontFamily: typography.fonts.medium,
+    fontFamily: TYPOGRAPHY.fonts.medium,
     fontSize: 13,
   },
 });

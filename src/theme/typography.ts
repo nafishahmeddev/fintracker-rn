@@ -32,7 +32,7 @@ export type TypographyTheme = {
   fonts: TypographyFonts;
 };
 
-export const typography: TypographyTheme = {
+export const TYPOGRAPHY: TypographyTheme = {
   sizes: {
     xs: 12,
     sm: 14,

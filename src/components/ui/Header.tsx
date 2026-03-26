@@ -4,7 +4,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { TYPOGRAPHY } from '../../theme/typography';
 
 export type HeaderProps = {
   title: string;
@@ -70,14 +70,14 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontFamily: typography.fonts.heading,
+    fontFamily: TYPOGRAPHY.fonts.heading,
     color: colors.text,
     fontSize: 28,
     letterSpacing: -1,
     lineHeight: 32,
   },
   subtitle: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     color: colors.textMuted,
     fontSize: 13,
     letterSpacing: 0.1,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { ThemeColors } from '../../../theme/colors';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 
 type Props = {
   value: string;
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   label: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 10,
     letterSpacing: 1.5,
     marginBottom: 8,
@@ -48,12 +48,12 @@ const styles = StyleSheet.create({
   },
   currency: {
     fontSize: 24,
-    fontFamily: typography.fonts.medium,
+    fontFamily: TYPOGRAPHY.fonts.medium,
   },
   input: {
     flex: 1,
     fontSize: 48,
-    fontFamily: typography.fonts.bold,
+    fontFamily: TYPOGRAPHY.fonts.bold,
     letterSpacing: -1,
   },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { MoneyText } from './MoneyText';
 
 type KPIMetrics = {
@@ -97,7 +97,7 @@ const createStyles = (colors: ThemeColors) =>
       borderColor: colors.primary,
     },
     currencyTabText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 12,
       color: colors.textMuted,
       letterSpacing: 0.3,
@@ -121,7 +121,7 @@ const createStyles = (colors: ThemeColors) =>
     },
     kpiLabel: {
       color: colors.textMuted,
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 9,
       letterSpacing: 1.4,
     },

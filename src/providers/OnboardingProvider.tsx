@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator, View } from 'react-native';
-import { darkTheme } from '../theme/colors';
+import { DARK_THEME } from '../theme/colors';
 
 type OnboardingContextType = {
   hasOnboarded: boolean;
@@ -48,8 +48,8 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: darkTheme.background }}>
-        <ActivityIndicator size="large" color={darkTheme.primary} />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: DARK_THEME.background }}>
+        <ActivityIndicator size="large" color={DARK_THEME.primary} />
       </View>
     );
   }

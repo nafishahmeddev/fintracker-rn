@@ -1,4 +1,3 @@
-import { getDeviceCurrencyCode as sharedGetDeviceCurrencyCode } from '../../constants/currency';
 import { OnboardingStepDefinition } from './types';
 
 export const ONBOARDING_STEPS: OnboardingStepDefinition[] = [
@@ -21,7 +20,3 @@ export const ONBOARDING_STEPS: OnboardingStepDefinition[] = [
     subtitle: 'Answer a few quick questions and your starting wallet is ready.',
   },
 ];
-
-export const getDeviceCurrencyCode = (): string => {
-  return sharedGetDeviceCurrencyCode();
-};

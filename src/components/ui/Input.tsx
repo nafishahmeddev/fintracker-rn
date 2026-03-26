@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { TYPOGRAPHY } from '../../theme/typography';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -40,10 +40,10 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginBottom: 0, // Let parent handle spacing in high-density
   },
   label: {
-    fontSize: typography.sizes.sm,
+    fontSize: TYPOGRAPHY.sizes.sm,
     color: colors.textMuted,
     marginBottom: 8,
-    fontWeight: typography.weights.medium,
+    fontWeight: TYPOGRAPHY.weights.medium,
   },
   inputContainer: {
     backgroundColor: colors.surface,
@@ -63,22 +63,22 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   input: {
     color: colors.text,
-    fontSize: typography.sizes.lg,
+    fontSize: TYPOGRAPHY.sizes.lg,
     paddingHorizontal: 16,
     paddingVertical: 12,
     height: 56,
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
   },
   minimalInput: {
     color: colors.text,
     fontSize: 16,
     paddingHorizontal: 0,
     height: 48,
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
   },
   errorText: {
     color: colors.danger,
-    fontSize: typography.sizes.sm,
+    fontSize: TYPOGRAPHY.sizes.sm,
     marginTop: 4,
   },
 });

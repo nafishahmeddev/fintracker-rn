@@ -3,7 +3,7 @@ import React from 'react';
 import { ActivityIndicator, Platform, StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { TYPOGRAPHY } from '../../theme/typography';
 
 type ButtonProps = {
   title: string;
@@ -89,9 +89,9 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     overflow: 'hidden',
   },
   text: {
-    fontSize: typography.sizes.md,
-    fontFamily: typography.fonts.semibold,
-    fontWeight: typography.weights.semibold,
+    fontSize: TYPOGRAPHY.sizes.md,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
+    fontWeight: TYPOGRAPHY.weights.semibold,
     letterSpacing: -0.2,
   },
 });

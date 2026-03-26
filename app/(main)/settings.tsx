@@ -13,7 +13,7 @@ import { accounts, categories, payments } from '../../src/db/schema';
 import { useSettings } from '../../src/providers/SettingsProvider';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
+import { TYPOGRAPHY } from '../../src/theme/typography';
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
@@ -272,14 +272,14 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginBottom: 24,
   },
   heroKicker: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 10,
     color: colors.primary,
     letterSpacing: 2,
     marginBottom: 4,
   },
   heroTitle: {
-    fontFamily: typography.fonts.heading,
+    fontFamily: TYPOGRAPHY.fonts.heading,
     fontSize: 26,
     color: colors.text,
     letterSpacing: -0.5,
@@ -300,7 +300,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.success,
   },
   heroBadgeText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 9,
     color: colors.textMuted,
     letterSpacing: 1,
@@ -314,14 +314,14 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     flex: 1,
   },
   heroGridLabel: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 9,
     color: colors.textMuted,
     letterSpacing: 1,
     marginBottom: 4,
   },
   heroGridValue: {
-    fontFamily: typography.fonts.heading,
+    fontFamily: TYPOGRAPHY.fonts.heading,
     fontSize: 18,
     color: colors.text,
     letterSpacing: -0.2,
@@ -335,7 +335,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     marginBottom: 28,
   },
   sectionLabel: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 10,
     color: colors.textMuted,
     letterSpacing: 2,
@@ -365,12 +365,12 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     flex: 1,
   },
   rowTitle: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 16,
     color: colors.text,
   },
   rowSubtitle: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     fontSize: 12,
     color: colors.textMuted,
     marginTop: 2,
@@ -381,7 +381,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     gap: 8,
   },
   rowValue: {
-    fontFamily: typography.fonts.medium,
+    fontFamily: TYPOGRAPHY.fonts.medium,
     fontSize: 11,
     color: colors.primary,
     letterSpacing: 1,
@@ -392,13 +392,13 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     gap: 6,
   },
   footerBrand: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 10,
     color: colors.text,
     letterSpacing: 3,
   },
   footerCopy: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     fontSize: 9,
     color: colors.textMuted,
     textAlign: 'center',
@@ -423,13 +423,13 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     elevation: 8,
   },
   modalTitle: {
-    fontFamily: typography.fonts.heading,
+    fontFamily: TYPOGRAPHY.fonts.heading,
     fontSize: 24,
     color: colors.text,
     marginBottom: 6,
   },
   modalSubtitle: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     fontSize: 14,
     color: colors.textMuted,
     marginBottom: 20,
@@ -456,7 +456,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.surface,
   },
   modalBtnCancelText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.text,
   },
   modalBtnSave: {
@@ -468,7 +468,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.text,
   },
   modalBtnSaveText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.background,
   },
 });

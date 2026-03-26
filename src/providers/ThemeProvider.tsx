@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 import { useColorScheme } from 'react-native';
-import { lightTheme, darkTheme, ThemeColors } from '../theme/colors';
+import { LIGHT_THEME, DARK_THEME, ThemeColors } from '../theme/colors';
 import { useSettings } from './SettingsProvider';
 
 type ThemeContextType = {
@@ -9,7 +9,7 @@ type ThemeContextType = {
 };
 
 const ThemeContext = createContext<ThemeContextType>({
-  colors: darkTheme,
+  colors: DARK_THEME,
   isDark: true,
 });
 
@@ -23,7 +23,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     ? systemColorScheme === 'dark' 
     : profile.theme === 'dark';
     
-  const colors = isDark ? darkTheme : lightTheme;
+  const colors = isDark ? DARK_THEME : LIGHT_THEME;
 
   return (
     <ThemeContext.Provider value={{ colors, isDark }}>

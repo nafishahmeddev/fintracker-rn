@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../../theme/colors';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 
 type Props = {
   value: 'CR' | 'DR';
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   pillText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 13,
   },
 });

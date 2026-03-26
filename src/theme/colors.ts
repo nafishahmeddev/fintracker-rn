@@ -14,7 +14,7 @@ export type ThemePalette = {
   warning: string;
 };
 
-export const darkTheme: ThemePalette = {
+export const DARK_THEME: ThemePalette = {
   background: '#000100',
   card: 'rgba(255, 255, 255, 0.02)', // Extremely subtle phantom bounds
   surface: 'rgba(255, 255, 255, 0.05)',
@@ -30,7 +30,7 @@ export const darkTheme: ThemePalette = {
   warning: '#F59E0B',
 };
 
-export const lightTheme: ThemePalette = {
+export const LIGHT_THEME: ThemePalette = {
   background: '#F6FFF9',
   card: 'rgba(0, 0, 0, 0.02)', 
   surface: 'rgba(0, 0, 0, 0.05)',

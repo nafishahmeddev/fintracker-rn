@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../../providers/ThemeProvider';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 
 type SectionHeaderProps = {
   title: string;
@@ -39,13 +39,13 @@ const createStyles = (colors: { [key: string]: string }) =>
       marginBottom: 12,
     },
     title: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       color: colors.textMuted,
       fontSize: 10,
       letterSpacing: 1.5,
     },
     right: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       color: colors.primary,
       fontSize: 12,
     },

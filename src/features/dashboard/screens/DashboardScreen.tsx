@@ -13,7 +13,7 @@ import { DEFAULT_CURRENCY } from '../../../constants/currency';
 import { useSettings } from '../../../providers/SettingsProvider';
 import { useTheme } from '../../../providers/ThemeProvider';
 import { ThemeColors } from '../../../theme/colors';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 import type { Account } from '../../accounts/api/accounts';
 import { AccountFormModal } from '../../accounts/components/AccountFormModal';
 import { useAccounts, useDeleteAccount } from '../../accounts/hooks/accounts';
@@ -448,7 +448,7 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     borderColor: colors.text,
   },
   currencyTabText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.textMuted,
     fontSize: 11,
     letterSpacing: 0.4,
@@ -457,7 +457,7 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     color: colors.background,
   },
   heroBadge: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.textMuted,
     fontSize: 10,
     letterSpacing: 1.5,
@@ -486,7 +486,7 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     borderRadius: 4,
   },
   splitLabel: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.textMuted,
     fontSize: 10,
     letterSpacing: 1.2,
@@ -534,7 +534,7 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     backgroundColor: colors.text,
   },
   quickActionPrimaryText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.background,
     fontSize: 14,
   },
@@ -551,7 +551,7 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     borderColor: colors.border,
   },
   quickActionSecondaryText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.text,
     fontSize: 14,
   },
@@ -601,13 +601,13 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     marginBottom: 14,
   },
   accountPlaceholderTitle: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.text,
     fontSize: 16,
     marginBottom: 6,
   },
   accountPlaceholderText: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     color: colors.textMuted,
     fontSize: 12,
     lineHeight: 18,
@@ -644,12 +644,12 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     flex: 1,
   },
   accountCardName: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.text,
     fontSize: 14,
   },
   accountCardHint: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     color: colors.textMuted,
     fontSize: 11,
     marginTop: 2,
@@ -664,12 +664,12 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     backgroundColor: colors.background + '80',
   },
   accountCurrencyText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 10,
     letterSpacing: 0.8,
   },
   accountBalanceLabel: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 9,
     color: colors.textMuted,
     letterSpacing: 1.2,
@@ -689,7 +689,7 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     gap: 4,
   },
   accountCardStatLabel: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 8,
     color: colors.textMuted,
     letterSpacing: 1,
@@ -716,7 +716,7 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     gap: 8,
   },
   emptyActivityText: {
-    fontFamily: typography.fonts.regular,
+    fontFamily: TYPOGRAPHY.fonts.regular,
     fontSize: 13,
     color: colors.textMuted,
   },
@@ -731,7 +731,7 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     marginTop: 4,
   },
   emptyActivityActionText: {
-    fontFamily: typography.fonts.semibold,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     fontSize: 11,
     color: colors.background,
   },

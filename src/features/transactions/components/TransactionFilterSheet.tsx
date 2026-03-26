@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeColors } from '../../../theme/colors';
-import { typography } from '../../../theme/typography';
+import { TYPOGRAPHY } from '../../../theme/typography';
 import { Account } from '../../accounts/api/accounts';
 import { Category } from '../../categories/api/categories';
 
@@ -255,7 +255,7 @@ const createStyles = (colors: ThemeColors) =>
       borderColor: colors.border,
     },
     sheetTitle: {
-      fontFamily: typography.fonts.heading,
+      fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 26,
       color: colors.text,
       letterSpacing: -0.5,
@@ -271,7 +271,7 @@ const createStyles = (colors: ThemeColors) =>
       justifyContent: 'center',
     },
     sheetClearBtnText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       color: colors.text,
       fontSize: 12,
     },
@@ -284,7 +284,7 @@ const createStyles = (colors: ThemeColors) =>
       marginBottom: 28,
     },
     sheetLabel: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 10,
       color: colors.textMuted,
       letterSpacing: 1.5,
@@ -305,7 +305,7 @@ const createStyles = (colors: ThemeColors) =>
       justifyContent: 'center',
     },
     sheetPillText: {
-      fontFamily: typography.fonts.medium,
+      fontFamily: TYPOGRAPHY.fonts.medium,
       fontSize: 14,
       color: colors.text,
     },
@@ -326,7 +326,7 @@ const createStyles = (colors: ThemeColors) =>
       elevation: 6,
     },
     sheetApplyBtnText: {
-      fontFamily: typography.fonts.semibold,
+      fontFamily: TYPOGRAPHY.fonts.semibold,
       color: colors.background,
       fontSize: 16,
     },
