@@ -77,59 +77,63 @@ export default function OnboardingScreen() {
       // ── Income ──────────────────────────────────────────────────────
       { name: 'Salary',        icon: 'cash-outline',          color: toDbColor('#6BD498'), type: 'CR' },
       { name: 'Freelance',     icon: 'sparkles-outline',      color: toDbColor('#B8D641'), type: 'CR' },
-      { name: 'Business',      icon: 'briefcase-outline',     color: toDbColor('#63A4FF'), type: 'CR' },
-      { name: 'Investment',    icon: 'trending-up-outline',   color: toDbColor('#A78BFA'), type: 'CR' },
-      { name: 'Rental',        icon: 'home-outline',          color: toDbColor('#34D399'), type: 'CR' },
-      { name: 'Bonus',         icon: 'gift-outline',          color: toDbColor('#F9A8D4'), type: 'CR' },
-      { name: 'Refund',        icon: 'refresh-outline',       color: toDbColor('#6EE7B7'), type: 'CR' },
-      { name: 'Side Income',   icon: 'wallet-outline',        color: toDbColor('#FCD34D'), type: 'CR' },
+      { name: 'Sales',         icon: 'cart-outline',          color: toDbColor('#FCD34D'), type: 'CR' },
+      { name: 'Dividends',     icon: 'trending-up-outline',   color: toDbColor('#63A4FF'), type: 'CR' },
+      { name: 'Interests',     icon: 'add-circle-outline',    color: toDbColor('#A78BFA'), type: 'CR' },
+      { name: 'Gifts',         icon: 'gift-outline',          color: toDbColor('#F9A8D4'), type: 'CR' },
+      { name: 'Refunds',       icon: 'refresh-outline',       color: toDbColor('#6EE7B7'), type: 'CR' },
+      { name: 'Other Income',  icon: 'wallet-outline',        color: toDbColor('#94A3B8'), type: 'CR' },
 
-      // ── Essentials ──────────────────────────────────────────────────
-      { name: 'Groceries',     icon: 'basket-outline',        color: toDbColor('#F5C451'), type: 'DR' },
+      // ── Housing & Utilities ──────────────────────────────────────────
       { name: 'Rent',          icon: 'business-outline',      color: toDbColor('#FF8A65'), type: 'DR' },
-      { name: 'Utilities',     icon: 'flash-outline',         color: toDbColor('#FBBF24'), type: 'DR' },
-      { name: 'Internet',      icon: 'wifi-outline',          color: toDbColor('#60A5FA'), type: 'DR' },
-      { name: 'Phone',         icon: 'phone-portrait-outline',color: toDbColor('#818CF8'), type: 'DR' },
-      { name: 'Insurance',     icon: 'shield-checkmark-outline', color: toDbColor('#6B7280'), type: 'DR' },
-      { name: 'Loan / EMI',    icon: 'card-outline',          color: toDbColor('#EF4444'), type: 'DR' },
+      { name: 'Mortgage',      icon: 'home-outline',          color: toDbColor('#F87171'), type: 'DR' },
+      { name: 'Electricity',   icon: 'flash-outline',         color: toDbColor('#FBBF24'), type: 'DR' },
+      { name: 'Water',         icon: 'water-outline',         color: toDbColor('#60A5FA'), type: 'DR' },
+      { name: 'Internet',      icon: 'wifi-outline',          color: toDbColor('#818CF8'), type: 'DR' },
+      { name: 'Phone',         icon: 'phone-portrait-outline',color: toDbColor('#A5B4FC'), type: 'DR' },
+      { name: 'Maintenance',   icon: 'build-outline',         color: toDbColor('#9CA3AF'), type: 'DR' },
+
+      // ── Food & Drink ────────────────────────────────────────────────
+      { name: 'Groceries',     icon: 'basket-outline',        color: toDbColor('#F5C451'), type: 'DR' },
+      { name: 'Dining Out',    icon: 'restaurant-outline',    color: toDbColor('#FB923C'), type: 'DR' },
+      { name: 'Delivery',      icon: 'moped-outline',         color: toDbColor('#F87171'), type: 'DR' },
+      { name: 'Coffee',        icon: 'cafe-outline',          color: toDbColor('#C4A35A'), type: 'DR' },
+      { name: 'Drinks',        icon: 'wine-outline',          color: toDbColor('#C084FC'), type: 'DR' },
 
       // ── Transport ───────────────────────────────────────────────────
-      { name: 'Transport',     icon: 'car-outline',           color: toDbColor('#63A4FF'), type: 'DR' },
       { name: 'Fuel',          icon: 'speedometer-outline',   color: toDbColor('#FB923C'), type: 'DR' },
+      { name: 'Car Payment',   icon: 'car-outline',           color: toDbColor('#63A4FF'), type: 'DR' },
+      { name: 'Public Transit',icon: 'bus-outline',           color: toDbColor('#38BDF8'), type: 'DR' },
+      { name: 'Ride Share',    icon: 'car-sport-outline',     color: toDbColor('#34D399'), type: 'DR' },
       { name: 'Parking',       icon: 'locate-outline',        color: toDbColor('#94A3B8'), type: 'DR' },
-      { name: 'Travel',        icon: 'airplane-outline',      color: toDbColor('#38BDF8'), type: 'DR' },
 
-      // ── Food & Social ────────────────────────────────────────────────
-      { name: 'Dining Out',    icon: 'restaurant-outline',    color: toDbColor('#F87171'), type: 'DR' },
-      { name: 'Coffee',        icon: 'cafe-outline',          color: toDbColor('#C4A35A'), type: 'DR' },
-      { name: 'Alcohol',       icon: 'wine-outline',          color: toDbColor('#C084FC'), type: 'DR' },
-
-      // ── Health & Fitness ─────────────────────────────────────────────
-      { name: 'Healthcare',    icon: 'medkit-outline',        color: toDbColor('#34D399'), type: 'DR' },
+      // ── Health & Wellness ───────────────────────────────────────────
+      { name: 'Health',        icon: 'medkit-outline',        color: toDbColor('#F87171'), type: 'DR' },
       { name: 'Pharmacy',      icon: 'bandage-outline',       color: toDbColor('#6EE7B7'), type: 'DR' },
       { name: 'Gym',           icon: 'barbell-outline',       color: toDbColor('#4ADE80'), type: 'DR' },
+      { name: 'Personal Care', icon: 'cut-outline',           color: toDbColor('#F9A8D4'), type: 'DR' },
 
-      // ── Lifestyle ────────────────────────────────────────────────────
+      // ── Lifestyle & Fun ──────────────────────────────────────────────
       { name: 'Shopping',      icon: 'bag-outline',           color: toDbColor('#F472B6'), type: 'DR' },
-      { name: 'Electronics',   icon: 'hardware-chip-outline', color: toDbColor('#A5B4FC'), type: 'DR' },
-      { name: 'Subscriptions', icon: 'repeat-outline',        color: toDbColor('#C084FC'), type: 'DR' },
+      { name: 'Electronics',   icon: 'hardware-chip-outline', color: toDbColor('#818CF8'), type: 'DR' },
+      { name: 'Subscrip.',     icon: 'repeat-outline',        color: toDbColor('#C084FC'), type: 'DR' },
       { name: 'Entertainment', icon: 'film-outline',          color: toDbColor('#FCA5A5'), type: 'DR' },
+      { name: 'Travel',        icon: 'airplane-outline',      color: toDbColor('#38BDF8'), type: 'DR' },
       { name: 'Games',         icon: 'game-controller-outline', color: toDbColor('#7C3AED'), type: 'DR' },
       { name: 'Books',         icon: 'book-outline',          color: toDbColor('#D97706'), type: 'DR' },
+
+      // ── Family & Education ──────────────────────────────────────────
       { name: 'Education',     icon: 'school-outline',        color: toDbColor('#0EA5E9'), type: 'DR' },
-
-      // ── Home ─────────────────────────────────────────────────────────
-      { name: 'Home & Garden', icon: 'leaf-outline',          color: toDbColor('#86EFAC'), type: 'DR' },
-      { name: 'Maintenance',   icon: 'build-outline',         color: toDbColor('#9CA3AF'), type: 'DR' },
-      { name: 'Furniture',     icon: 'bed-outline',           color: toDbColor('#C4B5FD'), type: 'DR' },
-
-      // ── Personal & Other ─────────────────────────────────────────────
-      { name: 'Personal Care', icon: 'cut-outline',           color: toDbColor('#F9A8D4'), type: 'DR' },
       { name: 'Kids',          icon: 'happy-outline',         color: toDbColor('#FCD34D'), type: 'DR' },
       { name: 'Pets',          icon: 'paw-outline',           color: toDbColor('#A3E635'), type: 'DR' },
-      { name: 'Charity',       icon: 'heart-outline',         color: toDbColor('#FB7185'), type: 'DR' },
+      { name: 'Gifts given',   icon: 'heart-outline',         color: toDbColor('#FB7185'), type: 'DR' },
+
+      // ── Finance & Taxes ─────────────────────────────────────────────
+      { name: 'Loan/EMI',      icon: 'card-outline',          color: toDbColor('#EF4444'), type: 'DR' },
       { name: 'Taxes',         icon: 'document-text-outline', color: toDbColor('#6B7280'), type: 'DR' },
-      { name: 'Other',         icon: 'ellipsis-horizontal-outline', color: toDbColor('#94A3B8'), type: 'DR' },
+      { name: 'Insurance',     icon: 'shield-checkmark-outline', color: toDbColor('#4B5563'), type: 'DR' },
+      { name: 'Fees',          icon: 'receipt-outline',       color: toDbColor('#94A3B8'), type: 'DR' },
+      { name: 'Other',         icon: 'ellipsis-horizontal-outline', color: toDbColor('#cbd5e1'), type: 'DR' },
     ];
 
     for (const category of defaults) {

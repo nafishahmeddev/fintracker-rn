@@ -14,6 +14,7 @@ import { useSettings } from '../../src/providers/SettingsProvider';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { TYPOGRAPHY } from '../../src/theme/typography';
+import { seedDummyData } from '../../src/utils/seed';
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
@@ -23,6 +24,8 @@ export default function SettingsScreen() {
   const [showAppearanceDialog, setShowAppearanceDialog] = React.useState(false);
   const [showResetConfirmDialog, setShowResetConfirmDialog] = React.useState(false);
   const [showEditNameModal, setShowEditNameModal] = React.useState(false);
+  const [showSeedConfirmDialog, setShowSeedConfirmDialog] = React.useState(false);
+  const [isSeeding, setIsSeeding] = React.useState(false);
   const [nameInput, setNameInput] = React.useState('');
 
   const themeOptions: { label: string; value: 'light' | 'dark' | 'system'; icon: keyof typeof Ionicons.glyphMap }[] = [
@@ -58,6 +61,23 @@ export default function SettingsScreen() {
   const saveEditName = async () => {
     await updateProfile({ name: nameInput.trim() });
     setShowEditNameModal(false);
+  };
+
+  const handleSeedData = () => {
+    setShowSeedConfirmDialog(true);
+  };
+
+  const runSeedData = async () => {
+    try {
+      setIsSeeding(true);
+      const count = await seedDummyData();
+      Alert.alert("Success", `Generated ${count} transactions across the last 12 months.`);
+      setShowSeedConfirmDialog(false);
+    } catch (e: any) {
+      Alert.alert("Error", e.message || "Failed to generate seed data.");
+    } finally {
+      setIsSeeding(false);
+    }
   };
 
   type PreferenceRowProps = {
@@ -172,10 +192,32 @@ export default function SettingsScreen() {
               destructive
               subtitle="Permanently wipe all local data"
               onPress={handleResetData}
-              isLast
+              isLast={!__DEV__}
             />
+            {__DEV__ && (
+              <PreferenceRow
+                icon="flask-outline"
+                title="Seed Dummy Data"
+                color={colors.primary}
+                subtitle="Generate 12 months of test data"
+                onPress={handleSeedData}
+                isLast
+              />
+            )}
           </View>
         </View>
+
+        {__DEV__ && (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>DEVELOPER</Text>
+            <View style={styles.card}>
+              <View style={styles.devCard}>
+                <Ionicons name="construct-outline" size={20} color={colors.primary} />
+                <Text style={styles.devText}>Development Mode Active</Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         <View style={styles.footer}>
           <Text style={styles.footerBrand}>LUNO / CORE</Text>
@@ -244,6 +286,16 @@ export default function SettingsScreen() {
         confirmLabel="Wipe Data"
         destructive
         onConfirm={runResetData}
+      />
+
+      <ConfirmDialog
+        visible={showSeedConfirmDialog}
+        onClose={() => setShowSeedConfirmDialog(false)}
+        title="Seed Test Data"
+        message="This will add 12 months of transactions to your default account. Are you sure?"
+        confirmLabel="Generate"
+        isLoading={isSeeding}
+        onConfirm={runSeedData}
       />
     </SafeAreaView>
   );
@@ -470,5 +522,17 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   modalBtnSaveText: {
     fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.background,
+  },
+  devCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 16,
+  },
+  devText: {
+    fontFamily: TYPOGRAPHY.fonts.semibold,
+    fontSize: 13,
+    color: colors.text,
+    letterSpacing: 0.5,
   },
 });
