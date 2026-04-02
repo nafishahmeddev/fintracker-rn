@@ -1,14 +1,14 @@
 import { Header } from '@/src/components/ui/Header';
-import { useSubscription, PlanType } from '@/src/providers/SubscriptionProvider';
+import { SKU_LIFETIME, SKU_MONTHLY, SKU_YEARLY } from '@/src/constants/iap';
+import { PlanType, useSubscription } from '@/src/providers/SubscriptionProvider';
 import { useTheme } from '@/src/providers/ThemeProvider';
 import { TYPOGRAPHY } from '@/src/theme/typography';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SKU_LIFETIME, SKU_MONTHLY, SKU_YEARLY } from '@/src/constants/iap';
 
 const FEATURES = [
   { icon: 'infinite', title: 'Absolute Runway', description: 'Real-time calculation of exactly how long your capital will last.' },
@@ -30,26 +30,26 @@ export default function PremiumScreen() {
   // Map store products to our logical plans, filtered by availability
   const mappedPlans = useMemo(() => {
     const plans = [
-      { 
-        id: 'MONTHLY' as PlanType, 
+      {
+        id: 'MONTHLY' as PlanType,
         sku: SKU_MONTHLY,
-        name: 'MONTHLY', 
+        name: 'MONTHLY',
         period: '/ MO',
         badge: null
       },
-      { 
-        id: 'YEARLY' as PlanType, 
+      {
+        id: 'YEARLY' as PlanType,
         sku: SKU_YEARLY,
-        name: 'YEARLY', 
-        period: '/ YR', 
-        badge: 'SAVE 33%' 
+        name: 'YEARLY',
+        period: '/ YR',
+        badge: 'SAVE 33%'
       },
-      { 
-        id: 'LIFETIME' as PlanType, 
+      {
+        id: 'LIFETIME' as PlanType,
         sku: SKU_LIFETIME,
-        name: 'LIFETIME', 
-        period: 'ONCE', 
-        badge: 'EARLY BIRD' 
+        name: 'LIFETIME',
+        period: 'ONCE',
+        badge: 'EARLY BIRD'
       },
     ];
 
@@ -57,7 +57,7 @@ export default function PremiumScreen() {
     return plans.map(plan => {
       const product = products.find(p => p.id === plan.sku);
       if (!product) return null;
-      
+
       // Manually add an "offer" effect for Lifetime
       let originalPrice = null;
       if (plan.id === 'LIFETIME') {
@@ -120,7 +120,7 @@ export default function PremiumScreen() {
           <Text style={styles.successSubtitle}>
             Your premium tools are active across all platforms. Enjoy absolute clarity over your wealth.
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.successBtn}
             onPress={() => router.back()}
           >
@@ -146,9 +146,9 @@ export default function PremiumScreen() {
 
       {/* ── Header ── */}
       <Header title="Luno Pro" showBack />
-      
+
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
+
         {/* ── Editorial Hero ── */}
         <View style={styles.heroSection}>
           <Text style={styles.heroKicker}>PRO SERVICE</Text>
@@ -156,7 +156,7 @@ export default function PremiumScreen() {
           <Text style={styles.heroSubtitle}>All plans include a 14-day free trial managed by your app store.</Text>
         </View>
 
-        
+
         {/* ── Pricing Grid ── */}
         <View style={styles.pricingSection}>
           <Text style={styles.sectionLabel}>SELECT PLAN</Text>
@@ -232,7 +232,7 @@ export default function PremiumScreen() {
 
       {/* ── Action Footer ── */}
       <View style={styles.footer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.buyBtn}
           onPress={handlePurchase}
           disabled={isProcessing || isPremium || products.length === 0}
@@ -246,14 +246,14 @@ export default function PremiumScreen() {
             </Text>
           )}
         </TouchableOpacity>
-        
+
         <View style={styles.legalRows}>
           <TouchableOpacity onPress={handleRestore} disabled={isProcessing}>
-             <Text style={styles.legalLink}>RESTORE</Text>
+            <Text style={styles.legalLink}>RESTORE</Text>
           </TouchableOpacity>
           <View style={styles.legalSeparator} />
           <TouchableOpacity onPress={() => Alert.alert("Terms", "Purchases are tied to your Apple/Google account.")}>
-             <Text style={styles.legalLink}>TERMS</Text>
+            <Text style={styles.legalLink}>TERMS</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -269,12 +269,12 @@ const createStyles = (colors: any, screenWidth: number) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   bgCircle: { position: 'absolute', borderRadius: 999 },
   scrollContent: { paddingHorizontal: 24, paddingBottom: 40 },
-  
+
   heroSection: { marginTop: 24, marginBottom: 32 },
   heroKicker: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.primary, letterSpacing: 2, marginBottom: 8 },
   heroTitle: { fontFamily: TYPOGRAPHY.fonts.headingRegular, fontSize: 36, lineHeight: 42, color: colors.text, letterSpacing: -1.5 },
   heroSubtitle: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 13, color: colors.textMuted, marginTop: 12, lineHeight: 20 },
-  
+
   trialCard: {
     backgroundColor: colors.surface,
     borderRadius: 24,
@@ -295,15 +295,15 @@ const createStyles = (colors: any, screenWidth: number) => StyleSheet.create({
   trialBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 11, color: colors.background, letterSpacing: 1 },
 
   sectionLabel: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.textMuted, letterSpacing: 2, marginBottom: 12 },
-  
+
   pricingSection: { marginBottom: 32 },
   planGrid: { gap: 12 },
   planCard: {
     backgroundColor: colors.surface,
     padding: 20,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: 1.5,
+    borderColor: colors.primary + '15',
     minHeight: 90,
     justifyContent: 'center',
     position: 'relative',
@@ -319,19 +319,19 @@ const createStyles = (colors: any, screenWidth: number) => StyleSheet.create({
 
   featuresSection: { marginBottom: 32 },
   featuresCard: { backgroundColor: colors.surface, borderRadius: 24, overflow: 'hidden', padding: 8 },
-  featureRow: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border + '25' },
+  featureRow: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16, borderBottomWidth: 1, borderBottomColor: "#00000010" },
   featureIconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   featureMeta: { flex: 1 },
 
   brandingBox: { alignItems: 'center', marginTop: 10, marginBottom: 20 },
   brandingText: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.text + '20', letterSpacing: 3 },
 
-  footer: { padding: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 32, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border },
+  footer: { padding: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 32, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.primary + '10' },
   buyBtn: { backgroundColor: colors.primary, height: 64, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginBottom: 20, shadowColor: colors.primary, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 12 },
   buyBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 16, color: colors.background, letterSpacing: 1 },
   legalRows: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 16 },
   legalLink: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.textMuted, letterSpacing: 1.5 },
-  legalSeparator: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.border },
+  legalSeparator: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.primary + '20' },
 
   successContent: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40 },
   successIcon: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
