@@ -116,7 +116,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
     try {
       const casted = await IAPService.getActivePurchases();
-
       if (casted.length > 0) {
         const sortedByTier = [...casted].sort((a, b) => {
           const tierVal = (id: string) => {
@@ -208,14 +207,16 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    // Handle initialization on mount and never re-run.
     initIAP();
 
     return () => {
+      // Just clean up listeners, do NOT shutdown the entire bridge
+      // which is needed for the lifetime of the provider/app.
       if (purchaseUpdateSub) purchaseUpdateSub.remove();
       if (purchaseErrorSub) purchaseErrorSub.remove();
-      IAPService.shutdown();
     };
-  }, [handlePurchaseSuccess, syncSubscriptionStatus]);
+  }, []); // Strictly mount-only: prevents connection-reconnection loops.
 
   // Separate Effect for AppState logic to prevent main initialization re-triggers
   useEffect(() => {
