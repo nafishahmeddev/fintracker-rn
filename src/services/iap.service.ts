@@ -16,47 +16,69 @@ export interface IAPProduct {
 /**
  * IAPService: A clean encapsulation of store interactions.
  * Features:
- * 1. Unified error handling.
- * 2. Real-time store communication.
- * 3. Platform-agnostic method signatures.
+ * 1. Promise-based initialization guard (No race conditions).
+ * 2. Unified error handling.
+ * 3. Reactive Store communication.
  */
 export class IAPService {
-  private static isInitialized = false;
+  private static _initPromise: Promise<boolean> | null = null;
+  private static _isInitialized = false;
 
   /**
-   * Initializes the connection to the store.
-   * Returns true if successful, false otherwise.
+   * Internal initialization logic.
    */
-  static async init(): Promise<boolean> {
+  private static async _doInit(): Promise<boolean> {
     try {
-      console.log('[IAPService] Calling IAP.initConnection()...');
-      if (this.isInitialized) {
-        console.log('[IAPService] Already initialized.');
-        return true;
+      console.log('[IAPService] Starting native store connection...');
+      const success = await IAP.initConnection();
+      
+      if (success && Platform.OS === 'android') {
+        // Minor stabilization delay for Android Billing Bridge
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
-      const connected = await IAP.initConnection();
-      console.log('[IAPService] IAP.initConnection() result:', connected);
-      this.isInitialized = !!connected;
-      return !!connected;
+
+      this._isInitialized = !!success;
+      console.log('[IAPService] Initialization result:', this._isInitialized);
+      return this._isInitialized;
     } catch (error) {
-      console.error('[IAPService] init error:', error);
+      console.error('[IAPService] Native initialization failed:', error);
+      this._initPromise = null; // Allow retry on failure
       return false;
     }
   }
 
   /**
-   * Fetches products from the store.
+   * Public initialization method. 
+   * Returns a shared promise ensuring only one connection attempt exists at any time.
+   */
+  static async init(): Promise<boolean> {
+    if (this._isInitialized) return true;
+    if (this._initPromise) return this._initPromise;
+
+    this._initPromise = this._doInit();
+    return this._initPromise;
+  }
+
+  /**
+   * Internal guard to ensure the store is ready before any data request.
+   */
+  private static async ensureReady(): Promise<void> {
+    const ready = await this.init();
+    if (!ready) throw new Error('Billing client not ready');
+  }
+
+  /**
+   * Fetches products from the store with internal readiness guard.
    */
   static async getProducts(skus: string[]): Promise<IAPProduct[]> {
-    console.log('[IAPService] getProducts() called for SKUs:', skus);
+    await this.ensureReady();
+    
+    console.log('[IAPService] Fetching products:', skus);
     try {
-      if (skus.length === 0) {
-        console.warn('[IAPService] getProducts() called with empty SKUs list.');
-        return [];
-      }
-      console.log('[IAPService] Calling IAP.fetchProducts()...');
+      if (skus.length === 0) return [];
+      
       const products = await IAP.fetchProducts({ skus, type: "all" });
-      console.log('[IAPService] IAP.fetchProducts() raw result:', products?.length || 0, 'items');
+      console.log('[IAPService] Store returned:', products?.length || 0, 'products');
 
       if (products && products.length > 0) {
         return products.map(p => ({
@@ -68,11 +90,26 @@ export class IAPService {
           description: p.description,
         }));
       }
-
       return [];
     } catch (error) {
-      console.error('[IAPService] getProducts error:', error);
+      console.error('[IAPService] Product fetch failed:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Fetches the user's current valid entitlements from the store.
+   */
+  static async getActivePurchases(): Promise<IAP.Purchase[]> {
+    await this.ensureReady();
+    
+    try {
+      const result = await IAP.getAvailablePurchases();
+      // expo-iap has a known typing quirk where it might return void or array
+      return (result as unknown as IAP.Purchase[]) || [];
+    } catch (error) {
+       console.error('[IAPService] Entitlement fetch failed:', error);
+       throw error;
     }
   }
 
@@ -90,24 +127,23 @@ export class IAPService {
         const supported = await Linking.canOpenURL(url);
         if (supported) {
           await Linking.openURL(url);
-        } else {
-          console.error('[IAPService] Cannot open URL:', url);
         }
       } catch (error) {
-        console.error('[IAPService] Error opening management URL:', error);
+        console.error('[IAPService] Failed to open management URL:', error);
       }
     }
   }
 
   /**
-   * Cleans up listener and connection resource.
+   * Cleanly closes the store connection.
    */
   static async shutdown() {
     try {
       await IAP.endConnection();
-      this.isInitialized = false;
+      this._isInitialized = false;
+      this._initPromise = null;
     } catch (error) {
-      console.error('[IAPService] shutdown error:', error);
+      console.error('[IAPService] Shutdown failed:', error);
     }
   }
 }
