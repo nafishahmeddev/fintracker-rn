@@ -18,7 +18,7 @@ import type { Account } from '../../accounts/api/accounts';
 import { AccountFormModal } from '../../accounts/components/AccountFormModal';
 import { useAccounts, useDeleteAccount } from '../../accounts/hooks/accounts';
 import { useTransactions } from '../../transactions/hooks/transactions';
-import { useSubscription } from '@/src/providers/SubscriptionProvider';
+import { usePremium } from '@/src/providers/PremiumProvider';
 import { SectionHeader } from '../components/SectionHeader';
 import { TopExpenseCategoriesCard } from '../components/TopExpenseCategoriesCard';
 import { useDashboardStats, useTopExpenseCategories } from '../hooks/dashboard';
@@ -43,7 +43,7 @@ const resolveIconName = (raw: string | null | undefined, fallback: IoniconName):
 
 export function DashboardScreen() {
   const { colors, isDark } = useTheme();
-  const { isPremium } = useSubscription();
+  const { isPremium } = usePremium();
   const { profile } = useSettings();
   const { width: screenWidth } = useWindowDimensions();
   const styles = React.useMemo(() => createStyles(colors, screenWidth), [colors, screenWidth]);

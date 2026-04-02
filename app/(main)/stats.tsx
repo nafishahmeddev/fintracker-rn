@@ -10,7 +10,7 @@ import { PremiumGuard } from '../../src/components/ui/PremiumGuard';
 import { DEFAULT_CURRENCY } from '../../src/constants/currency';
 import { useAccounts } from '../../src/features/accounts/hooks/accounts';
 import { useTransactions } from '../../src/features/transactions/hooks/transactions';
-import { useSubscription } from '@/src/providers/SubscriptionProvider';
+import { usePremium } from '@/src/providers/PremiumProvider';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { TYPOGRAPHY } from '../../src/theme/typography';
@@ -49,7 +49,7 @@ const computeFlow = (items: { type: 'CR' | 'DR'; amount: number }[]) =>
 
 export default function StatsScreen() {
   const { colors } = useTheme();
-  const { isPremium } = useSubscription();
+  const { isPremium } = usePremium();
   const router = useRouter();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const { data: transactions, isLoading: txLoading } = useTransactions();

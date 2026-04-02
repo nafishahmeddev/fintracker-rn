@@ -3,7 +3,7 @@ import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSubscription } from '@/src/providers/SubscriptionProvider';
+import { usePremium } from '@/src/providers/PremiumProvider';
 import { useTheme } from '../../providers/ThemeProvider';
 import { TYPOGRAPHY } from '../../theme/typography';
 
@@ -18,7 +18,7 @@ interface PremiumGuardProps {
  * Provides a call-to-action to upgrade.
  */
 export function PremiumGuard({ children, label = 'PREMIUM FEATURE', containerStyle }: PremiumGuardProps) {
-  const { isPremium } = useSubscription();
+  const { isPremium } = usePremium();
   const { colors, isDark } = useTheme();
   const router = useRouter();
 

@@ -1,58 +1,49 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as IAP from 'expo-iap';
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { AlertButton, AlertModal } from '../components/ui/AlertModal';
-import { ALL_SKUS, SKU_LIFETIME, SKU_MONTHLY, SKU_YEARLY } from '../constants/iap';
+import { ALL_SKUS, SKU_LIFETIME } from '../constants/iap';
 import { IAPProduct, IAPService } from '../services/iap.service';
 
 /**
- * Supported subscription plans in the Luno ecosystem.
+ * Internal state representation of the user's premium status.
  */
-export type PlanType = 'MONTHLY' | 'YEARLY' | 'LIFETIME';
-
-/**
- * Internal state representation of the user's subscription status.
- */
-export interface SubscriptionState {
+export interface PremiumState {
   isPremium: boolean;
-  planType: PlanType | null;
 }
 
 /**
- * Context type defining the public API for the Subscription system.
+ * Context type defining the public API for the Premium system.
  */
-type SubscriptionContextType = {
-  subscription: SubscriptionState;
-  products: IAPProduct[];
+type PremiumContextType = {
   isPremium: boolean;
+  products: IAPProduct[];
   isLoading: boolean;
   error: string | null;
   hasFetched: boolean;
-  purchasePlan: (plan: PlanType) => Promise<void>;
+  purchasePremium: () => Promise<void>;
   restorePurchase: () => Promise<void>;
-  manageSubscription: () => Promise<void>;
-  resetSubscription: () => Promise<void>;
+  resetPremium: () => Promise<void>;
   showAlert: (config: { title: string; message?: string; type?: 'info' | 'success' | 'error' | 'warning'; buttons?: AlertButton[] }) => void;
 };
 
-export const SubscriptionContext = createContext<SubscriptionContextType | null>(null);
+export const PremiumContext = createContext<PremiumContextType | null>(null);
 
-export function useSubscription() {
-  const ctx = useContext(SubscriptionContext);
-  if (!ctx) throw new Error('useSubscription must be used within SubscriptionProvider');
+export function usePremium() {
+  const ctx = useContext(PremiumContext);
+  if (!ctx) throw new Error('usePremium must be used within PremiumProvider');
   return ctx;
 }
 
-const STORAGE_KEY = '@luno_subscription_v4';
+const STORAGE_KEY = '@luno_premium_v6';
 
-const INITIAL_STATE: SubscriptionState = {
+const INITIAL_STATE: PremiumState = {
   isPremium: false,
-  planType: null,
 };
 
-export function SubscriptionProvider({ children }: { children: ReactNode }) {
-  const [subscription, setSubscription] = useState<SubscriptionState>(INITIAL_STATE);
+export function PremiumProvider({ children }: { children: ReactNode }) {
+  const [premiumState, setPremiumState] = useState<PremiumState>(INITIAL_STATE);
   const [products, setProducts] = useState<IAPProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
@@ -84,87 +75,74 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const saveSubscription = useCallback(async (newState: SubscriptionState) => {
+  const savePremiumState = useCallback(async (newState: PremiumState) => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-      setSubscription(newState);
+      setPremiumState(newState);
     } catch (error) {
-      console.error('[Subscription] Failed to persist state:', error);
+      console.error('[Premium] Failed to persist state:', error);
     }
   }, []);
 
   const handlePurchaseSuccess = useCallback(async (purchase: IAP.Purchase) => {
-    const sku = purchase.productId;
-    let planType: PlanType | null = null;
-
-    if (sku === SKU_MONTHLY) planType = 'MONTHLY';
-    else if (sku === SKU_YEARLY) planType = 'YEARLY';
-    else if (sku === SKU_LIFETIME) planType = 'LIFETIME';
-
-    if (planType) {
-      const newState: SubscriptionState = {
-        isPremium: true,
-        planType,
-      };
-      await saveSubscription(newState);
+    if (purchase.productId === SKU_LIFETIME) {
+      await savePremiumState({ isPremium: true });
     }
-  }, [saveSubscription]);
+  }, [savePremiumState]);
 
-  const syncSubscriptionStatus = useCallback(async () => {
+  const syncPremiumStatus = useCallback(async () => {
     if (isSyncing.current) return;
     isSyncing.current = true;
 
     try {
       const casted = await IAPService.getActivePurchases();
-      if (casted.length > 0) {
-        const sortedByTier = [...casted].sort((a, b) => {
-          const tierVal = (id: string) => {
-            if (id === SKU_LIFETIME) return 3;
-            if (id === SKU_YEARLY) return 2;
-            if (id === SKU_MONTHLY) return 1;
-            return 0;
-          };
-          return tierVal(b.productId) - tierVal(a.productId);
-        });
-
-        const activePurchase = sortedByTier[0];
-        if (activePurchase) {
-          await handlePurchaseSuccess(activePurchase);
-          return;
-        }
+      const hasLifetime = casted.some(p => p.productId === SKU_LIFETIME);
+      
+      if (hasLifetime) {
+        await savePremiumState({ isPremium: true });
+        return;
       }
 
-      console.log('[Subscription] No active purchases found.');
-      setSubscription(prev => {
+      // If we are currently premium but the store has no record, revoke.
+      // NOTE: For one-time purchases, this usually only happens on refunds.
+      setPremiumState(prev => {
         if (!prev.isPremium) return prev;
         const expiredState = { ...INITIAL_STATE };
         AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(expiredState)).catch(() => { });
 
         showAlert({
           title: 'Access Removed',
-          message: 'Your Pro access has ended or was refunded. You can re-purchase at any time.',
+          message: 'Your Pro access has been revoked or was refunded. You can repurchase at any time.',
           type: 'warning',
         });
         return expiredState;
       });
     } catch (err) {
-      console.log('[Subscription] Store sync skipped:', err);
+      console.log('[Premium] Store sync skipped:', err);
     } finally {
       isSyncing.current = false;
     }
-  }, [handlePurchaseSuccess, showAlert]);
+  }, [savePremiumState, showAlert]);
+
+  const syncRef = useRef(syncPremiumStatus);
+  const purchaseRef = useRef(handlePurchaseSuccess);
 
   useEffect(() => {
-    const loadSubscription = async () => {
+    syncRef.current = syncPremiumStatus;
+    purchaseRef.current = handlePurchaseSuccess;
+  }, [syncPremiumStatus, handlePurchaseSuccess]);
+
+  useEffect(() => {
+    const loadState = async () => {
       try {
         const storedValue = await AsyncStorage.getItem(STORAGE_KEY);
-        if (storedValue) setSubscription(JSON.parse(storedValue));
+        if (storedValue) setPremiumState(JSON.parse(storedValue));
       } catch {
       } finally {
         setIsLoading(false);
       }
     };
-    loadSubscription();
+    loadState();
   }, []);
 
   useEffect(() => {
@@ -179,14 +157,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         if (connected) {
           purchaseUpdateSub = IAP.purchaseUpdatedListener(async (purchase) => {
             if (purchase.productId) {
-              await handlePurchaseSuccess(purchase);
+              await purchaseRef.current(purchase);
               await IAP.finishTransaction({ purchase });
             }
           });
 
           purchaseErrorSub = IAP.purchaseErrorListener((error) => {
             const code = (error as { code?: string }).code;
-            if (code !== 'E_USER_CANCELLED') {
+            if (errorMsg(code) !== 'CANCELED') {
               setError(`IAP Error: ${code || 'Unknown error'}`);
             }
           });
@@ -195,44 +173,43 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           setProducts(fetched);
           setHasFetched(true);
 
-          // ALWAYS sync status after initialization.
-          // If the store returns 0 active purchases, the app will revoke features immediately.
-          await syncSubscriptionStatus();
+          await syncRef.current();
         } else {
           setError('Failed to connect to App Store / Google Play.');
         }
       } catch (err) {
-        console.error('[Subscription] IAP Initialization flow failed:', err);
+        console.error('[Premium] IAP Initialization flow failed:', err);
         setError('Billing services currently unavailable.');
       }
     };
 
-    // Handle initialization on mount and never re-run.
     initIAP();
 
     return () => {
-      // Just clean up listeners, do NOT shutdown the entire bridge
-      // which is needed for the lifetime of the provider/app.
       if (purchaseUpdateSub) purchaseUpdateSub.remove();
       if (purchaseErrorSub) purchaseErrorSub.remove();
     };
-  }, []); // Strictly mount-only: prevents connection-reconnection loops.
+  }, []);
 
-  // Separate Effect for AppState logic to prevent main initialization re-triggers
+  const errorMsg = (code?: string) => {
+    if (code === 'E_USER_CANCELLED') return 'CANCELED';
+    return code;
+  };
+
   useEffect(() => {
     if (!isIapInitialized) return;
 
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
       if (nextAppState === 'active' && !isSyncing.current) {
-        syncSubscriptionStatus().catch(() => { });
+        syncPremiumStatus().catch(() => { });
       }
     };
 
     const sub = AppState.addEventListener('change', handleAppStateChange);
     return () => sub.remove();
-  }, [isIapInitialized, syncSubscriptionStatus]);
+  }, [isIapInitialized, syncPremiumStatus]);
 
-  const purchasePlan = useCallback(async (plan: PlanType) => {
+  const purchasePremium = useCallback(async () => {
     if (!isIapInitialized) {
       showAlert({
         title: 'Network Required',
@@ -242,22 +219,17 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    let sku = '';
-    if (plan === 'MONTHLY') sku = SKU_MONTHLY;
-    else if (plan === 'YEARLY') sku = SKU_YEARLY;
-    else if (plan === 'LIFETIME') sku = SKU_LIFETIME;
-
     try {
       await IAP.requestPurchase({
         request: {
-          apple: { sku },
-          google: { skus: [sku] }
+          apple: { sku: SKU_LIFETIME },
+          google: { skus: [SKU_LIFETIME] }
         },
-        type: sku === SKU_LIFETIME ? 'in-app' : 'subs'
+        type: 'in-app'
       });
     } catch (error) {
       const code = (error as { code?: string }).code;
-      if (code !== 'E_USER_CANCELLED') {
+      if (errorMsg(code) !== 'CANCELED') {
         showAlert({
           title: 'Purchase Error',
           message: 'We could not process your request. Check your store account.',
@@ -279,17 +251,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
     try {
       const castedPurchases = await IAPService.getActivePurchases();
+      const hasLifetime = castedPurchases.some(p => p.productId === SKU_LIFETIME);
 
-      if (castedPurchases.length > 0) {
-        const sorted = [...castedPurchases].sort((a, b) => b.transactionDate - a.transactionDate);
-        const latestPurchase = sorted[0];
-
-        await handlePurchaseSuccess(latestPurchase);
-        await IAP.finishTransaction({ purchase: latestPurchase });
-
+      if (hasLifetime) {
+        await savePremiumState({ isPremium: true });
         showAlert({
           title: 'Access Restored',
-          message: 'Your Pro membership has been successfully reconciled.',
+          message: 'Your permanent Luno Pro access has been restored.',
           type: 'success',
         });
       } else {
@@ -300,41 +268,32 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         });
       }
     } catch (error) {
-      console.error('[Subscription] Restoration failed:', error);
+      console.error('[Premium] Restoration failed:', error);
       showAlert({
         title: 'Restoration Failed',
         message: 'Restoration timed out or failed. Please try again later.',
         type: 'error',
       });
     }
-  }, [isIapInitialized, handlePurchaseSuccess, showAlert]);
+  }, [isIapInitialized, savePremiumState, showAlert]);
 
-  const manageSubscription = useCallback(async () => {
-    await IAPService.manage();
-  }, []);
-
-  const resetSubscription = useCallback(async () => {
-    await saveSubscription(INITIAL_STATE);
-  }, [saveSubscription]);
-
-  const isPremiumActive = useMemo(() => !!subscription.isPremium, [subscription]);
+  const resetPremium = useCallback(async () => {
+    await savePremiumState(INITIAL_STATE);
+  }, [savePremiumState]);
 
   return (
-    <SubscriptionContext.Provider value={{
-      subscription,
+    <PremiumContext.Provider value={{
+      isPremium: premiumState.isPremium,
       products,
-      isPremium: isPremiumActive,
       isLoading: isLoading || (!hasFetched && !error),
       error,
       hasFetched,
-      purchasePlan,
+      purchasePremium,
       restorePurchase,
-      manageSubscription,
-      resetSubscription,
+      resetPremium,
       showAlert
     }}>
       {children}
-
       <AlertModal
         visible={alertConfig.visible}
         title={alertConfig.title}
@@ -343,6 +302,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         buttons={alertConfig.buttons}
         onClose={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
       />
-    </SubscriptionContext.Provider>
+    </PremiumContext.Provider>
   );
 }

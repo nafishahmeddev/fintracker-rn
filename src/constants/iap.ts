@@ -1,5 +1,4 @@
 import { Platform } from 'react-native';
-import { PlanType } from '../providers/SubscriptionProvider';
 
 export interface ProFeature {
   icon: string;
@@ -7,32 +6,12 @@ export interface ProFeature {
   description: string;
 }
 
-export interface MappedPlan {
-  id: PlanType;
-  sku: string;
-  name: string;
-  period: string;
-  badge: string | null;
-  price: string;
-  originalPrice: string | null;
-}
-
-export const SKU_MONTHLY = Platform.select({
-  ios: 'com.luno.monthly',
-  android: 'luno_monthly',
-}) || 'luno_monthly';
-
-export const SKU_YEARLY = Platform.select({
-  ios: 'com.luno.yearly',
-  android: 'luno_yearly',
-}) || 'luno_yearly';
-
 export const SKU_LIFETIME = Platform.select({
   ios: 'com.luno.lifetime',
   android: 'luno_lifetime',
 }) || 'luno_lifetime';
 
-export const ALL_SKUS = [SKU_MONTHLY, SKU_YEARLY, SKU_LIFETIME];
+export const ALL_SKUS = [SKU_LIFETIME];
 
 export const FEATURES: ProFeature[] = [
   { icon: 'infinite', title: 'Absolute Runway', description: 'Real-time calculation of exactly how long your capital will last.' },

@@ -9,7 +9,7 @@ import { DatabaseProvider } from '@/src/providers/DatabaseProvider';
 import { OnboardingProvider } from '@/src/providers/OnboardingProvider';
 import { QueryProvider } from '@/src/providers/QueryProvider';
 import { SettingsProvider } from '@/src/providers/SettingsProvider';
-import { SubscriptionProvider } from '@/src/providers/SubscriptionProvider';
+import { PremiumProvider } from '@/src/providers/PremiumProvider';
 import { ThemeProvider as CustomThemeProvider } from '@/src/providers/ThemeProvider';
 import {
   BricolageGrotesque_400Regular,
@@ -63,7 +63,7 @@ export default function RootLayout() {
       <QueryProvider>
         <DatabaseProvider>
           <SettingsProvider>
-            <SubscriptionProvider>
+            <PremiumProvider>
               <OnboardingProvider>
                 <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
                   <CustomThemeProvider>
@@ -74,7 +74,7 @@ export default function RootLayout() {
                   </CustomThemeProvider>
                 </ThemeProvider>
               </OnboardingProvider>
-            </SubscriptionProvider>
+            </PremiumProvider>
           </SettingsProvider>
         </DatabaseProvider>
       </QueryProvider>

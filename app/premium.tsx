@@ -1,102 +1,39 @@
 import { Header } from '@/src/components/ui/Header';
-import { FEATURES, MappedPlan, SKU_LIFETIME, SKU_MONTHLY, SKU_YEARLY } from '@/src/constants/iap';
-import { PlanType, useSubscription } from '@/src/providers/SubscriptionProvider';
+import { FEATURES, SKU_LIFETIME } from '@/src/constants/iap';
+import { usePremium } from '@/src/providers/PremiumProvider';
 import { useTheme } from '@/src/providers/ThemeProvider';
 import { ThemeColors } from '@/src/theme/colors';
 import { TYPOGRAPHY } from '@/src/theme/typography';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// FEATURES is now imported from src/constants/iap
-
 /**
- * PremiumScreen: The primary paywall and subscription management interface.
- * Implements an 'Editorial Brutalist' aesthetic with immersive background effects,
- * dynamic pricing tiers, and direct integration with the Luno Pro subscription system.
+ * PremiumScreen: The primary paywall for Luno Pro Lifetime access.
+ * Refined for high hierarchy and flat glassmorphic aesthetics.
+ * The pricing is now the focal point, with a compact features list.
  */
 export default function PremiumScreen() {
   const { colors, isDark } = useTheme();
-  const { products, purchasePlan, restorePurchase, isPremium, subscription, manageSubscription, isLoading, error } = useSubscription();
+  const { products, purchasePremium, restorePurchase, isPremium, isLoading, error } = usePremium();
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<PlanType>('YEARLY');
 
-  /**
-   * MappedPlans: Reconciles raw store products with our logical plan definitions.
-   * Includes data for badges, display naming, and a calculated 'original price' 
-   * for the Lifetime tier to visualize the early-bird value.
-   */
-  const mappedPlans = useMemo((): MappedPlan[] => {
-    const plans = [
-      {
-        id: 'MONTHLY' as PlanType,
-        sku: SKU_MONTHLY,
-        name: 'MONTHLY',
-        period: '/ MO',
-        badge: null
-      },
-      {
-        id: 'YEARLY' as PlanType,
-        sku: SKU_YEARLY,
-        name: 'YEARLY',
-        period: '/ YR',
-        badge: 'SAVE 33%'
-      },
-      {
-        id: 'LIFETIME' as PlanType,
-        sku: SKU_LIFETIME,
-        name: 'LIFETIME',
-        period: 'ONCE',
-        badge: 'EARLY BIRD'
-      },
-    ];
-
-      return plans.map(plan => {
-        const product = products.find(p => p.id === plan.sku);
-        if (!product) return null;
-  
-        let originalPrice = null;
-        if (plan.id === 'LIFETIME') {
-          // Use the structured price from the new service
-          const symbol = product.currencySymbol;
-          const currentVal = product.priceAmount;
-          if (currentVal > 0) {
-            originalPrice = `${symbol}${Math.round(currentVal * 3.5)}`;
-          }
-        }
-  
-        return {
-          ...plan,
-          price: product.displayPrice,
-          originalPrice,
-        } as MappedPlan;
-      }).filter((p): p is MappedPlan => !!p);
+  const lifetimeProduct = useMemo(() => {
+    return products.find(p => p.id === SKU_LIFETIME);
   }, [products]);
 
   const styles = useMemo(() => createStyles(colors, screenWidth), [colors, screenWidth]);
 
-  // Sync selectedPlan with available plans
-  useEffect(() => {
-    if (mappedPlans.length > 0) {
-      const isCurrentValid = mappedPlans.some(p => p.id === selectedPlan);
-      if (!isCurrentValid) {
-        // Default to Yearly if available, otherwise pick first in list
-        const yearly = mappedPlans.find(p => p.id === 'YEARLY');
-        setSelectedPlan(yearly ? 'YEARLY' : mappedPlans[0].id);
-      }
-    }
-  }, [mappedPlans, selectedPlan]);
-
   const handlePurchase = useCallback(async () => {
     setIsProcessing(true);
-    await purchasePlan(selectedPlan);
+    await purchasePremium();
     setIsProcessing(false);
-  }, [selectedPlan, purchasePlan]);
+  }, [purchasePremium]);
 
   const handleRestore = useCallback(async () => {
     setIsProcessing(true);
@@ -104,11 +41,9 @@ export default function PremiumScreen() {
     setIsProcessing(false);
   }, [restorePurchase]);
 
-
   if (isPremium && !isProcessing) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        {/* ── Immersive Background ── */}
         <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
           <View style={[styles.bgCircle, { top: -100, left: -100, width: 500, height: 500, backgroundColor: colors.primary, opacity: 0.15 }]} />
           <View style={[styles.bgCircle, { bottom: -150, right: -150, width: 600, height: 600, backgroundColor: colors.primary, opacity: 0.1 }]} />
@@ -122,19 +57,19 @@ export default function PremiumScreen() {
              </View>
              
              <View style={styles.proHero}>
-               <Text style={styles.proKicker}>{subscription.planType || 'PRO'}</Text>
+               <Text style={styles.proKicker}>LIFETIME ACCESS</Text>
                <Text style={styles.proHeading}>Luno Pro{"\n"}Unlocked.</Text>
              </View>
 
              <View style={styles.proStatusRow}>
                <View style={styles.statusPill}>
                  <View style={[styles.statusDot, { backgroundColor: colors.primary }]} />
-                 <Text style={styles.statusText}>ACTIVE MEMBER</Text>
+                 <Text style={styles.statusText}>FOREVER MEMBER</Text>
                </View>
              </View>
 
              <Text style={styles.proDescription}>
-               You have full access to our professional capital management suite. Your data is synced across all your devices.
+               You have permanent, unrestricted access to the complete professional suite. All current and future features are yours.
              </Text>
           </View>
 
@@ -142,19 +77,11 @@ export default function PremiumScreen() {
             <TouchableOpacity
               style={styles.actionBtn}
               onPress={() => router.back()}
+              activeOpacity={0.85}
             >
               <Text style={styles.actionBtnText}>DASHBOARD</Text>
               <Ionicons name="arrow-forward" size={18} color={colors.background} />
             </TouchableOpacity>
-
-            {subscription.planType !== 'LIFETIME' && (
-              <TouchableOpacity
-                style={styles.manageBtn}
-                onPress={manageSubscription}
-              >
-                <Text style={styles.manageBtnText}>MANAGE SUBSCRIPTION</Text>
-              </TouchableOpacity>
-            )}
           </View>
         </SafeAreaView>
       </View>
@@ -181,105 +108,81 @@ export default function PremiumScreen() {
 
         {/* ── Editorial Hero ── */}
         <View style={styles.heroSection}>
-          <Text style={styles.heroKicker}>PRO SERVICE</Text>
-          <Text style={styles.heroTitle}>Limitless control{"\n"}over your capital.</Text>
-          <Text style={styles.heroSubtitle}>All plans include a 14-day free trial managed by your app store.</Text>
+          <Text style={styles.heroKicker}>ONE-TIME UPGRADE</Text>
+          <Text style={styles.heroTitle}>Unlock peak financial clarity.</Text>
+          <Text style={styles.heroSubtitle}>Unlock all professional tools with a single permanent license.</Text>
         </View>
 
-
-        {/* ── Pricing Grid ── */}
-        <View style={styles.pricingSection}>
-          <Text style={styles.sectionLabel}>SELECT PLAN</Text>
-          <View style={styles.planGrid}>
-            {mappedPlans.map((plan) => {
-              const isSelected = selectedPlan === plan.id;
-              return (
-                <TouchableOpacity
-                  key={plan.id}
-                  style={[
-                    styles.planCard,
-                    isSelected && { borderColor: colors.primary, borderWidth: 2 }
-                  ]}
-                  onPress={() => setSelectedPlan(plan.id)}
-                  activeOpacity={0.9}
-                >
-                  {plan.badge && (
-                    <View style={styles.planBadge}>
-                      <Text style={styles.planBadgeText}>{plan.badge}</Text>
-                    </View>
-                  )}
-                  <View style={styles.planHeader}>
-                    <Text style={styles.planName}>{plan.name}</Text>
-                    {isSelected && <Ionicons name="checkmark-circle" size={16} color={colors.primary} />}
-                  </View>
-                  <View style={styles.priceRow}>
-                    <View>
-                      {plan.originalPrice && (
-                        <Text style={styles.originalPrice}>{plan.originalPrice}</Text>
-                      )}
-                      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
-                        <Text style={styles.planPrice}>{plan.price}</Text>
-                        <Text style={styles.planPeriod}>{plan.period}</Text>
-                      </View>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-
-            {error && (
-              <View style={styles.errorBox}>
-                <Ionicons name="alert-circle" size={24} color={colors.danger} />
-                <Text style={styles.errorText}>{error}</Text>
-                <TouchableOpacity style={styles.retryBtn} onPress={() => restorePurchase()}>
-                  <Text style={styles.retryBtnText}>CHECK STORE AGAIN</Text>
-                </TouchableOpacity>
+        {/* ── Main Offer Card (PRIORITIZED HIERARCHY) ── */}
+        <View style={styles.offerSection}>
+          <View style={styles.lifetimeCard}>
+            <View style={styles.cardHeader}>
+              <View>
+                <Text style={styles.cardTitle}>LIFETIME ACCESS</Text>
+                <Text style={styles.cardSubtitle}>Complete Pro Suite</Text>
               </View>
-            )}
-
-            {/* Skeleton Loading State */}
-            {(isLoading && products.length === 0 && !error) && Array.from({ length: 3 }).map((_, i) => (
-              <View key={i} style={[styles.planCard, { opacity: 0.5, borderStyle: 'dotted' }]}>
-                <ActivityIndicator size="small" color={colors.primary} />
+              <View style={styles.cardBadge}>
+                <Text style={styles.cardBadgeText}>BEST VALUE</Text>
               </View>
-            ))}
+            </View>
 
-            {/* Empty State (Not loading, no error, but no products) */}
-            {(!isLoading && products.length === 0 && !error) && (
-              <View style={styles.errorBox}>
-                <Text style={styles.errorText}>No plans found for your region.</Text>
-              </View>
-            )}
+            <View style={styles.priceContainer}>
+              {lifetimeProduct ? (
+                <>
+                  <Text style={styles.priceValue}>{lifetimeProduct.displayPrice}</Text>
+                  <Text style={styles.priceSuffix}>ONE-TIME</Text>
+                </>
+              ) : isLoading ? (
+                <ActivityIndicator color={colors.primary} />
+              ) : (
+                <Text style={styles.priceError}>Pricing unavailable</Text>
+              )}
+            </View>
+
+            <View style={styles.cardDivider} />
+            
+            <View style={styles.trustInfo}>
+                <View style={styles.trustRow}>
+                  <Ionicons name="shield-checkmark" style={styles.trustIcon} size={14} color={colors.success} />
+                  <Text style={styles.trustText}>Permanent Apple/Google Device License</Text>
+                </View>
+                <View style={styles.trustRow}>
+                    <Ionicons name="cloud-done" style={styles.trustIcon} size={14} color={colors.success} />
+                    <Text style={styles.trustText}>All future tool updates included</Text>
+                </View>
+            </View>
           </View>
         </View>
 
-        {/* ── Features List ── */}
+        {/* ── Compact Feature Section ── */}
         <View style={styles.featuresSection}>
           <Text style={styles.sectionLabel}>PRO CAPABILITIES</Text>
-            <View style={styles.featuresCard}>
-              <View style={styles.featuresList}>
-                {FEATURES.map((feature, index) => (
-                  <View key={index} style={[styles.featureRow, index === FEATURES.length - 1 && { borderBottomWidth: 0 }]}>
-                    <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                    <Text style={styles.featureRowTitle}>{feature.title}</Text>
-                  </View>
-                ))}
+          
+          <View style={styles.featuresGrid}>
+            {FEATURES.map((feature, index) => (
+              <View key={index} style={styles.featureRow}>
+                <View style={[styles.featureIconWrap, { backgroundColor: colors.primary + '15' }]}>
+                  <Ionicons name={feature.icon as any} size={16} color={colors.primary} />
+                </View>
+                <View style={styles.featureInfo}>
+                  <Text style={styles.featureTitle}>{feature.title}</Text>
+                  <Text style={styles.featureDesc} numberOfLines={2}>{feature.description}</Text>
+                </View>
               </View>
-              
-              <TouchableOpacity 
-                style={styles.learnMoreBtn} 
-                onPress={() => router.push('/features')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.learnMoreText}>LEARN MORE ABOUT PRO</Text>
-                <Ionicons name="arrow-forward" size={12} color={colors.primary} />
-              </TouchableOpacity>
-            </View>
+            ))}
+          </View>
         </View>
 
-        {/* ── Branding ── */}
+        {/* ── Error State ── */}
+        {error && (
+          <View style={styles.errorBox}>
+            <Ionicons name="alert-circle" size={24} color={colors.danger} />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        )}
+
         <View style={styles.brandingBox}>
-          <Text style={styles.brandingText}>LUNO / CORE SERVICE</Text>
+          <Text style={styles.brandingText}>LUNO / PRO SYSTEM</Text>
         </View>
       </ScrollView>
 
@@ -288,24 +191,24 @@ export default function PremiumScreen() {
         <TouchableOpacity
           style={styles.buyBtn}
           onPress={handlePurchase}
-          disabled={isProcessing || isPremium || products.length === 0}
+          disabled={isProcessing || isPremium || !lifetimeProduct}
           activeOpacity={0.85}
         >
           {isProcessing ? (
             <ActivityIndicator color={colors.background} />
           ) : (
             <Text style={styles.buyBtnText}>
-              {isPremium ? 'PRO MEMBER' : `UPGRADE TO ${selectedPlan}`}
+              {isPremium ? 'PRO MEMBER' : `UPGRADE FOREVER`}
             </Text>
           )}
         </TouchableOpacity>
 
         <View style={styles.legalRows}>
           <TouchableOpacity onPress={handleRestore} disabled={isProcessing}>
-            <Text style={styles.legalLink}>RESTORE</Text>
+            <Text style={styles.legalLink}>RESTORE PURCHASE</Text>
           </TouchableOpacity>
           <View style={styles.legalSeparator} />
-          <TouchableOpacity onPress={() => Alert.alert("Terms", "Purchases are tied to your Apple/Google account.")}>
+          <TouchableOpacity onPress={() => Alert.alert("Terms", "Luno Pro is a one-time purchase tied to your store account.")}>
             <Text style={styles.legalLink}>TERMS</Text>
           </TouchableOpacity>
         </View>
@@ -319,99 +222,73 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
   bgCircle: { position: 'absolute', borderRadius: 999 },
   scrollContent: { paddingHorizontal: 24, paddingBottom: 40 },
 
-  heroSection: { marginTop: 24, marginBottom: 32 },
-  heroKicker: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.primary, letterSpacing: 2, marginBottom: 8 },
-  heroTitle: { fontFamily: TYPOGRAPHY.fonts.headingRegular, fontSize: 36, lineHeight: 42, color: colors.text, letterSpacing: -1.5 },
-  heroSubtitle: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 13, color: colors.textMuted, marginTop: 12, lineHeight: 20 },
+  heroSection: { marginTop: 20, marginBottom: 24 },
+  heroKicker: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 10, color: colors.primary, letterSpacing: 2.5, marginBottom: 8 },
+  heroTitle: { fontFamily: TYPOGRAPHY.fonts.headingRegular, fontSize: 40, lineHeight: 44, color: colors.text, letterSpacing: -2, marginBottom: 4 },
+  heroSubtitle: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 14, color: colors.textMuted, lineHeight: 22, maxWidth: '85%' },
 
-  trialCard: {
-    backgroundColor: colors.surface,
+  offerSection: { marginBottom: 28 },
+  lifetimeCard: {
+    backgroundColor: colors.surface + '80', // Glassmorphic transparency
     borderRadius: 24,
-    padding: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 20,
-    marginBottom: 32,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  trialContent: { flex: 1 },
-  trialBadge: { backgroundColor: colors.primary, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginBottom: 8 },
-  trialBadgeText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 9, color: colors.background },
-  trialTitle: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 18, color: colors.text },
-  trialSubtitle: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 12, color: colors.textMuted, marginTop: 2 },
-  trialBtn: { backgroundColor: colors.text, paddingHorizontal: 16, height: 40, borderRadius: 12, justifyContent: 'center' },
-  trialBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 11, color: colors.background, letterSpacing: 1 },
-
-  sectionLabel: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.textMuted, letterSpacing: 2, marginBottom: 12 },
-
-  pricingSection: { marginBottom: 32 },
-  planGrid: { gap: 12 },
-  planCard: {
-    backgroundColor: colors.surface,
-    padding: 20,
-    borderRadius: 20,
+    padding: 22,
     borderWidth: 1.5,
-    borderColor: colors.primary + '15',
-    minHeight: 90,
-    justifyContent: 'center',
+    borderColor: colors.primary,
     position: 'relative',
+    // No elevation or shadows for flat glass look
   },
-  planHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  planName: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 11, color: colors.textMuted, letterSpacing: 1 },
-  priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
-  planPrice: { fontFamily: TYPOGRAPHY.fonts.amountBold, fontSize: 26, color: colors.text, letterSpacing: -1 },
-  originalPrice: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 13, color: colors.textMuted, textDecorationLine: 'line-through', marginBottom: -2 },
-  planPeriod: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 14, color: colors.textMuted },
-  planBadge: { position: 'absolute', top: -10, right: 20, backgroundColor: colors.primary, paddingHorizontal: 10, height: 22, borderRadius: 11, justifyContent: 'center' },
-  planBadgeText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 9, color: colors.background, letterSpacing: 0.5 },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  cardTitle: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 18, color: colors.text, letterSpacing: 0.5 },
+  cardSubtitle: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 12, color: colors.textMuted, marginTop: 1 },
+  cardBadge: { backgroundColor: colors.primary, paddingHorizontal: 9, height: 20, borderRadius: 10, justifyContent: 'center' },
+  cardBadgeText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 8, color: colors.background, letterSpacing: 1 },
 
-  featuresSection: { marginBottom: 32 },
-  featuresCard: { 
-    backgroundColor: colors.surface, 
-    borderRadius: 24, 
-    overflow: 'hidden',
-    borderWidth: 1.5,
-    borderColor: colors.primary + '15',
-  },
-  featuresList: { padding: 8 },
-  featureRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 12, 
-    padding: 16, 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#00000008' // Subtle transparent grey
-  },
-  featureRowTitle: { 
-    fontFamily: TYPOGRAPHY.fonts.semibold, 
-    fontSize: 14, 
-    color: colors.text, 
-    letterSpacing: 0.2,
-    flex: 1 
-  },
+  priceContainer: { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 18 },
+  priceValue: { fontFamily: TYPOGRAPHY.fonts.amountBold, fontSize: 42, color: colors.text, letterSpacing: -1 },
+  priceSuffix: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 14, color: colors.textMuted, letterSpacing: 0.5 },
+  priceError: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 14, color: colors.danger },
+
+  cardDivider: { height: 1, backgroundColor: colors.border, marginBottom: 14, opacity: 0.5 },
+  trustInfo: { gap: 8 },
+  trustRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  trustIcon: { width: 14 },
+  trustText: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 11, color: colors.success, letterSpacing: 0.1 },
+
+  sectionLabel: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 10, color: colors.textMuted, letterSpacing: 2, marginBottom: 16, opacity: 0.8 },
   
-  learnMoreBtn: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    gap: 8, 
-    paddingVertical: 18, 
-    backgroundColor: colors.primary + '08'
+  featuresSection: { marginBottom: 32 },
+  featuresGrid: { gap: 12 },
+  featureRow: {
+      flexDirection: 'row',
+      backgroundColor: colors.surface + '50',
+      borderRadius: 20,
+      padding: 14,
+      gap: 14,
+      borderWidth: 1,
+      borderColor: colors.border,
   },
-  learnMoreText: { 
-    fontFamily: TYPOGRAPHY.fonts.bold, 
-    fontSize: 10, 
-    color: colors.primary, 
-    letterSpacing: 1.5 
+  featureIconWrap: {
+      width: 38,
+      height: 38,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
   },
+  featureInfo: { flex: 1, justifyContent: 'center' },
+  featureTitle: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 14, color: colors.text, marginBottom: 1 },
+  featureDesc: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 12, color: colors.textMuted, lineHeight: 16 },
 
-  brandingBox: { alignItems: 'center', marginTop: 10, marginBottom: 20 },
+  brandingBox: { alignItems: 'center', marginTop: 10, marginBottom: 0 },
   brandingText: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.text + '20', letterSpacing: 3 },
 
   footer: { padding: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 32, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.primary + '10' },
-  buyBtn: { backgroundColor: colors.primary, height: 64, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginBottom: 20, shadowColor: colors.primary, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 12 },
-  buyBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 16, color: colors.background, letterSpacing: 1 },
+  buyBtn: { backgroundColor: colors.primary, height: 64, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  buyBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 16, color: colors.background, letterSpacing: 1.5 },
   legalRows: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 16 },
   legalLink: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.textMuted, letterSpacing: 1.5 },
   legalSeparator: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.primary + '20' },
@@ -439,57 +316,10 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
   statusText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 10, color: colors.text, letterSpacing: 1 },
 
   proDescription: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 16, color: colors.textMuted, lineHeight: 26, maxWidth: '90%' },
-
   proActions: { gap: 16, marginBottom: 12 },
-  actionBtn: { 
-    height: 72, 
-    backgroundColor: colors.text, 
-    borderRadius: 24, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    gap: 16 
-  },
+  actionBtn: { height: 72, backgroundColor: colors.text, borderRadius: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 },
   actionBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 15, color: colors.background, letterSpacing: 2 },
-  
-  manageBtn: { 
-    paddingVertical: 12, 
-    alignItems: 'center' 
-  },
-  manageBtnText: { 
-    fontFamily: TYPOGRAPHY.fonts.bold, 
-    fontSize: 11, 
-    color: colors.textMuted, 
-    letterSpacing: 2 
-  },
 
-  errorBox: { 
-    padding: 24, 
-    borderRadius: 24, 
-    backgroundColor: colors.danger + '10', 
-    alignItems: 'center',
-    gap: 12,
-    borderWidth: 1,
-    borderColor: colors.danger + '20'
-  },
-  errorText: { 
-    fontFamily: TYPOGRAPHY.fonts.regular, 
-    fontSize: 14, 
-    color: colors.danger, 
-    textAlign: 'center',
-    lineHeight: 20
-  },
-  retryBtn: { 
-    backgroundColor: colors.danger, 
-    paddingHorizontal: 20, 
-    height: 40, 
-    borderRadius: 12, 
-    justifyContent: 'center' 
-  },
-  retryBtnText: { 
-    fontFamily: TYPOGRAPHY.fonts.bold, 
-    fontSize: 11, 
-    color: colors.background, 
-    letterSpacing: 1 
-  },
+  errorBox: { padding: 18, borderRadius: 18, backgroundColor: colors.danger + '10', alignItems: 'center', marginBottom: 20 },
+  errorText: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 13, color: colors.danger, textAlign: 'center' },
 });
