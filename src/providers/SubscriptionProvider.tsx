@@ -3,6 +3,7 @@ import * as IAP from 'expo-iap';
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode, useMemo } from 'react';
 import { Alert } from 'react-native';
 import { ALL_SKUS, SKU_LIFETIME, SKU_MONTHLY, SKU_YEARLY } from '../constants/iap';
+import { IAPProduct, IAPService } from '../services/iap.service';
 
 /**
  * Supported subscription plans in the Luno ecosystem.
@@ -25,6 +26,8 @@ export interface SubscriptionState {
   purchasedAt: string | null;
   /** ISO timestamp of subscription expiration (null for Lifetime). */
   expiresAt: string | null;
+  /** True if the subscription was specifically revoked (e.g., via refund). */
+  isRevoked?: boolean;
 }
 
 /**
@@ -33,12 +36,16 @@ export interface SubscriptionState {
 type SubscriptionContextType = {
   /** Reactive current state of the subscription. */
   subscription: SubscriptionState;
-  /** List of available products fetched from the store. */
-  products: IAP.Product[];
+  /** List of available products fetched from the store or mock data. */
+  products: IAPProduct[];
   /** Derived boolean for convenient premium gating. */
   isPremium: boolean;
   /** True while the store connection or local loading is in progress. */
   isLoading: boolean;
+  /** Any error message encountered during synchronization or purchase. */
+  error: string | null;
+  /** True if the system has attempted to fetch products at least once. */
+  hasFetched: boolean;
   /** Initiates a purchase flow for a specific plan tier. */
   purchasePlan: (plan: PlanType) => Promise<void>;
   /** Restores previous purchases to synchronize state. */
@@ -78,8 +85,10 @@ const INITIAL_STATE: SubscriptionState = {
  */
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [subscription, setSubscription] = useState<SubscriptionState>(INITIAL_STATE);
-  const [products, setProducts] = useState<IAP.Product[]>([]);
+  const [products, setProducts] = useState<IAPProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isIapInitialized, setIsIapInitialized] = useState(false);
 
   /**
@@ -127,6 +136,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         planType,
         purchasedAt: new Date(purchase.transactionDate || now.getTime()).toISOString(),
         expiresAt,
+        isRevoked: false, // Reset revocation on any success
       };
       await saveSubscription(newState);
     }
@@ -142,6 +152,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       const casted = (available as unknown as IAP.Purchase[]) || [];
       
       if (casted.length > 0) {
+        // Find the "best" purchase (highest tier)
         const sortedByTier = [...casted].sort((a, b) => {
           const tierVal = (skuIdentifier: string) => {
             if (skuIdentifier === SKU_LIFETIME) return 3;
@@ -159,19 +170,39 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Cleanup local state if store confirms no active subscriptions (online only)
+      // NO ACTIVE PURCHASES RETURNED FROM STORE
+      // We only proceed with revocation if we are online and sure the store returned an empty list.
       setSubscription(prev => {
-        if (prev.isPremium && prev.planType !== 'LIFETIME') {
-          const isActuallyExpired = prev.expiresAt && new Date(prev.expiresAt) < new Date();
-          if (isActuallyExpired) {
-            const expiredState = { ...INITIAL_STATE };
-            AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(expiredState)).catch(() => {});
-            return expiredState;
-          }
+        if (!prev.isPremium) return prev;
+
+        // CASE 1: Lifetime Access Revocation (Refund Detection)
+        // If the user had lifetime but the store says they have nothing, it was refunded.
+        if (prev.planType === 'LIFETIME') {
+          console.warn('[Subscription] Lifetime access revoked (Refund detected)');
+          const revokedState = { ...INITIAL_STATE, isRevoked: true };
+          AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(revokedState)).catch(() => {});
+          
+          Alert.alert(
+            'Access Removed', 
+            'Your Luno Pro lifetime access has been revoked due to a refund. You can re-purchase at any time.',
+            [{ text: 'OK' }]
+          );
+          return revokedState;
         }
+
+        // CASE 2: Recurring Subscription Expiration
+        // Check if the current subscription session has actually lapsed.
+        const isActuallyExpired = prev.expiresAt && new Date(prev.expiresAt) < new Date();
+        if (isActuallyExpired) {
+          console.log('[Subscription] Recurring subscription expired');
+          const expiredState = { ...INITIAL_STATE };
+          AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(expiredState)).catch(() => {});
+          return expiredState;
+        }
+
         return prev;
       });
-    } catch (error) {
+    } catch {
       // Offline or network error: we do nothing and rely on the locally loaded cache.
       console.log('[Subscription] Store sync skipped (likely offline or network error)');
     }
@@ -185,8 +216,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         if (storedValue) {
           setSubscription(JSON.parse(storedValue));
         }
-      } catch (error) {
-        console.error('[Subscription] Cache read error:', error);
+      } catch {
+        // Quiet fail on cache read; we fall back to INITIAL_STATE
       } finally {
         // App is ready to show UI as soon as cache is loaded
         setIsLoading(false);
@@ -201,12 +232,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     let purchaseErrorSub: { remove: () => void } | undefined;
 
     const initIAP = async () => {
+      console.log('[Subscription] Initializing IAP via Service...');
       try {
-        const connected = await IAP.initConnection();
+        const connected = await IAPService.init();
         setIsIapInitialized(connected);
         
         if (connected) {
           purchaseUpdateSub = IAP.purchaseUpdatedListener(async (purchase) => {
+            console.log('[Subscription] Purchase Success:', purchase.productId);
             if (purchase.productId) {
               await handlePurchaseSuccess(purchase);
               await IAP.finishTransaction({ purchase });
@@ -216,20 +249,25 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           purchaseErrorSub = IAP.purchaseErrorListener((error) => {
             const code = (error as { code?: string }).code;
             if (code !== 'E_USER_CANCELLED') {
-              console.warn('[Subscription] Listener error:', error);
+              setError(`IAP Error: ${code || 'Unknown error'}`);
             }
           });
 
-          const fetchedProducts = await IAP.fetchProducts({ skus: ALL_SKUS });
-          if (fetchedProducts) {
-            setProducts(fetchedProducts as IAP.Product[]);
+          const fetched = await IAPService.getProducts(ALL_SKUS);
+          setProducts(fetched);
+          setHasFetched(true);
+
+          if (fetched.length === 0 && !__DEV__) {
+            setError('Could not connect to store or no products found.');
           }
 
           await syncSubscriptionStatus();
+        } else {
+          setError('Failed to connect to App Store / Google Play.');
         }
-      } catch (error) {
-        // If connection fails (offline), we already have the local cache from above.
-        console.log('[Subscription] Store connection failed (Offline mode)');
+      } catch (err) {
+        console.error('[Subscription] IAP Initialization flow failed:', err);
+        setError('Billing services currently unavailable.');
       }
     };
 
@@ -238,7 +276,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     return () => {
       if (purchaseUpdateSub) purchaseUpdateSub.remove();
       if (purchaseErrorSub) purchaseErrorSub.remove();
-      IAP.endConnection();
+      IAPService.shutdown();
     };
   }, [handlePurchaseSuccess, syncSubscriptionStatus]);
 
@@ -311,9 +349,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   /**
    * The single source of truth for the app's premium status.
    * Checks both the base flag and the expiration date for local validity.
+   * Ensures specifically revoked accounts don't retain access.
    */
   const isPremiumActive = useMemo(() => !!(
     subscription.isPremium && 
+    !subscription.isRevoked &&
     (!subscription.expiresAt || new Date(subscription.expiresAt) > new Date())
   ), [subscription]);
 
@@ -322,7 +362,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       subscription, 
       products,
       isPremium: isPremiumActive, 
-      isLoading, 
+      isLoading: isLoading || (!hasFetched && !error), // Wait until at least one attempt is made
+      error,
+      hasFetched,
       purchasePlan, 
       restorePurchase,
       resetSubscription 

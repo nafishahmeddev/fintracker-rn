@@ -20,7 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
  */
 export default function PremiumScreen() {
   const { colors, isDark } = useTheme();
-  const { products, purchasePlan, restorePurchase, isPremium } = useSubscription();
+  const { products, purchasePlan, restorePurchase, isPremium, isLoading, error } = useSubscription();
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -56,26 +56,26 @@ export default function PremiumScreen() {
       },
     ];
 
-    return plans.map(plan => {
-      const product = products.find(p => p.id === plan.sku);
-      if (!product) return null;
-
-      let originalPrice = null;
-      if (plan.id === 'LIFETIME') {
-        const symbol = product.displayPrice.replace(/[0-9., ]/g, '').trim();
-        // Assume early bird value is ~3.5x for visual anchor
-        const currentVal = parseFloat(product.displayPrice.replace(/[^0-9.]/g, ''));
-        if (!isNaN(currentVal)) {
-          originalPrice = `${symbol}${Math.round(currentVal * 3.5)}`;
+      return plans.map(plan => {
+        const product = products.find(p => p.id === plan.sku);
+        if (!product) return null;
+  
+        let originalPrice = null;
+        if (plan.id === 'LIFETIME') {
+          // Use the structured price from the new service
+          const symbol = product.currencySymbol;
+          const currentVal = product.priceAmount;
+          if (currentVal > 0) {
+            originalPrice = `${symbol}${Math.round(currentVal * 3.5)}`;
+          }
         }
-      }
-
-      return {
-        ...plan,
-        price: product.displayPrice,
-        originalPrice,
-      } as MappedPlan;
-    }).filter((p): p is MappedPlan => !!p);
+  
+        return {
+          ...plan,
+          price: product.displayPrice,
+          originalPrice,
+        } as MappedPlan;
+      }).filter((p): p is MappedPlan => !!p);
   }, [products]);
 
   const styles = useMemo(() => createStyles(colors, screenWidth), [colors, screenWidth]);
@@ -198,12 +198,29 @@ export default function PremiumScreen() {
               );
             })}
 
+            {error && (
+              <View style={styles.errorBox}>
+                <Ionicons name="alert-circle" size={24} color={colors.danger} />
+                <Text style={styles.errorText}>{error}</Text>
+                <TouchableOpacity style={styles.retryBtn} onPress={() => restorePurchase()}>
+                  <Text style={styles.retryBtnText}>CHECK STORE AGAIN</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
             {/* Skeleton Loading State */}
-            {mappedPlans.length === 0 && Array.from({ length: 3 }).map((_, i) => (
+            {(isLoading && products.length === 0 && !error) && Array.from({ length: 3 }).map((_, i) => (
               <View key={i} style={[styles.planCard, { opacity: 0.5, borderStyle: 'dotted' }]}>
                 <ActivityIndicator size="small" color={colors.primary} />
               </View>
             ))}
+
+            {/* Empty State (Not loading, no error, but no products) */}
+            {(!isLoading && products.length === 0 && !error) && (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>No plans found for your region.</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -376,4 +393,34 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
   successSubtitle: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 16, color: colors.textMuted, textAlign: 'center', marginTop: 12, lineHeight: 24 },
   successBtn: { backgroundColor: colors.text, width: '100%', height: 60, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginTop: 40 },
   successBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 14, color: colors.background, letterSpacing: 1 },
+
+  errorBox: { 
+    padding: 24, 
+    borderRadius: 24, 
+    backgroundColor: colors.danger + '10', 
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: colors.danger + '20'
+  },
+  errorText: { 
+    fontFamily: TYPOGRAPHY.fonts.regular, 
+    fontSize: 14, 
+    color: colors.danger, 
+    textAlign: 'center',
+    lineHeight: 20
+  },
+  retryBtn: { 
+    backgroundColor: colors.danger, 
+    paddingHorizontal: 20, 
+    height: 40, 
+    borderRadius: 12, 
+    justifyContent: 'center' 
+  },
+  retryBtnText: { 
+    fontFamily: TYPOGRAPHY.fonts.bold, 
+    fontSize: 11, 
+    color: colors.background, 
+    letterSpacing: 1 
+  },
 });
