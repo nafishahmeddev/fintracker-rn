@@ -31,12 +31,6 @@ export class IAPService {
     try {
       console.log('[IAPService] Starting native store connection...');
       const success = await IAP.initConnection();
-      
-      if (success && Platform.OS === 'android') {
-        // Minor stabilization delay for Android Billing Bridge
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-
       this._isInitialized = !!success;
       console.log('[IAPService] Initialization result:', this._isInitialized);
       return this._isInitialized;

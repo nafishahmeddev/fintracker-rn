@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as IAP from 'expo-iap';
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode, useMemo, useRef } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
+import { AlertButton, AlertModal } from '../components/ui/AlertModal';
 import { ALL_SKUS, SKU_LIFETIME, SKU_MONTHLY, SKU_YEARLY } from '../constants/iap';
 import { IAPProduct, IAPService } from '../services/iap.service';
-import { AlertModal, AlertButton } from '../components/ui/AlertModal';
 
 /**
  * Supported subscription plans in the Luno ecosystem.
@@ -116,7 +116,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
     try {
       const casted = await IAPService.getActivePurchases();
-      
+
       if (casted.length > 0) {
         const sortedByTier = [...casted].sort((a, b) => {
           const tierVal = (id: string) => {
@@ -135,11 +135,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      console.log('[Subscription] No active purchases found.');
       setSubscription(prev => {
         if (!prev.isPremium) return prev;
         const expiredState = { ...INITIAL_STATE };
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(expiredState)).catch(() => {});
-        
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(expiredState)).catch(() => { });
+
         showAlert({
           title: 'Access Removed',
           message: 'Your Pro access has ended or was refunded. You can re-purchase at any time.',
@@ -175,7 +176,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       try {
         const connected = await IAPService.init();
         setIsIapInitialized(connected);
-        
+
         if (connected) {
           purchaseUpdateSub = IAP.purchaseUpdatedListener(async (purchase) => {
             if (purchase.productId) {
@@ -195,10 +196,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           setProducts(fetched);
           setHasFetched(true);
 
-          if (fetched.length === 0 && !__DEV__) {
-            setError('Could not connect to store or no products found.');
-          }
-
+          // ALWAYS sync status after initialization.
+          // If the store returns 0 active purchases, the app will revoke features immediately.
           await syncSubscriptionStatus();
         } else {
           setError('Failed to connect to App Store / Google Play.');
@@ -211,21 +210,26 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
     initIAP();
 
+    return () => {
+      if (purchaseUpdateSub) purchaseUpdateSub.remove();
+      if (purchaseErrorSub) purchaseErrorSub.remove();
+      IAPService.shutdown();
+    };
+  }, [handlePurchaseSuccess, syncSubscriptionStatus]);
+
+  // Separate Effect for AppState logic to prevent main initialization re-triggers
+  useEffect(() => {
+    if (!isIapInitialized) return;
+
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
-      if (nextAppState === 'active' && isIapInitialized && !isSyncing.current) {
-        syncSubscriptionStatus().catch(() => {});
+      if (nextAppState === 'active' && !isSyncing.current) {
+        syncSubscriptionStatus().catch(() => { });
       }
     };
 
     const sub = AppState.addEventListener('change', handleAppStateChange);
-
-    return () => {
-      if (purchaseUpdateSub) purchaseUpdateSub.remove();
-      if (purchaseErrorSub) purchaseErrorSub.remove();
-      sub.remove();
-      IAPService.shutdown();
-    };
-  }, [handlePurchaseSuccess, syncSubscriptionStatus, isIapInitialized]);
+    return () => sub.remove();
+  }, [isIapInitialized, syncSubscriptionStatus]);
 
   const purchasePlan = useCallback(async (plan: PlanType) => {
     if (!isIapInitialized) {
@@ -271,17 +275,17 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       });
       return;
     }
-    
+
     try {
       const castedPurchases = await IAPService.getActivePurchases();
-      
+
       if (castedPurchases.length > 0) {
         const sorted = [...castedPurchases].sort((a, b) => b.transactionDate - a.transactionDate);
         const latestPurchase = sorted[0];
-        
+
         await handlePurchaseSuccess(latestPurchase);
         await IAP.finishTransaction({ purchase: latestPurchase });
-        
+
         showAlert({
           title: 'Access Restored',
           message: 'Your Pro membership has been successfully reconciled.',
@@ -315,21 +319,21 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const isPremiumActive = useMemo(() => !!subscription.isPremium, [subscription]);
 
   return (
-    <SubscriptionContext.Provider value={{ 
-      subscription, 
+    <SubscriptionContext.Provider value={{
+      subscription,
       products,
-      isPremium: isPremiumActive, 
-      isLoading: isLoading || (!hasFetched && !error), 
+      isPremium: isPremiumActive,
+      isLoading: isLoading || (!hasFetched && !error),
       error,
       hasFetched,
-      purchasePlan, 
+      purchasePlan,
       restorePurchase,
       manageSubscription,
       resetSubscription,
       showAlert
     }}>
       {children}
-      
+
       <AlertModal
         visible={alertConfig.visible}
         title={alertConfig.title}
