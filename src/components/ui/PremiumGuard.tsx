@@ -3,7 +3,7 @@ import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSubscription } from '../../hooks/useSubscription';
+import { useSubscription } from '@/src/providers/SubscriptionProvider';
 import { useTheme } from '../../providers/ThemeProvider';
 import { TYPOGRAPHY } from '../../theme/typography';
 

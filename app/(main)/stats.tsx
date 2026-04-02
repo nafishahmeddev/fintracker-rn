@@ -10,7 +10,7 @@ import { PremiumGuard } from '../../src/components/ui/PremiumGuard';
 import { DEFAULT_CURRENCY } from '../../src/constants/currency';
 import { useAccounts } from '../../src/features/accounts/hooks/accounts';
 import { useTransactions } from '../../src/features/transactions/hooks/transactions';
-import { useSubscription } from '../../src/hooks/useSubscription';
+import { useSubscription } from '@/src/providers/SubscriptionProvider';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { TYPOGRAPHY } from '../../src/theme/typography';

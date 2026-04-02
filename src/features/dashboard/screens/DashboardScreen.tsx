@@ -18,7 +18,7 @@ import type { Account } from '../../accounts/api/accounts';
 import { AccountFormModal } from '../../accounts/components/AccountFormModal';
 import { useAccounts, useDeleteAccount } from '../../accounts/hooks/accounts';
 import { useTransactions } from '../../transactions/hooks/transactions';
-import { useSubscription } from '../../../hooks/useSubscription';
+import { useSubscription } from '@/src/providers/SubscriptionProvider';
 import { SectionHeader } from '../components/SectionHeader';
 import { TopExpenseCategoriesCard } from '../components/TopExpenseCategoriesCard';
 import { useDashboardStats, useTopExpenseCategories } from '../hooks/dashboard';

@@ -15,7 +15,7 @@ import { useSettings } from '../../src/providers/SettingsProvider';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { TYPOGRAPHY } from '../../src/theme/typography';
-import { useSubscription } from '../../src/hooks/useSubscription';
+import { useSubscription } from '@/src/providers/SubscriptionProvider';
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
