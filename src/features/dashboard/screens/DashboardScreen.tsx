@@ -18,6 +18,7 @@ import type { Account } from '../../accounts/api/accounts';
 import { AccountFormModal } from '../../accounts/components/AccountFormModal';
 import { useAccounts, useDeleteAccount } from '../../accounts/hooks/accounts';
 import { useTransactions } from '../../transactions/hooks/transactions';
+import { useSubscription } from '../../../hooks/useSubscription';
 import { SectionHeader } from '../components/SectionHeader';
 import { TopExpenseCategoriesCard } from '../components/TopExpenseCategoriesCard';
 import { useDashboardStats, useTopExpenseCategories } from '../hooks/dashboard';
@@ -42,6 +43,7 @@ const resolveIconName = (raw: string | null | undefined, fallback: IoniconName):
 
 export function DashboardScreen() {
   const { colors, isDark } = useTheme();
+  const { isPremium } = useSubscription();
   const { profile } = useSettings();
   const { width: screenWidth } = useWindowDimensions();
   const styles = React.useMemo(() => createStyles(colors, screenWidth), [colors, screenWidth]);
@@ -152,6 +154,16 @@ export function DashboardScreen() {
           subtitle={`${getGreeting()}${profile.name ? `, ${profile.name.split(' ')[0]}` : ''}`}
           rightAction={(
             <View style={styles.headerActions}>
+              {!isPremium && (
+                <TouchableOpacity 
+                  style={styles.proBadge} 
+                  onPress={() => router.push('/premium' as any)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="sparkles" size={12} color={colors.primary} />
+                  <Text style={[styles.proBadgeText, { color: colors.primary }]}>PRO</Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/(main)/stats')} activeOpacity={0.85}>
                 <Ionicons name="stats-chart-outline" size={18} color={colors.text} />
               </TouchableOpacity>
@@ -752,5 +764,22 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 6,
+  },
+  proBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: colors.primary + '20',
+    borderWidth: 1,
+    borderColor: colors.primary,
+    marginRight: 4,
+  },
+  proBadgeText: {
+    fontFamily: TYPOGRAPHY.fonts.semibold,
+    fontSize: 10,
+    letterSpacing: 0.5,
   },
 });

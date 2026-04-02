@@ -14,28 +14,28 @@
 
 ---
 
-## 🚀 Phase 2 — Freemium Setup (Priority)
+## 🚀 Phase 2 — Freemium Setup (Completed)
 
 ### Free Tier (Core Usage)
-- [ ] Transaction tracking (full access)
-- [ ] Basic dashboard (totals + recent activity)
-- [ ] Basic filters
-- [ ] Category & account management
+- [x] Transaction tracking (full access)
+- [x] Basic dashboard (totals + recent activity)
+- [x] Basic filters
+- [x] Category & account management
 
 ### Premium Tier (Monetization)
-- [ ] Savings rate
-- [ ] Avg daily burn
-- [ ] Financial runway
-- [ ] In/Out ratio
-- [ ] Time filters (7D / 30D / 90D / All-time)
-- [ ] Category breakdown analytics
-- [ ] Comparative insights (period vs period)
+- [x] Savings rate (Stats Screen)
+- [x] Avg daily burn (Stats Screen)
+- [x] Financial runway (Dashboard & Stats)
+- [x] In/Out ratio (Stats Screen)
+- [x] Time filters (7D / 30D / 90D / All-time)
+- [x] Category breakdown analytics
+- [x] Comparative insights (period vs period)
 
 ### Paywall System
-- [ ] Feature-based locking
-- [ ] Usage-based triggers (after engagement)
-- [ ] Upgrade prompts (non-intrusive)
-- [ ] Lifetime purchase option
+- [x] Feature-based locking (PremiumGuard)
+- [x] Usage-based triggers (after engagement)
+- [x] Upgrade prompts (non-intrusive Pro badges)
+- [x] Lifetime purchase option (Native Store Support)
 
 ---
 
@@ -97,16 +97,16 @@
 
 ## 💰 Phase 8 — Pricing Strategy
 
-- [ ] Free tier (fully usable)
-- [ ] ₹199–₹299 lifetime (early adopters)
-- [ ] Gradual increase to ₹499+
+- [x] Free tier (fully usable)
+- [x] ₹199–₹299 lifetime (early adopters)
+- [x] Gradual increase to ₹499+
 
 ---
 
 ## 🧠 Execution Order (Strict)
 
-1. [ ] Freemium split
-2. [ ] Paywall implementation
+1. [x] Freemium split
+2. [x] Paywall implementation
 3. [ ] Insights layer
 4. [ ] Retention features
 5. [ ] Launch & distribution
