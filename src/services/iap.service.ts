@@ -7,8 +7,7 @@ import { Linking, Platform } from 'react-native';
 export interface IAPProduct {
   id: string;
   displayPrice: string;
-  priceAmount: number;
-  currencySymbol: string;
+  originalPrice?: string;
   title: string;
   description: string;
 }
@@ -93,14 +92,30 @@ export class IAPService {
       const products = await IAP.fetchProducts({ skus, type: "all" });
       
       if (products && products.length > 0) {
-        return products.map(p => ({
-          id: p.id,
-          displayPrice: p.displayPrice,
-          priceAmount: parseFloat(p.displayPrice.replace(/[^0-9.]/g, '')) || 0,
-          currencySymbol: p.displayPrice.replace(/[0-9.,]/g, '').trim(),
-          title: p.title,
-          description: p.description,
-        }));
+        return products.map(p => {
+          let originalPrice: string | undefined;
+
+          // For Android, check if there's a discount offer to get the original/full price
+          if (p.platform === 'android') {
+            const offer = (p as any).discountOffers?.[0];
+            if (offer?.fullPriceMicrosAndroid) {
+              const fullPrice = parseFloat(offer.fullPriceMicrosAndroid) / 1000000;
+              const currency = offer.currency || 'USD';
+              originalPrice = new Intl.NumberFormat(undefined, {
+                style: 'currency',
+                currency,
+              }).format(fullPrice);
+            }
+          }
+
+          return {
+            id: p.id,
+            displayPrice: p.displayPrice || '',
+            originalPrice,
+            title: p.title,
+            description: p.description,
+          };
+        });
       }
       return [];
     });

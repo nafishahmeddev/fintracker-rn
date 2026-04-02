@@ -12,13 +12,12 @@ import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, Touch
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 /**
- * PremiumScreen: The primary paywall for Luno Pro Lifetime access.
- * Refined for high hierarchy and flat glassmorphic aesthetics.
- * The pricing is now the focal point, with a compact features list.
+ * PremiumScreen: Consolidates conversion and detailed information.
+ * Refined to match the 'Settings' pattern for a cohesive app experience.
  */
 export default function PremiumScreen() {
   const { colors, isDark } = useTheme();
-  const { products, purchasePremium, restorePurchase, isPremium, isLoading, error } = usePremium();
+  const { products, purchasePremium, restorePurchase, isPremium, isLoading } = usePremium();
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -110,16 +109,16 @@ export default function PremiumScreen() {
         <View style={styles.heroSection}>
           <Text style={styles.heroKicker}>ONE-TIME UPGRADE</Text>
           <Text style={styles.heroTitle}>Unlock peak financial clarity.</Text>
-          <Text style={styles.heroSubtitle}>Unlock all professional tools with a single permanent license.</Text>
+          <Text style={styles.heroSubtitle}>No subscriptions. One payment for permanent access to all professional tools.</Text>
         </View>
 
-        {/* ── Main Offer Card (PRIORITIZED HIERARCHY) ── */}
+        {/* ── Main Offer Card (Primary CTA) ── */}
         <View style={styles.offerSection}>
           <View style={styles.lifetimeCard}>
             <View style={styles.cardHeader}>
               <View>
                 <Text style={styles.cardTitle}>LIFETIME ACCESS</Text>
-                <Text style={styles.cardSubtitle}>Complete Pro Suite</Text>
+                <Text style={styles.cardSubtitle}>Forever Pro License</Text>
               </View>
               <View style={styles.cardBadge}>
                 <Text style={styles.cardBadgeText}>BEST VALUE</Text>
@@ -129,8 +128,13 @@ export default function PremiumScreen() {
             <View style={styles.priceContainer}>
               {lifetimeProduct ? (
                 <>
-                  <Text style={styles.priceValue}>{lifetimeProduct.displayPrice}</Text>
-                  <Text style={styles.priceSuffix}>ONE-TIME</Text>
+                  <View style={styles.priceRow}>
+                    {lifetimeProduct.originalPrice && (
+                      <Text style={styles.originalPrice}>{lifetimeProduct.originalPrice}</Text>
+                    )}
+                    <Text style={styles.priceValue}>{lifetimeProduct.displayPrice}</Text>
+                  </View>
+                  <Text style={styles.priceSuffix}>ONE-TIME Only</Text>
                 </>
               ) : isLoading ? (
                 <ActivityIndicator color={colors.primary} />
@@ -143,30 +147,32 @@ export default function PremiumScreen() {
             
             <View style={styles.trustInfo}>
                 <View style={styles.trustRow}>
-                  <Ionicons name="shield-checkmark" style={styles.trustIcon} size={14} color={colors.success} />
-                  <Text style={styles.trustText}>Permanent Apple/Google Device License</Text>
+                  <Ionicons name="shield-checkmark" size={14} color={colors.success} />
+                  <Text style={styles.trustText}>Permanent Device Account License</Text>
                 </View>
                 <View style={styles.trustRow}>
-                    <Ionicons name="cloud-done" style={styles.trustIcon} size={14} color={colors.success} />
+                    <Ionicons name="cloud-done" size={14} color={colors.success} />
                     <Text style={styles.trustText}>All future tool updates included</Text>
                 </View>
             </View>
           </View>
         </View>
 
-        {/* ── Compact Feature Section ── */}
+        {/* ── Detailed Features (Settings Pattern) ── */}
         <View style={styles.featuresSection}>
           <Text style={styles.sectionLabel}>PRO CAPABILITIES</Text>
-          
-          <View style={styles.featuresGrid}>
+          <View style={styles.settingsCard}>
             {FEATURES.map((feature, index) => (
-              <View key={index} style={styles.featureRow}>
-                <View style={[styles.featureIconWrap, { backgroundColor: colors.primary + '15' }]}>
-                  <Ionicons name={feature.icon as any} size={16} color={colors.primary} />
+              <View key={index} style={[styles.settingsRow, index === FEATURES.length - 1 && { borderBottomWidth: 0 }]}>
+                <View style={[styles.iconBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                  <Ionicons name={feature.icon as any} size={18} color={colors.text} />
                 </View>
-                <View style={styles.featureInfo}>
-                  <Text style={styles.featureTitle}>{feature.title}</Text>
-                  <Text style={styles.featureDesc} numberOfLines={2}>{feature.description}</Text>
+                <View style={styles.textDetails}>
+                  <Text style={styles.rowTitle}>{feature.title}</Text>
+                  <Text style={styles.rowSubtitle} numberOfLines={1}>{feature.description}</Text>
+                </View>
+                <View style={styles.rowRightSide}>
+                   <Ionicons name="sparkles" size={14} color={colors.primary} />
                 </View>
               </View>
             ))}
@@ -174,13 +180,6 @@ export default function PremiumScreen() {
         </View>
 
         {/* ── Error State ── */}
-        {error && (
-          <View style={styles.errorBox}>
-            <Ionicons name="alert-circle" size={24} color={colors.danger} />
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )}
-
         <View style={styles.brandingBox}>
           <Text style={styles.brandingText}>LUNO / PRO SYSTEM</Text>
         </View>
@@ -229,13 +228,12 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
 
   offerSection: { marginBottom: 28 },
   lifetimeCard: {
-    backgroundColor: colors.surface + '80', // Glassmorphic transparency
+    backgroundColor: colors.surface + '80',
     borderRadius: 24,
     padding: 22,
     borderWidth: 1.5,
     borderColor: colors.primary,
     position: 'relative',
-    // No elevation or shadows for flat glass look
   },
   cardHeader: {
     flexDirection: 'row',
@@ -248,40 +246,64 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
   cardBadge: { backgroundColor: colors.primary, paddingHorizontal: 9, height: 20, borderRadius: 10, justifyContent: 'center' },
   cardBadgeText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 8, color: colors.background, letterSpacing: 1 },
 
-  priceContainer: { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 18 },
-  priceValue: { fontFamily: TYPOGRAPHY.fonts.amountBold, fontSize: 42, color: colors.text, letterSpacing: -1 },
-  priceSuffix: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 14, color: colors.textMuted, letterSpacing: 0.5 },
+  priceContainer: { marginBottom: 18 },
+  priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10 },
+  originalPrice: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 18, color: colors.textMuted, textDecorationLine: 'line-through', opacity: 0.6 },
+  priceValue: { fontFamily: TYPOGRAPHY.fonts.amountBold, fontSize: 44, color: colors.text, letterSpacing: -1.5 },
+  priceSuffix: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 13, color: colors.textMuted, opacity: 0.8 },
   priceError: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 14, color: colors.danger },
 
   cardDivider: { height: 1, backgroundColor: colors.border, marginBottom: 14, opacity: 0.5 },
   trustInfo: { gap: 8 },
   trustRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  trustIcon: { width: 14 },
   trustText: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 11, color: colors.success, letterSpacing: 0.1 },
 
-  sectionLabel: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 10, color: colors.textMuted, letterSpacing: 2, marginBottom: 16, opacity: 0.8 },
+  sectionLabel: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 10, color: colors.textMuted, letterSpacing: 2, marginBottom: 14, opacity: 0.8 },
   
+  /* ── Settings-like Feature Styles ── */
   featuresSection: { marginBottom: 32 },
-  featuresGrid: { gap: 12 },
-  featureRow: {
-      flexDirection: 'row',
-      backgroundColor: colors.surface + '50',
-      borderRadius: 20,
-      padding: 14,
-      gap: 14,
-      borderWidth: 1,
-      borderColor: colors.border,
+  settingsCard: {
+    borderRadius: 20,
+    backgroundColor: colors.surface + '80',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  featureIconWrap: {
-      width: 38,
-      height: 38,
-      borderRadius: 12,
-      justifyContent: 'center',
-      alignItems: 'center',
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  featureInfo: { flex: 1, justifyContent: 'center' },
-  featureTitle: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 14, color: colors.text, marginBottom: 1 },
-  featureDesc: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 12, color: colors.textMuted, lineHeight: 16 },
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    marginRight: 14,
+  },
+  textDetails: {
+    flex: 1,
+  },
+  rowTitle: {
+    fontFamily: TYPOGRAPHY.fonts.semibold,
+    fontSize: 16,
+    color: colors.text,
+  },
+  rowSubtitle: {
+    fontFamily: TYPOGRAPHY.fonts.regular,
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  rowRightSide: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
 
   brandingBox: { alignItems: 'center', marginTop: 10, marginBottom: 0 },
   brandingText: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.text + '20', letterSpacing: 3 },
@@ -319,7 +341,4 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
   proActions: { gap: 16, marginBottom: 12 },
   actionBtn: { height: 72, backgroundColor: colors.text, borderRadius: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 },
   actionBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 15, color: colors.background, letterSpacing: 2 },
-
-  errorBox: { padding: 18, borderRadius: 18, backgroundColor: colors.danger + '10', alignItems: 'center', marginBottom: 20 },
-  errorText: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 13, color: colors.danger, textAlign: 'center' },
 });
