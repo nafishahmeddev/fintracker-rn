@@ -11,11 +11,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SKU_LIFETIME, SKU_MONTHLY, SKU_YEARLY } from '@/src/constants/iap';
 
 const FEATURES = [
-  { icon: 'infinite', title: 'Financial Runway', description: 'Know exactly how many days your balance lasts.' },
-  { icon: 'trending-up', title: 'Advanced Analytics', description: 'Get deep insights into your spending habits.' },
-  { icon: 'calendar', title: 'Custom Time Ranges', description: 'Filter your data by any period (30D, 90D, All-time).' },
-  { icon: 'pie-chart', title: 'Category Breakdown', description: 'Detailed visualization of where your money goes.' },
-  { icon: 'git-compare', title: 'Period Comparison', description: 'Compare this month vs last month to track progress.' },
+  { icon: 'infinite', title: 'Absolute Runway', description: 'Know exactly how many days your capital will last at current burn.' },
+  { icon: 'trending-up', title: 'Burn Analytics', description: 'Detect spending anomalies and trends before they impact you.' },
+  { icon: 'calendar', title: 'Universal Filters', description: 'Shift perspective with 7D, 30D, 90D, and All-Time windowing.' },
+  { icon: 'pie-chart', title: 'Capital Distribution', description: 'Precision breakdown of every cent across your core sectors.' },
+  { icon: 'git-compare', title: 'Delta Comparison', description: 'Objective performance metrics: this month vs. the previous.' },
 ];
 
 export default function PremiumScreen() {
