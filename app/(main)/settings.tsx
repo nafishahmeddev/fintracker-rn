@@ -19,7 +19,7 @@ import { useSubscription } from '@/src/providers/SubscriptionProvider';
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
-  const { subscription, isPremium, isTrialActive, trialDaysRemaining, resetSubscription } = useSubscription();
+  const { subscription, isPremium, resetSubscription } = useSubscription();
   const { profile, updateProfile } = useSettings();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const router = useRouter();
@@ -145,24 +145,22 @@ export default function SettingsScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>SUBSCRIPTION</Text>
-          <View style={[styles.card, (isPremium || isTrialActive) && { borderColor: colors.primary, borderWidth: 1.5 }]}>
+          <View style={[styles.card, isPremium && { borderColor: colors.primary, borderWidth: 1.5 }]}>
             <PreferenceRow
-              icon={(isPremium || isTrialActive) ? "sparkles" : "star-outline"}
+              icon={isPremium ? "sparkles" : "star-outline"}
               title={
-                isTrialActive ? `Free Trial (${trialDaysRemaining} days)` :
                 subscription.planType === 'LIFETIME' ? 'Luno Pro (Lifetime)' :
                 subscription.planType === 'YEARLY' ? 'Luno Pro (Yearly)' :
                 subscription.planType === 'MONTHLY' ? 'Luno Pro (Monthly)' :
                 'Upgrade to Pro'
               }
-              value={(isPremium || isTrialActive) ? "ACTIVE" : "FREE"}
+              value={isPremium ? "ACTIVE" : "FREE"}
               subtitle={
-                isTrialActive ? "Experience all pro features for free" :
                 isPremium ? "Enjoying full access to all features" :
                 "Unlock advanced analytics & insights"
               }
               onPress={() => router.push('/premium' as any)}
-              color={(isPremium || isTrialActive) ? colors.primary : undefined}
+              color={isPremium ? colors.primary : undefined}
               isLast
             />
           </View>

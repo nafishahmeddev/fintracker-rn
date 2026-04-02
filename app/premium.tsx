@@ -11,16 +11,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SKU_LIFETIME, SKU_MONTHLY, SKU_YEARLY } from '@/src/constants/iap';
 
 const FEATURES = [
-  { icon: 'infinite', title: 'Absolute Runway', description: 'Know exactly how many days your capital will last at current burn.' },
-  { icon: 'trending-up', title: 'Burn Analytics', description: 'Detect spending anomalies and trends before they impact you.' },
-  { icon: 'calendar', title: 'Universal Filters', description: 'Shift perspective with 7D, 30D, 90D, and All-Time windowing.' },
-  { icon: 'pie-chart', title: 'Capital Distribution', description: 'Precision breakdown of every cent across your core sectors.' },
-  { icon: 'git-compare', title: 'Delta Comparison', description: 'Objective performance metrics: this month vs. the previous.' },
+  { icon: 'infinite', title: 'Absolute Runway', description: 'Real-time calculation of exactly how long your capital will last.' },
+  { icon: 'trending-up', title: 'Advanced Burn Analytics', description: 'Identifying spending velocity and anomalies before they trend.' },
+  { icon: 'calendar', title: 'Universal Time Filters', description: 'Deep historical perspective with 7D, 30D, 90D, and All-Time windowing.' },
+  { icon: 'pie-chart', title: 'Sector Distribution', description: 'Precision multi-account breakdown across your entire asset portfolio.' },
+  { icon: 'git-compare', title: 'Performance Deltas', description: 'Objective growth and burn metrics: current vs. previous period.' },
+  { icon: 'shield-checkmark', title: 'Secure & Private', description: 'Native transactions. Your data stays on your device, always.' },
 ];
 
 export default function PremiumScreen() {
   const { colors, isDark } = useTheme();
-  const { subscription, products, purchasePlan, restorePurchase, startTrial, isPremium } = useSubscription();
+  const { products, purchasePlan, restorePurchase, isPremium } = useSubscription();
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -56,9 +57,22 @@ export default function PremiumScreen() {
     return plans.map(plan => {
       const product = products.find(p => p.id === plan.sku);
       if (!product) return null;
+      
+      // Manually add an "offer" effect for Lifetime
+      let originalPrice = null;
+      if (plan.id === 'LIFETIME') {
+        const symbol = product.displayPrice.replace(/[0-9., ]/g, '').trim();
+        // Assuming original is roughly 3.5x for the strikethrough effect
+        const currentVal = parseFloat(product.displayPrice.replace(/[^0-9.]/g, ''));
+        if (!isNaN(currentVal)) {
+          originalPrice = `${symbol}${Math.round(currentVal * 3.5)}`;
+        }
+      }
+
       return {
         ...plan,
         price: product.displayPrice,
+        originalPrice,
       };
     }).filter(p => !!p) as any[];
   }, [products]);
@@ -89,12 +103,6 @@ export default function PremiumScreen() {
     setIsProcessing(false);
   }, [restorePurchase]);
 
-  const handleStartTrial = useCallback(async () => {
-    setIsProcessing(true);
-    await startTrial();
-    setIsProcessing(false);
-    router.back();
-  }, [startTrial, router]);
 
   if (isPremium && !isProcessing) {
     return (
@@ -143,30 +151,11 @@ export default function PremiumScreen() {
         
         {/* ── Editorial Hero ── */}
         <View style={styles.heroSection}>
-          <Text style={styles.heroKicker}>UPGRADE SERVICE</Text>
+          <Text style={styles.heroKicker}>PRO SERVICE</Text>
           <Text style={styles.heroTitle}>Limitless control{"\n"}over your capital.</Text>
+          <Text style={styles.heroSubtitle}>All plans include a 14-day free trial managed by your app store.</Text>
         </View>
 
-        {/* ── Trial Card ── */}
-        {!subscription.trialStartedAt && !isPremium && (
-          <View style={styles.trialCard}>
-            <View style={styles.trialContent}>
-              <View style={styles.trialBadge}>
-                <Text style={styles.trialBadgeText}>14D TRIAL</Text>
-              </View>
-              <Text style={styles.trialTitle}>Pure experience.</Text>
-              <Text style={styles.trialSubtitle}>Experience Pro free for 14 days. No string attached.</Text>
-            </View>
-            <TouchableOpacity 
-              style={styles.trialBtn}
-              onPress={handleStartTrial}
-              disabled={isProcessing}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.trialBtnText}>ACTIVATE</Text>
-            </TouchableOpacity>
-          </View>
-        )}
         
         {/* ── Pricing Grid ── */}
         <View style={styles.pricingSection}>
@@ -194,8 +183,15 @@ export default function PremiumScreen() {
                     {isSelected && <Ionicons name="checkmark-circle" size={16} color={colors.primary} />}
                   </View>
                   <View style={styles.priceRow}>
-                    <Text style={styles.planPrice}>{plan.price}</Text>
-                    <Text style={styles.planPeriod}>{plan.period}</Text>
+                    <View>
+                      {plan.originalPrice && (
+                        <Text style={styles.originalPrice}>{plan.originalPrice}</Text>
+                      )}
+                      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+                        <Text style={styles.planPrice}>{plan.price}</Text>
+                        <Text style={styles.planPeriod}>{plan.period}</Text>
+                      </View>
+                    </View>
                   </View>
                 </TouchableOpacity>
               );
@@ -277,6 +273,7 @@ const createStyles = (colors: any, screenWidth: number) => StyleSheet.create({
   heroSection: { marginTop: 24, marginBottom: 32 },
   heroKicker: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.primary, letterSpacing: 2, marginBottom: 8 },
   heroTitle: { fontFamily: TYPOGRAPHY.fonts.headingRegular, fontSize: 36, lineHeight: 42, color: colors.text, letterSpacing: -1.5 },
+  heroSubtitle: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 13, color: colors.textMuted, marginTop: 12, lineHeight: 20 },
   
   trialCard: {
     backgroundColor: colors.surface,
@@ -315,13 +312,14 @@ const createStyles = (colors: any, screenWidth: number) => StyleSheet.create({
   planName: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 11, color: colors.textMuted, letterSpacing: 1 },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
   planPrice: { fontFamily: TYPOGRAPHY.fonts.amountBold, fontSize: 26, color: colors.text, letterSpacing: -1 },
+  originalPrice: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 13, color: colors.textMuted, textDecorationLine: 'line-through', marginBottom: -2 },
   planPeriod: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 14, color: colors.textMuted },
   planBadge: { position: 'absolute', top: -10, right: 20, backgroundColor: colors.primary, paddingHorizontal: 10, height: 22, borderRadius: 11, justifyContent: 'center' },
   planBadgeText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 9, color: colors.background, letterSpacing: 0.5 },
 
   featuresSection: { marginBottom: 32 },
   featuresCard: { backgroundColor: colors.surface, borderRadius: 24, overflow: 'hidden', padding: 8 },
-  featureRow: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border + '60' },
+  featureRow: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border + '25' },
   featureIconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   featureMeta: { flex: 1 },
 

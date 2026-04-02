@@ -9,8 +9,6 @@ export type PlanType = 'MONTHLY' | 'YEARLY' | 'LIFETIME';
 export interface SubscriptionState {
   isPremium: boolean;
   planType: PlanType | null;
-  trialStartedAt: string | null;
-  trialEndsAt: string | null;
   purchasedAt: string | null;
   expiresAt: string | null;
 }
@@ -21,12 +19,9 @@ type SubscriptionContextType = {
   subscription: SubscriptionState;
   products: Product[];
   isPremium: boolean;
-  isTrialActive: boolean;
-  trialDaysRemaining: number | null;
   isLoading: boolean;
   purchasePlan: (plan: PlanType) => Promise<void>;
   restorePurchase: () => Promise<void>;
-  startTrial: () => Promise<void>;
   resetSubscription: () => Promise<void>;
 };
 
@@ -39,13 +34,10 @@ export function useSubscription() {
 }
 
 const STORAGE_KEY = '@luno_subscription_v4';
-const TRIAL_DURATION_DAYS = 14;
 
 const INITIAL_STATE: SubscriptionState = {
   isPremium: false,
   planType: null,
-  trialStartedAt: null,
-  trialEndsAt: null,
   purchasedAt: null,
   expiresAt: null,
 };
@@ -92,8 +84,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         planType,
         purchasedAt: now.toISOString(),
         expiresAt,
-        trialStartedAt: null, // Reset trial if they buy
-        trialEndsAt: null,
       };
       await saveSubscription(newState);
     }
@@ -157,20 +147,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     };
   }, [handlePurchaseSuccess]);
 
-  const startTrial = useCallback(async () => {
-    if (subscription.trialStartedAt) return;
-
-    const now = new Date();
-    const ends = new Date();
-    ends.setDate(now.getDate() + TRIAL_DURATION_DAYS);
-
-    const newState: SubscriptionState = {
-      ...subscription,
-      trialStartedAt: now.toISOString(),
-      trialEndsAt: ends.toISOString(),
-    };
-    await saveSubscription(newState);
-  }, [subscription, saveSubscription]);
 
   const purchasePlan = useCallback(async (plan: PlanType) => {
     if (!isIapInitialized) {
@@ -223,35 +199,19 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     await saveSubscription(INITIAL_STATE);
   }, [saveSubscription]);
 
-  // Derivative state
-  const isTrialActive = useMemo(() => !!(
-    subscription.trialEndsAt && 
-    new Date(subscription.trialEndsAt) > new Date() && 
-    !subscription.isPremium
-  ), [subscription]);
-
-  const trialDaysRemaining = useMemo(() => subscription.trialEndsAt
-    ? Math.max(0, Math.ceil((new Date(subscription.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-    : null, [subscription]);
-
   const isPremiumActive = useMemo(() => !!(
     subscription.isPremium && 
     (!subscription.expiresAt || new Date(subscription.expiresAt) > new Date())
   ), [subscription]);
 
-  const isAccessGranted = isPremiumActive || isTrialActive;
-
   return (
     <SubscriptionContext.Provider value={{ 
       subscription, 
       products,
-      isPremium: isAccessGranted, 
-      isTrialActive, 
-      trialDaysRemaining,
+      isPremium: isPremiumActive, 
       isLoading, 
       purchasePlan, 
       restorePurchase,
-      startTrial,
       resetSubscription 
     }}>
       {children}
