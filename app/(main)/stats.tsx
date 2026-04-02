@@ -1,3 +1,4 @@
+import { usePremium } from '@/src/providers/PremiumProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -10,7 +11,6 @@ import { PremiumGuard } from '../../src/components/ui/PremiumGuard';
 import { DEFAULT_CURRENCY } from '../../src/constants/currency';
 import { useAccounts } from '../../src/features/accounts/hooks/accounts';
 import { useTransactions } from '../../src/features/transactions/hooks/transactions';
-import { usePremium } from '@/src/providers/PremiumProvider';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { TYPOGRAPHY } from '../../src/theme/typography';
@@ -276,12 +276,12 @@ export default function StatsScreen() {
             {RANGE_OPTIONS.map((option) => {
               const active = option.value === selectedRange;
               const isLocked = !isPremium && option.value !== 7;
-              
+
               return (
                 <TouchableOpacity
                   key={option.label}
                   style={[
-                    styles.segmentPill, 
+                    styles.segmentPill,
                     active && styles.segmentPillActive,
                     isLocked && styles.segmentPillLocked
                   ]}
@@ -306,7 +306,7 @@ export default function StatsScreen() {
           <View style={styles.snapshotTopRow}>
             <View>
               <Text style={styles.snapshotKicker}>NET POSITION</Text>
-              <MoneyText amount={summary.net} currency={selectedCurrency} type={summary.net >= 0 ? 'CR' : 'DR'} style={styles.snapshotAmount} weight="bold" />
+              <MoneyText amount={Math.abs(summary.net)} currency={selectedCurrency} type={summary.net >= 0 ? 'CR' : 'DR'} style={styles.snapshotAmount} weight="bold" />
             </View>
             <View style={styles.rangeBadge}>
               <Text style={styles.rangeBadgeText}>{selectedRange === null ? 'ALL TIME' : `${selectedRange} DAYS`}</Text>
@@ -550,7 +550,7 @@ export default function StatsScreen() {
         <View style={styles.sectionCard}>
           {practicalMetrics.largestExpense ? (
             <View style={styles.highlightRow}>
-              <View style={[styles.listIcon, { backgroundColor: colors.danger + '1A' }]}> 
+              <View style={[styles.listIcon, { backgroundColor: colors.danger + '1A' }]}>
                 <Ionicons
                   name={resolveIconName(practicalMetrics.largestExpense.category.icon, 'pricetag-outline')}
                   size={16}
