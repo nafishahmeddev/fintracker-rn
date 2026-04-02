@@ -22,8 +22,6 @@ export interface SubscriptionState {
   isPremium: boolean;
   /** The tier of the current plan. */
   planType: PlanType | null;
-  /** ISO timestamp of when the purchase was originally made. */
-  purchasedAt: string | null;
 }
 
 /**
@@ -69,7 +67,6 @@ const STORAGE_KEY = '@luno_subscription_v4';
 const INITIAL_STATE: SubscriptionState = {
   isPremium: false,
   planType: null,
-  purchasedAt: null,
 };
 
 /**
@@ -102,7 +99,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
    */
   const handlePurchaseSuccess = useCallback(async (purchase: IAP.Purchase) => {
     const sku = purchase.productId;
-    const now = new Date();
     let planType: PlanType | null = null;
 
     if (sku === SKU_MONTHLY) planType = 'MONTHLY';
@@ -113,7 +109,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       const newState: SubscriptionState = {
         isPremium: true,
         planType,
-        purchasedAt: new Date(purchase.transactionDate || now.getTime()).toISOString(),
       };
       await saveSubscription(newState);
     }
