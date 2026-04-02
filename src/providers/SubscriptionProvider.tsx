@@ -232,9 +232,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     let purchaseErrorSub: { remove: () => void } | undefined;
 
     const initIAP = async () => {
-      console.log('[Subscription] Initializing IAP via Service...');
+      console.log('[Subscription] initIAP effect triggered');
       try {
+        console.log('[Subscription] Calling IAPService.init()...');
         const connected = await IAPService.init();
+        console.log('[Subscription] IAPService.init() result:', connected);
         setIsIapInitialized(connected);
         
         if (connected) {
@@ -253,7 +255,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
             }
           });
 
+          console.log('[Subscription] Calling IAPService.getProducts() with SKUs:', ALL_SKUS);
           const fetched = await IAPService.getProducts(ALL_SKUS);
+          console.log('[Subscription] IAPService.getProducts() returned:', fetched.length, 'products');
           setProducts(fetched);
           setHasFetched(true);
 

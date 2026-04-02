@@ -28,10 +28,15 @@ export class IAPService {
    */
   static async init(): Promise<boolean> {
     try {
-      if (this.isInitialized) return true;
+      console.log('[IAPService] Calling IAP.initConnection()...');
+      if (this.isInitialized) {
+        console.log('[IAPService] Already initialized.');
+        return true;
+      }
       const connected = await IAP.initConnection();
-      this.isInitialized = connected;
-      return connected;
+      console.log('[IAPService] IAP.initConnection() result:', connected);
+      this.isInitialized = !!connected;
+      return !!connected;
     } catch (error) {
       console.error('[IAPService] init error:', error);
       return false;
@@ -42,9 +47,16 @@ export class IAPService {
    * Fetches products from the store.
    */
   static async getProducts(skus: string[]): Promise<IAPProduct[]> {
+    console.log('[IAPService] getProducts() called for SKUs:', skus);
     try {
-      const products = await IAP.fetchProducts({ skus });
-      
+      if (skus.length === 0) {
+        console.warn('[IAPService] getProducts() called with empty SKUs list.');
+        return [];
+      }
+      console.log('[IAPService] Calling IAP.fetchProducts()...');
+      const products = await IAP.fetchProducts({ skus, type: "all" });
+      console.log('[IAPService] IAP.fetchProducts() raw result:', products?.length || 0, 'items');
+
       if (products && products.length > 0) {
         return products.map(p => ({
           id: p.id,
