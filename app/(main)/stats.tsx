@@ -1,13 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
 import { Header } from '../../src/components/ui/Header';
 import { MoneyText } from '../../src/components/ui/MoneyText';
+import { PremiumGuard } from '../../src/components/ui/PremiumGuard';
 import { DEFAULT_CURRENCY } from '../../src/constants/currency';
 import { useAccounts } from '../../src/features/accounts/hooks/accounts';
 import { useTransactions } from '../../src/features/transactions/hooks/transactions';
+import { useSubscription } from '@/src/providers/SubscriptionProvider';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { TYPOGRAPHY } from '../../src/theme/typography';
@@ -46,6 +49,8 @@ const computeFlow = (items: { type: 'CR' | 'DR'; amount: number }[]) =>
 
 export default function StatsScreen() {
   const { colors } = useTheme();
+  const { isPremium } = useSubscription();
+  const router = useRouter();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const { data: transactions, isLoading: txLoading } = useTransactions();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
@@ -56,7 +61,7 @@ export default function StatsScreen() {
   }, [accounts]);
 
   const [selectedCurrency, setSelectedCurrency] = React.useState(currencyKeys[0]);
-  const [selectedRange, setSelectedRange] = React.useState<(typeof RANGE_OPTIONS)[number]['value']>(30);
+  const [selectedRange, setSelectedRange] = React.useState<(typeof RANGE_OPTIONS)[number]['value']>(7);
 
   React.useEffect(() => {
     if (!currencyKeys.includes(selectedCurrency)) {
@@ -270,14 +275,27 @@ export default function StatsScreen() {
           <View style={styles.segmentRow}>
             {RANGE_OPTIONS.map((option) => {
               const active = option.value === selectedRange;
+              const isLocked = !isPremium && option.value !== 7;
+              
               return (
                 <TouchableOpacity
                   key={option.label}
-                  style={[styles.segmentPill, active && styles.segmentPillActive]}
-                  onPress={() => setSelectedRange(option.value)}
+                  style={[
+                    styles.segmentPill, 
+                    active && styles.segmentPillActive,
+                    isLocked && styles.segmentPillLocked
+                  ]}
+                  onPress={() => {
+                    if (isLocked) {
+                      router.push('/premium');
+                    } else {
+                      setSelectedRange(option.value);
+                    }
+                  }}
                   activeOpacity={0.85}
                 >
                   <Text style={[styles.segmentText, active && styles.segmentTextActive]}>{option.label}</Text>
+                  {isLocked && <Ionicons name="lock-closed" size={10} color={colors.textMuted} style={styles.lockIcon} />}
                 </TouchableOpacity>
               );
             })}
@@ -315,82 +333,86 @@ export default function StatsScreen() {
           <Text style={styles.sectionTitle}>PRACTICAL INSIGHTS</Text>
           <Text style={styles.sectionHint}>{selectedCurrency}</Text>
         </View>
-        <View style={styles.sectionCard}>
-          <View style={styles.metricGrid}>
-            <View style={styles.metricCell}>
-              <Text style={styles.metricLabel}>AVG DAILY BURN</Text>
-              <MoneyText amount={practicalMetrics.dailyBurn} currency={selectedCurrency} type="DR" style={styles.metricValue} weight="bold" />
-            </View>
-            <View style={styles.metricCell}>
-              <Text style={styles.metricLabel}>SAVINGS RATE</Text>
-              <Text style={styles.metricPlainValue}>{`${(practicalMetrics.savingsRate * 100).toFixed(1)}%`}</Text>
-            </View>
-            <View style={styles.metricCell}>
-              <Text style={styles.metricLabel}>RUNWAY</Text>
-              <Text style={styles.metricPlainValue}>{practicalMetrics.runwayDays === null ? 'No burn' : `${Math.max(0, practicalMetrics.runwayDays).toFixed(0)} days`}</Text>
-            </View>
-            <View style={styles.metricCell}>
-              <Text style={styles.metricLabel}>IN/OUT RATIO</Text>
-              <Text style={styles.metricPlainValue}>{practicalMetrics.flowRatio === null ? 'N/A' : `${practicalMetrics.flowRatio.toFixed(2)}x`}</Text>
+        <PremiumGuard label="INSIGHTS PRO">
+          <View style={styles.sectionCard}>
+            <View style={styles.metricGrid}>
+              <View style={styles.metricCell}>
+                <Text style={styles.metricLabel}>AVG DAILY BURN</Text>
+                <MoneyText amount={practicalMetrics.dailyBurn} currency={selectedCurrency} type="DR" style={styles.metricValue} weight="bold" />
+              </View>
+              <View style={styles.metricCell}>
+                <Text style={styles.metricLabel}>SAVINGS RATE</Text>
+                <Text style={styles.metricPlainValue}>{`${(practicalMetrics.savingsRate * 100).toFixed(1)}%`}</Text>
+              </View>
+              <View style={styles.metricCell}>
+                <Text style={styles.metricLabel}>RUNWAY</Text>
+                <Text style={styles.metricPlainValue}>{practicalMetrics.runwayDays === null ? 'No burn' : `${Math.max(0, practicalMetrics.runwayDays).toFixed(0)} days`}</Text>
+              </View>
+              <View style={styles.metricCell}>
+                <Text style={styles.metricLabel}>IN/OUT RATIO</Text>
+                <Text style={styles.metricPlainValue}>{practicalMetrics.flowRatio === null ? 'N/A' : `${practicalMetrics.flowRatio.toFixed(2)}x`}</Text>
+              </View>
             </View>
           </View>
-        </View>
+        </PremiumGuard>
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>PERIOD DELTA</Text>
           <Text style={styles.sectionHint}>{selectedRange === null ? 'Unavailable for ALL' : `vs previous ${selectedRange}D`}</Text>
         </View>
-        <View style={styles.sectionCard}>
-          {comparison ? (
-            <View style={styles.deltaList}>
-              <View style={styles.deltaRow}>
-                <View style={styles.deltaMeta}>
-                  <Ionicons name={comparison.deltaIncome >= 0 ? 'arrow-up' : 'arrow-down'} size={14} color={comparison.deltaIncome >= 0 ? colors.success : colors.danger} />
-                  <Text style={styles.deltaLabel}>INCOME</Text>
+        <PremiumGuard label="COMPARISON PRO" containerStyle={{ marginBottom: 22 }}>
+          <View style={styles.sectionCard}>
+            {comparison ? (
+              <View style={styles.deltaList}>
+                <View style={styles.deltaRow}>
+                  <View style={styles.deltaMeta}>
+                    <Ionicons name={comparison.deltaIncome >= 0 ? 'arrow-up' : 'arrow-down'} size={14} color={comparison.deltaIncome >= 0 ? colors.success : colors.danger} />
+                    <Text style={styles.deltaLabel}>INCOME</Text>
+                  </View>
+                  <MoneyText
+                    amount={Math.abs(comparison.deltaIncome)}
+                    currency={selectedCurrency}
+                    type={comparison.deltaIncome >= 0 ? 'CR' : 'DR'}
+                    style={styles.deltaValue}
+                    weight="bold"
+                  />
                 </View>
-                <MoneyText
-                  amount={Math.abs(comparison.deltaIncome)}
-                  currency={selectedCurrency}
-                  type={comparison.deltaIncome >= 0 ? 'CR' : 'DR'}
-                  style={styles.deltaValue}
-                  weight="bold"
-                />
-              </View>
 
-              <View style={styles.deltaRow}>
-                <View style={styles.deltaMeta}>
-                  <Ionicons name={comparison.deltaExpense <= 0 ? 'arrow-down' : 'arrow-up'} size={14} color={comparison.deltaExpense <= 0 ? colors.success : colors.danger} />
-                  <Text style={styles.deltaLabel}>EXPENSE</Text>
+                <View style={styles.deltaRow}>
+                  <View style={styles.deltaMeta}>
+                    <Ionicons name={comparison.deltaExpense <= 0 ? 'arrow-down' : 'arrow-up'} size={14} color={comparison.deltaExpense <= 0 ? colors.success : colors.danger} />
+                    <Text style={styles.deltaLabel}>EXPENSE</Text>
+                  </View>
+                  <MoneyText
+                    amount={Math.abs(comparison.deltaExpense)}
+                    currency={selectedCurrency}
+                    type={comparison.deltaExpense <= 0 ? 'CR' : 'DR'}
+                    style={styles.deltaValue}
+                    weight="bold"
+                  />
                 </View>
-                <MoneyText
-                  amount={Math.abs(comparison.deltaExpense)}
-                  currency={selectedCurrency}
-                  type={comparison.deltaExpense <= 0 ? 'CR' : 'DR'}
-                  style={styles.deltaValue}
-                  weight="bold"
-                />
-              </View>
 
-              <View style={styles.deltaRow}>
-                <View style={styles.deltaMeta}>
-                  <Ionicons name={comparison.deltaNet >= 0 ? 'trending-up' : 'trending-down'} size={14} color={comparison.deltaNet >= 0 ? colors.success : colors.danger} />
-                  <Text style={styles.deltaLabel}>NET</Text>
+                <View style={styles.deltaRow}>
+                  <View style={styles.deltaMeta}>
+                    <Ionicons name={comparison.deltaNet >= 0 ? 'trending-up' : 'trending-down'} size={14} color={comparison.deltaNet >= 0 ? colors.success : colors.danger} />
+                    <Text style={styles.deltaLabel}>NET</Text>
+                  </View>
+                  <MoneyText
+                    amount={Math.abs(comparison.deltaNet)}
+                    currency={selectedCurrency}
+                    type={comparison.deltaNet >= 0 ? 'CR' : 'DR'}
+                    style={styles.deltaValue}
+                    weight="bold"
+                  />
                 </View>
-                <MoneyText
-                  amount={Math.abs(comparison.deltaNet)}
-                  currency={selectedCurrency}
-                  type={comparison.deltaNet >= 0 ? 'CR' : 'DR'}
-                  style={styles.deltaValue}
-                  weight="bold"
-                />
               </View>
-            </View>
-          ) : (
-            <View style={styles.emptyStateCompact}>
-              <Text style={styles.emptyText}>Comparison requires a fixed date range.</Text>
-            </View>
-          )}
-        </View>
+            ) : (
+              <View style={styles.emptyStateCompact}>
+                <Text style={styles.emptyText}>Comparison requires a fixed date range.</Text>
+              </View>
+            )}
+          </View>
+        </PremiumGuard>
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>7-DAY FLOW</Text>
@@ -687,9 +709,14 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.background + '80',
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 4,
   },
   segmentPillActive: {
     backgroundColor: colors.text,
+  },
+  segmentPillLocked: {
+    opacity: 0.6,
   },
   segmentText: {
     fontFamily: TYPOGRAPHY.fonts.semibold,
@@ -699,6 +726,9 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   segmentTextActive: {
     color: colors.background,
+  },
+  lockIcon: {
+    marginLeft: 2,
   },
   snapshotGrid: {
     flexDirection: 'row',
@@ -821,43 +851,43 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     borderRadius: 7,
   },
   legendText: {
-    fontFamily: TYPOGRAPHY.fonts.medium,
+    fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.textMuted,
-    fontSize: 11,
+    fontSize: 10,
+    letterSpacing: 0.5,
   },
   trendRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
+    gap: 12,
   },
   trendDayWrap: {
-    width: 66,
-    marginRight: 10,
+    width: 40,
   },
   trendDay: {
     fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.text,
-    fontSize: 13,
+    fontSize: 11,
   },
   trendDate: {
     fontFamily: TYPOGRAPHY.fonts.regular,
     color: colors.textMuted,
-    fontSize: 11,
-    marginTop: 2,
+    fontSize: 9,
   },
   trendBars: {
     flex: 1,
-    gap: 6,
+    gap: 4,
   },
   trendBarTrack: {
-    height: 8,
-    borderRadius: 999,
-    backgroundColor: colors.background + '8C',
+    height: 6,
+    backgroundColor: colors.background + '80',
+    borderRadius: 3,
     overflow: 'hidden',
   },
   trendBarFill: {
     height: '100%',
-    borderRadius: 999,
+    borderRadius: 3,
   },
   trendIncomeFill: {
     backgroundColor: colors.success,
@@ -867,22 +897,21 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   listRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.background + '40',
-    gap: 10,
+    gap: 12,
   },
   listRowLast: {
     borderBottomWidth: 0,
-    paddingBottom: 2,
   },
   listIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    alignItems: 'center',
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   listBody: {
     flex: 1,
@@ -891,58 +920,31 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   listTitle: {
-    flex: 1,
     fontFamily: TYPOGRAPHY.fonts.semibold,
     color: colors.text,
     fontSize: 14,
   },
   listAmount: {
-    fontSize: 13,
+    fontSize: 14,
   },
   progressTrack: {
-    height: 6,
-    borderRadius: 999,
-    backgroundColor: colors.background + '8C',
+    height: 4,
+    backgroundColor: colors.background + '80',
+    borderRadius: 2,
     overflow: 'hidden',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   progressFill: {
     height: '100%',
-    borderRadius: 999,
+    borderRadius: 2,
   },
   listMeta: {
     fontFamily: TYPOGRAPHY.fonts.regular,
     color: colors.textMuted,
     fontSize: 11,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 26,
-  },
-  emptyStateCompact: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-  },
-  emptyTitle: {
-    fontFamily: TYPOGRAPHY.fonts.semibold,
-    color: colors.text,
-    fontSize: 15,
-    marginTop: 10,
-    marginBottom: 4,
-  },
-  emptyText: {
-    fontFamily: TYPOGRAPHY.fonts.regular,
-    color: colors.textMuted,
-    fontSize: 12,
-    textAlign: 'center',
-    maxWidth: 220,
-    lineHeight: 18,
   },
   txRow: {
     flexDirection: 'row',
@@ -950,16 +952,42 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.background + '40',
-    gap: 10,
+    gap: 12,
+    position: 'relative',
   },
   txAccent: {
+    position: 'absolute',
+    left: -14,
+    top: 14,
+    bottom: 14,
     width: 3,
-    alignSelf: 'stretch',
-    borderRadius: 999,
+    borderRadius: 2,
   },
   highlightRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
+  },
+  emptyState: {
+    paddingVertical: 40,
+    alignItems: 'center',
+    gap: 8,
+  },
+  emptyStateCompact: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  emptyTitle: {
+    fontFamily: TYPOGRAPHY.fonts.semibold,
+    color: colors.text,
+    fontSize: 15,
+  },
+  emptyText: {
+    fontFamily: TYPOGRAPHY.fonts.regular,
+    color: colors.textMuted,
+    fontSize: 12,
+    textAlign: 'center',
+    maxWidth: 240,
+    lineHeight: 18,
   },
 });

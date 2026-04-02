@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, DevSettings, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
 import { ConfirmDialog } from '../../src/components/ui/ConfirmDialog';
@@ -21,7 +21,11 @@ export default function DeveloperScreen() {
     try {
       setIsSeeding(true);
       const count = await seedDummyData();
-      Alert.alert("Success", `Generated ${count} transactions across all accounts.`);
+      Alert.alert(
+        "Success", 
+        `Generated ${count} transactions. The app will now reload to sync the UI.`,
+        [{ text: "OK", onPress: () => DevSettings.reload() }]
+      );
       setShowSeedConfirm(false);
     } catch (e: any) {
       Alert.alert("Error", e.message || "Failed to generate seed data.");

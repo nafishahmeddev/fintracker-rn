@@ -15,9 +15,11 @@ import { useSettings } from '../../src/providers/SettingsProvider';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { TYPOGRAPHY } from '../../src/theme/typography';
+import { useSubscription } from '@/src/providers/SubscriptionProvider';
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
+  const { subscription, isPremium, resetSubscription } = useSubscription();
   const { profile, updateProfile } = useSettings();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const router = useRouter();
@@ -142,6 +144,29 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionLabel}>SUBSCRIPTION</Text>
+          <View style={[styles.card, isPremium && { borderColor: colors.primary, borderWidth: 1.5 }]}>
+            <PreferenceRow
+              icon={isPremium ? "sparkles" : "star-outline"}
+              title={
+                subscription.planType === 'LIFETIME' ? 'Luno Pro (Lifetime)' :
+                subscription.planType === 'YEARLY' ? 'Luno Pro (Yearly)' :
+                subscription.planType === 'MONTHLY' ? 'Luno Pro (Monthly)' :
+                'Upgrade to Pro'
+              }
+              value={isPremium ? "ACTIVE" : "FREE"}
+              subtitle={
+                isPremium ? "Enjoying full access to all features" :
+                "Unlock advanced analytics & insights"
+              }
+              onPress={() => router.push('/premium' as any)}
+              color={isPremium ? colors.primary : undefined}
+              isLast
+            />
+          </View>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionLabel}>ACCOUNT</Text>
           <View style={styles.card}>
             <PreferenceRow
@@ -194,6 +219,18 @@ export default function SettingsScreen() {
             <Text style={styles.footerBrand}>LUNO / CORE</Text>
           </TouchableOpacity>
           <Text style={styles.footerCopy}>ALL DATA IS ENCRYPTED AND STORED LOCALLY BY DEFAULT.</Text>
+          
+          {devClickCount > 0 && (
+            <TouchableOpacity 
+              style={{ marginTop: 20, padding: 10 }} 
+              onPress={async () => {
+                await resetSubscription();
+                Alert.alert("Subscription Reset", "Account downgraded to Free.");
+              }}
+            >
+              <Text style={{ color: colors.danger, fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10 }}>RESET SUBSCRIPTION ({7 - devClickCount})</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
 

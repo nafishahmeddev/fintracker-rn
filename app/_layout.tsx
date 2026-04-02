@@ -9,6 +9,7 @@ import { DatabaseProvider } from '@/src/providers/DatabaseProvider';
 import { OnboardingProvider } from '@/src/providers/OnboardingProvider';
 import { QueryProvider } from '@/src/providers/QueryProvider';
 import { SettingsProvider } from '@/src/providers/SettingsProvider';
+import { SubscriptionProvider } from '@/src/providers/SubscriptionProvider';
 import { ThemeProvider as CustomThemeProvider } from '@/src/providers/ThemeProvider';
 import {
   BricolageGrotesque_400Regular,
@@ -37,8 +38,6 @@ const customizeText = () => {
   if (TextInput.defaultProps) { TextInput.defaultProps.style = customTextProps.style; } else { TextInput.defaultProps = customTextProps; }
 };
 
-// Removed unstable_settings anchor to prevent naming collisions with physical folders during path resolution
-
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [bricolageLoaded] = useBricolageFonts({
@@ -64,18 +63,20 @@ export default function RootLayout() {
       <QueryProvider>
         <DatabaseProvider>
           <SettingsProvider>
-            <OnboardingProvider>
-              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-              <CustomThemeProvider>
-                <Stack screenOptions={{ headerShown: false }}>
-                  {/* Rely on auto-resolution for groups */}
-                </Stack>
-                <StatusBar style="auto" />
-              </CustomThemeProvider>
-            </ThemeProvider>
-          </OnboardingProvider>
-        </SettingsProvider>
-      </DatabaseProvider>
+            <SubscriptionProvider>
+              <OnboardingProvider>
+                <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                  <CustomThemeProvider>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      {/* Rely on auto-resolution for groups */}
+                    </Stack>
+                    <StatusBar style="auto" />
+                  </CustomThemeProvider>
+                </ThemeProvider>
+              </OnboardingProvider>
+            </SubscriptionProvider>
+          </SettingsProvider>
+        </DatabaseProvider>
       </QueryProvider>
     </GestureHandlerRootView>
   );
