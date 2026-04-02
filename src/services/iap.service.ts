@@ -1,4 +1,5 @@
 import * as IAP from 'expo-iap';
+import { Linking, Platform } from 'react-native';
 
 /**
  * Standardized IAP Product interface to ensure consistency.
@@ -72,6 +73,29 @@ export class IAPService {
     } catch (error) {
       console.error('[IAPService] getProducts error:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Opens the platform's native subscription management screen.
+   */
+  static async manage(): Promise<void> {
+    const url = Platform.select({
+      ios: 'https://apps.apple.com/account/subscriptions',
+      android: 'https://play.google.com/store/account/subscriptions?package=me.nafish.luno',
+    });
+    
+    if (url) {
+      try {
+        const supported = await Linking.canOpenURL(url);
+        if (supported) {
+          await Linking.openURL(url);
+        } else {
+          console.error('[IAPService] Cannot open URL:', url);
+        }
+      } catch (error) {
+        console.error('[IAPService] Error opening management URL:', error);
+      }
     }
   }
 

@@ -20,7 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
  */
 export default function PremiumScreen() {
   const { colors, isDark } = useTheme();
-  const { products, purchasePlan, restorePurchase, isPremium, isLoading, error } = useSubscription();
+  const { products, purchasePlan, restorePurchase, isPremium, subscription, manageSubscription, isLoading, error } = useSubscription();
   const router = useRouter();
   const { width: screenWidth } = useWindowDimensions();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -121,12 +121,24 @@ export default function PremiumScreen() {
           <Text style={styles.successSubtitle}>
             Your premium tools are active across all platforms. Enjoy absolute clarity over your wealth.
           </Text>
-          <TouchableOpacity
-            style={styles.successBtn}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.successBtnText}>BACK TO DASHBOARD</Text>
-          </TouchableOpacity>
+          
+          <View style={{ width: '100%', gap: 12, marginTop: 40 }}>
+            {subscription.planType !== 'LIFETIME' && (
+              <TouchableOpacity
+                style={[styles.successBtn, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginTop: 0, shadowOpacity: 0 }]}
+                onPress={manageSubscription}
+              >
+                <Text style={[styles.successBtnText, { color: colors.text }]}>MANAGE SUBSCRIPTION</Text>
+              </TouchableOpacity>
+            )}
+            
+            <TouchableOpacity
+              style={[styles.successBtn, { marginTop: 0 }]}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.successBtnText}>BACK TO DASHBOARD</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     );

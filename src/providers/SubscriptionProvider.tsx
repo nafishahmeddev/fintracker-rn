@@ -50,6 +50,8 @@ type SubscriptionContextType = {
   purchasePlan: (plan: PlanType) => Promise<void>;
   /** Restores previous purchases to synchronize state. */
   restorePurchase: () => Promise<void>;
+  /** Opens the native store's subscription management interface. */
+  manageSubscription: () => Promise<void>;
   /** For development use only: resets the subscription to free tier. */
   resetSubscription: () => Promise<void>;
 };
@@ -346,6 +348,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, [isIapInitialized, handlePurchaseSuccess]);
 
+  const manageSubscription = useCallback(async () => {
+    await IAPService.manage();
+  }, []);
+
   const resetSubscription = useCallback(async () => {
     await saveSubscription(INITIAL_STATE);
   }, [saveSubscription]);
@@ -371,6 +377,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       hasFetched,
       purchasePlan, 
       restorePurchase,
+      manageSubscription,
       resetSubscription 
     }}>
       {children}
