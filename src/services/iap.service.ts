@@ -2,45 +2,54 @@ import * as IAP from 'expo-iap';
 import { Linking, Platform } from 'react-native';
 
 /**
- * Standardized IAP Product interface to ensure consistency.
+ * Standardized IAP Product interface to ensure consistency across platforms.
  */
 export interface IAPProduct {
+  /** Unique product identifier (SKU) */
   id: string;
+  /** Fully formatted localized price string including currency symbol (e.g., "$9.99") */
   displayPrice: string;
+  /** Optional formatted original price for strike-through display (e.g., "$19.99") */
   originalPrice?: string;
+  /** Product title from the native store */
   title: string;
+  /** Product description from the native store */
   description: string;
 }
 
 /**
- * IAPService: A clean encapsulation of store interactions.
+ * IAPService: A clean encapsulation of store interactions with 'Self-Healing' connectivity.
+ * 
  * Features:
- * 1. Self-healing connection logic (No patches/delays).
- * 2. Promise-based initialization guard.
+ * 1. Concurrent Safety: Shared initialization promise prevents redundant connection attempts.
+ * 2. Self-Healing: Automatically detects and repairs stale native bridge connections.
+ * 3. Simplified API: Returns localized and standardized Product objects.
  */
 export class IAPService {
   private static _initPromise: Promise<boolean> | null = null;
   private static _isInitialized = false;
 
   /**
-   * Internal initialization logic.
+   * Internal logic to establish the native store bridge.
+   * Uses expo-iap's initConnection and manages singleton state.
    */
   private static async _doInit(): Promise<boolean> {
     try {
-      console.log('[IAPService] Connecting to native store...');
       const success = await IAP.initConnection();
       this._isInitialized = !!success;
       return this._isInitialized;
     } catch (error) {
-      console.error('[IAPService] Native initialization failed:', error);
+      console.error('[IAPService] Bridge connection failed:', error instanceof Error ? error.message : error);
       this._initPromise = null;
       return false;
     }
   }
 
   /**
-   * Public initialization method. 
-   * Returns a shared promise ensuring only one connection attempt exists at any time.
+   * Initializes the native IAP bridge if necessary.
+   * Ensures that multiple concurrent calls result in only one connection attempt.
+   * 
+   * @returns A promise resolving to true if context was successfully established.
    */
   static async init(): Promise<boolean> {
     if (this._isInitialized) return true;
@@ -51,29 +60,29 @@ export class IAPService {
   }
 
   /**
-   * A "Self-Healing" wrapper for all native store calls.
-   * If a call fails because the billing client isn't ready or was disconnected,
-   * it transparently reconnects and tries again exactly once.
+   * Robust wrapper for all native store operations.
+   * Transparently handles 'Billing client not ready' errors by re-establishing 
+   * the connection exactly once before second attempt.
+   * 
+   * @param action The store operation to execute.
+   * @returns The result of the store operation.
    */
   private static async execute<T>(action: () => Promise<T>): Promise<T> {
     const ready = await this.init();
-    if (!ready) throw new Error('Billing client not ready');
+    if (!ready) throw new Error('Store interface unavailable');
 
     try {
       return await action();
-    } catch (error: any) {
-      // If the native bridge is not ready or out of sync, attempt a one-time healing reconnect
-      const errorMsg = error?.message || '';
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      
+      // Handle known stale connection scenarios (typically on Android during backgrounding)
       if (errorMsg.includes('Billing client not ready') || errorMsg.includes('disconnected')) {
-        console.warn('[IAPService] Connection stale, attempting self-heal...');
-        
-        // Reset state and reconnect
         this._isInitialized = false;
         this._initPromise = null;
         const reconnected = await this.init();
         
         if (reconnected) {
-          // Re-try the action exactly once
           return await action();
         }
       }
@@ -82,20 +91,22 @@ export class IAPService {
   }
 
   /**
-   * Fetches products from the store with self-healing connection logic.
+   * Fetches available products from Apple/Google with localized pricing.
+   * 
+   * @param skus List of product identifiers to fetch.
+   * @returns Array of standardized IAPProduct objects.
    */
   static async getProducts(skus: string[]): Promise<IAPProduct[]> {
     if (skus.length === 0) return [];
 
     return this.execute(async () => {
-      console.log('[IAPService] Fetching products:', skus);
       const products = await IAP.fetchProducts({ skus, type: "all" });
       
       if (products && products.length > 0) {
         return products.map(p => {
           let originalPrice: string | undefined;
 
-          // For Android, check if there's a discount offer to get the original/full price
+          // Android provides specific discount metadata for 'strikethrough' pricing logic
           if (p.platform === 'android') {
             const offer = (p as any).discountOffers?.[0];
             if (offer?.fullPriceMicrosAndroid) {
@@ -122,17 +133,20 @@ export class IAPService {
   }
 
   /**
-   * Fetches the user's current valid entitlements from the store.
+   * Retrieves all verified available purchases for the current user.
+   * 
+   * @returns Array of confirmed Purchase objects.
    */
   static async getActivePurchases(): Promise<IAP.Purchase[]> {
     return this.execute(async () => {
       const result = await IAP.getAvailablePurchases();
+      // Ensure specific Purchase typing from StoreKit/Play results
       return (result as unknown as IAP.Purchase[]) || [];
     });
   }
 
   /**
-   * Opens the platform's native subscription management screen.
+   * Links the user directly to the platform's native subscription management UI.
    */
   static async manage(): Promise<void> {
     const url = Platform.select({
@@ -147,21 +161,21 @@ export class IAPService {
           await Linking.openURL(url);
         }
       } catch (error) {
-        console.error('[IAPService] Failed to open management URL:', error);
+        console.error('[IAPService] Management shortcut unreachable:', error);
       }
     }
   }
 
   /**
-   * Cleanly closes the store connection.
+   * Cleanly terminates the platform store connection.
    */
-  static async shutdown() {
+  static async shutdown(): Promise<void> {
     try {
       await IAP.endConnection();
       this._isInitialized = false;
       this._initPromise = null;
     } catch (error) {
-      console.error('[IAPService] Shutdown failed:', error);
+      console.error('[IAPService] Termination failed:', error);
     }
   }
 }
