@@ -17,7 +17,7 @@ export interface IAPProduct {
  * IAPService: A clean encapsulation of store interactions.
  * Features:
  * 1. Unified error handling.
- * 2. High-fidelity Mock Mode for development builds.
+ * 2. Real-time store communication.
  * 3. Platform-agnostic method signatures.
  */
 export class IAPService {

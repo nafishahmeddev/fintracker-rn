@@ -24,10 +24,6 @@ export interface SubscriptionState {
   planType: PlanType | null;
   /** ISO timestamp of when the purchase was originally made. */
   purchasedAt: string | null;
-  /** ISO timestamp of subscription expiration (null for Lifetime). */
-  expiresAt: string | null;
-  /** True if the subscription was specifically revoked (e.g., via refund). */
-  isRevoked?: boolean;
 }
 
 /**
@@ -74,16 +70,12 @@ const INITIAL_STATE: SubscriptionState = {
   isPremium: false,
   planType: null,
   purchasedAt: null,
-  expiresAt: null,
 };
 
 /**
  * Provider component that manages the Luno Pro subscription lifecycle.
- * Features:
- * 1. Offline Resilience: Always loads from local cache first.
- * 2. Auto-Sync: Reconciles with Apple/Google store on every app launch.
- * 3. Grace Period: 3-day buffer for renewals to account for store delays.
- * 4. Robust Restoration: Hand-tailored restore logic with transaction finalization.
+ * Logic: Always prioritizes local cache for offline speed, then reconciles 
+ * live status with the store (Apple/Google) to detect renewals or refunds.
  */
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [subscription, setSubscription] = useState<SubscriptionState>(INITIAL_STATE);
@@ -106,39 +98,22 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
-   * Processes a successful transaction and updates the local state with calculated expiration.
-   * Includes a 3-day grace period for subscription processing.
+   * Processes a successful transaction and updates the local state.
    */
   const handlePurchaseSuccess = useCallback(async (purchase: IAP.Purchase) => {
     const sku = purchase.productId;
     const now = new Date();
     let planType: PlanType | null = null;
-    let expiresAt: string | null = null;
 
-    if (sku === SKU_MONTHLY) {
-      planType = 'MONTHLY';
-      const exp = new Date(purchase.transactionDate || now.getTime());
-      exp.setMonth(exp.getMonth() + 1);
-      exp.setDate(exp.getDate() + 3); // 3-day buffer
-      expiresAt = exp.toISOString();
-    } else if (sku === SKU_YEARLY) {
-      planType = 'YEARLY';
-      const exp = new Date(purchase.transactionDate || now.getTime());
-      exp.setFullYear(exp.getFullYear() + 1);
-      exp.setDate(exp.getDate() + 3); // 3-day buffer
-      expiresAt = exp.toISOString();
-    } else if (sku === SKU_LIFETIME) {
-      planType = 'LIFETIME';
-      expiresAt = null;
-    }
+    if (sku === SKU_MONTHLY) planType = 'MONTHLY';
+    else if (sku === SKU_YEARLY) planType = 'YEARLY';
+    else if (sku === SKU_LIFETIME) planType = 'LIFETIME';
 
     if (planType) {
       const newState: SubscriptionState = {
         isPremium: true,
         planType,
         purchasedAt: new Date(purchase.transactionDate || now.getTime()).toISOString(),
-        expiresAt,
-        isRevoked: false, // Reset revocation on any success
       };
       await saveSubscription(newState);
     }
@@ -177,32 +152,18 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       setSubscription(prev => {
         if (!prev.isPremium) return prev;
 
-        // CASE 1: Lifetime Access Revocation (Refund Detection)
-        // If the user had lifetime but the store says they have nothing, it was refunded.
-        if (prev.planType === 'LIFETIME') {
-          console.warn('[Subscription] Lifetime access revoked (Refund detected)');
-          const revokedState = { ...INITIAL_STATE, isRevoked: true };
-          AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(revokedState)).catch(() => {});
-          
-          Alert.alert(
-            'Access Removed', 
-            'Your Luno Pro lifetime access has been revoked due to a refund. You can re-purchase at any time.',
-            [{ text: 'OK' }]
-          );
-          return revokedState;
-        }
-
-        // CASE 2: Recurring Subscription Expiration
-        // Check if the current subscription session has actually lapsed.
-        const isActuallyExpired = prev.expiresAt && new Date(prev.expiresAt) < new Date();
-        if (isActuallyExpired) {
-          console.log('[Subscription] Recurring subscription expired');
-          const expiredState = { ...INITIAL_STATE };
-          AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(expiredState)).catch(() => {});
-          return expiredState;
-        }
-
-        return prev;
+        // If the user was Premium but the store returns nothing, access is revoked.
+        // This covers both Subscription Expiry and Lifetime Refunds.
+        console.warn(`[Subscription] Access revoked: ${prev.planType} entitlement lost`);
+        const expiredState = { ...INITIAL_STATE };
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(expiredState)).catch(() => {});
+        
+        Alert.alert(
+          'Access Removed', 
+          'Your Pro access has ended or was refunded. You can re-purchase at any time.',
+          [{ text: 'OK' }]
+        );
+        return expiredState;
       });
     } catch {
       // Offline or network error: we do nothing and rely on the locally loaded cache.
@@ -361,11 +322,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
    * Checks both the base flag and the expiration date for local validity.
    * Ensures specifically revoked accounts don't retain access.
    */
-  const isPremiumActive = useMemo(() => !!(
-    subscription.isPremium && 
-    !subscription.isRevoked &&
-    (!subscription.expiresAt || new Date(subscription.expiresAt) > new Date())
-  ), [subscription]);
+  const isPremiumActive = useMemo(() => !!subscription.isPremium, [subscription]);
 
   return (
     <SubscriptionContext.Provider value={{ 

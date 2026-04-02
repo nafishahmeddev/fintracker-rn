@@ -108,38 +108,55 @@ export default function PremiumScreen() {
   if (isPremium && !isProcessing) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
+        {/* ── Immersive Background ── */}
         <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-          <View style={[styles.bgCircle, { top: -60, left: -60, width: 340, height: 340, backgroundColor: colors.primary, opacity: 0.72 }]} />
-          <View style={[styles.bgCircle, { bottom: -110, left: 40, width: 380, height: 380, backgroundColor: colors.primary, opacity: 0.6 }]} />
+          <View style={[styles.bgCircle, { top: -100, left: -100, width: 500, height: 500, backgroundColor: colors.primary, opacity: 0.15 }]} />
+          <View style={[styles.bgCircle, { bottom: -150, right: -150, width: 600, height: 600, backgroundColor: colors.primary, opacity: 0.1 }]} />
         </View>
         <BlurView blurAmount={Platform.OS === 'ios' ? 80 : 95} blurType={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
-        <View style={styles.successContent}>
-          <View style={[styles.successIcon, { backgroundColor: colors.primary }]}>
-            <Ionicons name="sparkles" size={40} color={colors.background} />
+
+        <SafeAreaView style={styles.successWrapper}>
+          <View style={styles.proContent}>
+             <View style={styles.proBadge}>
+               <Ionicons name="sparkles" size={32} color={colors.primary} />
+             </View>
+             
+             <View style={styles.proHero}>
+               <Text style={styles.proKicker}>{subscription.planType || 'PRO'}</Text>
+               <Text style={styles.proHeading}>Luno Pro{"\n"}Unlocked.</Text>
+             </View>
+
+             <View style={styles.proStatusRow}>
+               <View style={styles.statusPill}>
+                 <View style={[styles.statusDot, { backgroundColor: colors.primary }]} />
+                 <Text style={styles.statusText}>ACTIVE MEMBER</Text>
+               </View>
+             </View>
+
+             <Text style={styles.proDescription}>
+               You have full access to our professional capital management suite. Your data is synced across all your devices.
+             </Text>
           </View>
-          <Text style={styles.successTitle}>Master of your capital.</Text>
-          <Text style={styles.successSubtitle}>
-            Your premium tools are active across all platforms. Enjoy absolute clarity over your wealth.
-          </Text>
-          
-          <View style={{ width: '100%', gap: 12, marginTop: 40 }}>
-            {subscription.planType !== 'LIFETIME' && (
-              <TouchableOpacity
-                style={[styles.successBtn, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, marginTop: 0, shadowOpacity: 0 }]}
-                onPress={manageSubscription}
-              >
-                <Text style={[styles.successBtnText, { color: colors.text }]}>MANAGE SUBSCRIPTION</Text>
-              </TouchableOpacity>
-            )}
-            
+
+          <View style={styles.proActions}>
             <TouchableOpacity
-              style={[styles.successBtn, { marginTop: 0 }]}
+              style={styles.actionBtn}
               onPress={() => router.back()}
             >
-              <Text style={styles.successBtnText}>BACK TO DASHBOARD</Text>
+              <Text style={styles.actionBtnText}>DASHBOARD</Text>
+              <Ionicons name="arrow-forward" size={18} color={colors.background} />
             </TouchableOpacity>
+
+            {subscription.planType !== 'LIFETIME' && (
+              <TouchableOpacity
+                style={styles.manageBtn}
+                onPress={manageSubscription}
+              >
+                <Text style={styles.manageBtnText}>MANAGE SUBSCRIPTION</Text>
+              </TouchableOpacity>
+            )}
           </View>
-        </View>
+        </SafeAreaView>
       </View>
     );
   }
@@ -399,12 +416,52 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
   legalLink: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.textMuted, letterSpacing: 1.5 },
   legalSeparator: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.primary + '20' },
 
-  successContent: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40 },
-  successIcon: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
-  successTitle: { fontFamily: TYPOGRAPHY.fonts.headingRegular, fontSize: 32, lineHeight: 38, color: colors.text, textAlign: 'center', letterSpacing: -1 },
-  successSubtitle: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 16, color: colors.textMuted, textAlign: 'center', marginTop: 12, lineHeight: 24 },
-  successBtn: { backgroundColor: colors.text, width: '100%', height: 60, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginTop: 40 },
-  successBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 14, color: colors.background, letterSpacing: 1 },
+  successWrapper: { flex: 1, padding: 32, justifyContent: 'space-between' },
+  proContent: { flex: 1, justifyContent: 'center' },
+  proBadge: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primary + '20', justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
+  proHero: { marginBottom: 24 },
+  proKicker: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 11, color: colors.primary, letterSpacing: 3, marginBottom: 8 },
+  proHeading: { fontFamily: TYPOGRAPHY.fonts.heading, fontSize: 56, lineHeight: 60, color: colors.text, letterSpacing: -3 },
+  
+  proStatusRow: { flexDirection: 'row', marginBottom: 32 },
+  statusPill: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 8, 
+    paddingHorizontal: 12, 
+    paddingVertical: 6, 
+    borderRadius: 20, 
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.primary + '30'
+  },
+  statusDot: { width: 6, height: 6, borderRadius: 3 },
+  statusText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 10, color: colors.text, letterSpacing: 1 },
+
+  proDescription: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 16, color: colors.textMuted, lineHeight: 26, maxWidth: '90%' },
+
+  proActions: { gap: 16, marginBottom: 12 },
+  actionBtn: { 
+    height: 72, 
+    backgroundColor: colors.text, 
+    borderRadius: 24, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    gap: 16 
+  },
+  actionBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 15, color: colors.background, letterSpacing: 2 },
+  
+  manageBtn: { 
+    paddingVertical: 12, 
+    alignItems: 'center' 
+  },
+  manageBtnText: { 
+    fontFamily: TYPOGRAPHY.fonts.bold, 
+    fontSize: 11, 
+    color: colors.textMuted, 
+    letterSpacing: 2 
+  },
 
   errorBox: { 
     padding: 24, 
