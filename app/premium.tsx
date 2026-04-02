@@ -1,7 +1,8 @@
 import { Header } from '@/src/components/ui/Header';
-import { SKU_LIFETIME, SKU_MONTHLY, SKU_YEARLY } from '@/src/constants/iap';
+import { FEATURES, MappedPlan, SKU_LIFETIME, SKU_MONTHLY, SKU_YEARLY } from '@/src/constants/iap';
 import { PlanType, useSubscription } from '@/src/providers/SubscriptionProvider';
 import { useTheme } from '@/src/providers/ThemeProvider';
+import { ThemeColors } from '@/src/theme/colors';
 import { TYPOGRAPHY } from '@/src/theme/typography';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
@@ -10,15 +11,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const FEATURES = [
-  { icon: 'infinite', title: 'Absolute Runway', description: 'Real-time calculation of exactly how long your capital will last.' },
-  { icon: 'trending-up', title: 'Advanced Burn Analytics', description: 'Identifying spending velocity and anomalies before they trend.' },
-  { icon: 'calendar', title: 'Universal Time Filters', description: 'Deep historical perspective with 7D, 30D, 90D, and All-Time windowing.' },
-  { icon: 'pie-chart', title: 'Sector Distribution', description: 'Precision multi-account breakdown across your entire asset portfolio.' },
-  { icon: 'git-compare', title: 'Performance Deltas', description: 'Objective growth and burn metrics: current vs. previous period.' },
-  { icon: 'shield-checkmark', title: 'Secure & Private', description: 'Native transactions. Your data stays on your device, always.' },
-];
+// FEATURES is now imported from src/constants/iap
 
+/**
+ * PremiumScreen: The primary paywall and subscription management interface.
+ * Implements an 'Editorial Brutalist' aesthetic with immersive background effects,
+ * dynamic pricing tiers, and direct integration with the Luno Pro subscription system.
+ */
 export default function PremiumScreen() {
   const { colors, isDark } = useTheme();
   const { products, purchasePlan, restorePurchase, isPremium } = useSubscription();
@@ -27,8 +26,12 @@ export default function PremiumScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('YEARLY');
 
-  // Map store products to our logical plans, filtered by availability
-  const mappedPlans = useMemo(() => {
+  /**
+   * MappedPlans: Reconciles raw store products with our logical plan definitions.
+   * Includes data for badges, display naming, and a calculated 'original price' 
+   * for the Lifetime tier to visualize the early-bird value.
+   */
+  const mappedPlans = useMemo((): MappedPlan[] => {
     const plans = [
       {
         id: 'MONTHLY' as PlanType,
@@ -53,16 +56,14 @@ export default function PremiumScreen() {
       },
     ];
 
-    // Create the dynamic list based on store results
     return plans.map(plan => {
       const product = products.find(p => p.id === plan.sku);
       if (!product) return null;
 
-      // Manually add an "offer" effect for Lifetime
       let originalPrice = null;
       if (plan.id === 'LIFETIME') {
         const symbol = product.displayPrice.replace(/[0-9., ]/g, '').trim();
-        // Assuming original is roughly 3.5x for the strikethrough effect
+        // Assume early bird value is ~3.5x for visual anchor
         const currentVal = parseFloat(product.displayPrice.replace(/[^0-9.]/g, ''));
         if (!isNaN(currentVal)) {
           originalPrice = `${symbol}${Math.round(currentVal * 3.5)}`;
@@ -73,8 +74,8 @@ export default function PremiumScreen() {
         ...plan,
         price: product.displayPrice,
         originalPrice,
-      };
-    }).filter(p => !!p) as any[];
+      } as MappedPlan;
+    }).filter((p): p is MappedPlan => !!p);
   }, [products]);
 
   const styles = useMemo(() => createStyles(colors, screenWidth), [colors, screenWidth]);
@@ -209,19 +210,25 @@ export default function PremiumScreen() {
         {/* ── Features List ── */}
         <View style={styles.featuresSection}>
           <Text style={styles.sectionLabel}>PRO CAPABILITIES</Text>
-          <View style={styles.featuresCard}>
-            {FEATURES.map((feature, index) => (
-              <View key={index} style={[styles.featureRow, index === FEATURES.length - 1 && { borderBottomWidth: 0 }]}>
-                <View style={[styles.featureIconBox, { backgroundColor: colors.primary + '15' }]}>
-                  <Ionicons name={feature.icon as any} size={18} color={colors.primary} />
-                </View>
-                <View style={styles.featureMeta}>
-                  <Text style={featureTitleStyle(colors)}>{feature.title}</Text>
-                  <Text style={featureDescStyle(colors)}>{feature.description}</Text>
-                </View>
+            <View style={styles.featuresCard}>
+              <View style={styles.featuresList}>
+                {FEATURES.map((feature, index) => (
+                  <View key={index} style={[styles.featureRow, index === FEATURES.length - 1 && { borderBottomWidth: 0 }]}>
+                    <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                    <Text style={styles.featureRowTitle}>{feature.title}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
+              
+              <TouchableOpacity 
+                style={styles.learnMoreBtn} 
+                onPress={() => router.push('/features')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.learnMoreText}>LEARN MORE ABOUT PRO</Text>
+                <Ionicons name="arrow-forward" size={12} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
         </View>
 
         {/* ── Branding ── */}
@@ -261,11 +268,7 @@ export default function PremiumScreen() {
   );
 }
 
-// Helper style functions to avoid complex nesting in JSX
-const featureTitleStyle = (colors: any) => ({ fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 15, color: colors.text });
-const featureDescStyle = (colors: any) => ({ fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 12, color: colors.textMuted, marginTop: 1 });
-
-const createStyles = (colors: any, screenWidth: number) => StyleSheet.create({
+const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   bgCircle: { position: 'absolute', borderRadius: 999 },
   scrollContent: { paddingHorizontal: 24, paddingBottom: 40 },
@@ -318,10 +321,44 @@ const createStyles = (colors: any, screenWidth: number) => StyleSheet.create({
   planBadgeText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 9, color: colors.background, letterSpacing: 0.5 },
 
   featuresSection: { marginBottom: 32 },
-  featuresCard: { backgroundColor: colors.surface, borderRadius: 24, overflow: 'hidden', padding: 8 },
-  featureRow: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16, borderBottomWidth: 1, borderBottomColor: "#00000010" },
-  featureIconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  featureMeta: { flex: 1 },
+  featuresCard: { 
+    backgroundColor: colors.surface, 
+    borderRadius: 24, 
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: colors.primary + '15',
+  },
+  featuresList: { padding: 8 },
+  featureRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 12, 
+    padding: 16, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#00000008' // Subtle transparent grey
+  },
+  featureRowTitle: { 
+    fontFamily: TYPOGRAPHY.fonts.semibold, 
+    fontSize: 14, 
+    color: colors.text, 
+    letterSpacing: 0.2,
+    flex: 1 
+  },
+  
+  learnMoreBtn: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    gap: 8, 
+    paddingVertical: 18, 
+    backgroundColor: colors.primary + '08'
+  },
+  learnMoreText: { 
+    fontFamily: TYPOGRAPHY.fonts.bold, 
+    fontSize: 10, 
+    color: colors.primary, 
+    letterSpacing: 1.5 
+  },
 
   brandingBox: { alignItems: 'center', marginTop: 10, marginBottom: 20 },
   brandingText: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.text + '20', letterSpacing: 3 },
