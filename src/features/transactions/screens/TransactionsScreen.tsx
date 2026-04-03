@@ -283,7 +283,7 @@ export function TransactionsScreen() {
       { in: 0, out: 0 },
     );
     return (
-      <View style={[styles.dayHeaderRow, { marginBottom: 12 }]}>
+      <View style={styles.dayHeaderRow}>
         <Text style={styles.dayTitle}>{title}</Text>
         <View style={styles.dayTotals}>
           {dayTotal.in > 0 && (
@@ -296,6 +296,8 @@ export function TransactionsScreen() {
       </View>
     );
   }, [styles]);
+
+  const renderSectionFooter = React.useCallback(() => <View style={{ height: 24 }} />, []);
 
   if (txQuery.isLoading) {
     return (
@@ -330,14 +332,15 @@ export function TransactionsScreen() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         renderSectionHeader={renderSectionHeader}
-        renderSectionFooter={() => <View style={{ height: 24 }} />}
+        renderSectionFooter={renderSectionFooter}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         onEndReached={loadMore}
         onEndReachedThreshold={0.4}
-        initialNumToRender={15}
-        maxToRenderPerBatch={20}
-        windowSize={11}
+        initialNumToRender={10}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        updateCellsBatchingPeriod={50}
         removeClippedSubviews={Platform.OS === 'android'}
         ListHeaderComponent={(
           <View style={styles.listHeader}>
@@ -499,6 +502,7 @@ const createStyles = (colors: ThemeColors) =>
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: 4,
+      marginBottom: 12,
     },
     dayTitle: {
       color: colors.textMuted,
