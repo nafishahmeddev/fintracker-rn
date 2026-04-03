@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
   ActivityIndicator,
-  FlatList,
+  SectionList,
   Platform,
   StyleSheet,
   Text,
@@ -199,7 +199,7 @@ export function TransactionsScreen() {
       prev.push(item);
       map.set(key, prev);
     });
-    return [...map.entries()];
+    return Array.from(map.entries()).map(([title, data]) => ({ title, data }));
   }, [transactions]);
 
   const loadMore = React.useCallback(() => {
@@ -260,10 +260,22 @@ export function TransactionsScreen() {
     [],
   );
 
-  const renderItem = React.useCallback(({ item }: { item: [string, TransactionListItem[]] }) => {
-    const [dateLabel, items] = item;
-    const dayTotal = items.reduce(
-      (acc, tx) => {
+  const renderItem = React.useCallback(({ item: tx, index, section }: any) => {
+    return (
+      <SwipeableRow
+        tx={tx}
+        isFirst={index === 0}
+        isLast={index === section.data.length - 1}
+        colors={colors}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+    );
+  }, [colors, handleEdit, handleDelete]);
+
+  const renderSectionHeader = React.useCallback(({ section: { title, data } }: any) => {
+    const dayTotal = data.reduce(
+      (acc: any, tx: any) => {
         if (tx.type === 'CR') acc.in += tx.amount;
         else acc.out += tx.amount;
         return acc;
@@ -271,34 +283,19 @@ export function TransactionsScreen() {
       { in: 0, out: 0 },
     );
     return (
-      <View style={styles.daySection}>
-        <View style={styles.dayHeaderRow}>
-          <Text style={styles.dayTitle}>{dateLabel}</Text>
-          <View style={styles.dayTotals}>
-            {dayTotal.in > 0 && (
-              <MoneyText amount={dayTotal.in} type="CR" style={styles.dayTotalValue} />
-            )}
-            {dayTotal.out > 0 && (
-              <MoneyText amount={dayTotal.out} type="DR" style={styles.dayTotalValue} />
-            )}
-          </View>
-        </View>
-        <View style={styles.dayCard}>
-          {items.map((tx, idx) => (
-            <SwipeableRow
-              key={tx.id}
-              tx={tx}
-              isFirst={idx === 0}
-              isLast={idx === items.length - 1}
-              colors={colors}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
+      <View style={[styles.dayHeaderRow, { marginBottom: 12 }]}>
+        <Text style={styles.dayTitle}>{title}</Text>
+        <View style={styles.dayTotals}>
+          {dayTotal.in > 0 && (
+            <MoneyText amount={dayTotal.in} type="CR" style={styles.dayTotalValue} />
+          )}
+          {dayTotal.out > 0 && (
+            <MoneyText amount={dayTotal.out} type="DR" style={styles.dayTotalValue} />
+          )}
         </View>
       </View>
     );
-  }, [colors, handleEdit, handleDelete, styles]);
+  }, [styles]);
 
   if (txQuery.isLoading) {
     return (
@@ -328,19 +325,20 @@ export function TransactionsScreen() {
         )}
       />
 
-      <FlatList
-        data={groupedByDate}
-        keyExtractor={(item) => item[0]}
+      <SectionList
+        sections={groupedByDate}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
+        renderSectionFooter={() => <View style={{ height: 24 }} />}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         onEndReached={loadMore}
         onEndReachedThreshold={0.4}
-        initialNumToRender={8}
-        maxToRenderPerBatch={10}
-        windowSize={10}
+        initialNumToRender={15}
+        maxToRenderPerBatch={20}
+        windowSize={11}
         removeClippedSubviews={Platform.OS === 'android'}
-        ItemSeparatorComponent={() => <View style={{ height: 24 }} />}
         ListHeaderComponent={(
           <View style={styles.listHeader}>
             <KPICard
