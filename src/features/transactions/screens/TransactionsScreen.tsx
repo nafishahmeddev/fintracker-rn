@@ -4,7 +4,6 @@ import React from 'react';
 import {
   ActivityIndicator,
   SectionList,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -337,11 +336,11 @@ export function TransactionsScreen() {
         showsVerticalScrollIndicator={false}
         onEndReached={loadMore}
         onEndReachedThreshold={0.4}
-        initialNumToRender={10}
-        maxToRenderPerBatch={5}
-        windowSize={5}
-        updateCellsBatchingPeriod={50}
-        removeClippedSubviews={Platform.OS === 'android'}
+        initialNumToRender={25}
+        maxToRenderPerBatch={10}
+        windowSize={11}
+        updateCellsBatchingPeriod={30}
+        removeClippedSubviews={false}
         ListHeaderComponent={(
           <View style={styles.listHeader}>
             <KPICard
