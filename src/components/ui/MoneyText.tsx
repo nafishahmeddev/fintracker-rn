@@ -21,7 +21,9 @@ export function MoneyText({
 }: MoneyTextProps) {
   const { colors } = useTheme();
   
-  const formattedAmount = formatCurrency(amount, currency);
+  const isCustomSign = type === 'CR' || type === 'DR';
+  const valToFormat = isCustomSign ? Math.abs(amount) : amount;
+  const formattedAmount = formatCurrency(valToFormat, currency);
   
   let prefix = '';
   let color = colors.text;
