@@ -22,6 +22,7 @@ import { usePremium } from '@/src/providers/PremiumProvider';
 import { SectionHeader } from '../components/SectionHeader';
 import { TopExpenseCategoriesCard } from '../components/TopExpenseCategoriesCard';
 import { useDashboardStats, useTopExpenseCategories } from '../hooks/dashboard';
+import { InsightsSection } from '../components/InsightsSection';
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -221,6 +222,9 @@ export function DashboardScreen() {
             <View style={[styles.flowBarExpense, { flex: 1 - incomeBarRatio }]} />
           </View>
         </View>
+
+        {/* ── Insights Layer (Pro Only) ── */}
+        <InsightsSection currency={selectedCurrency} />
 
         {/* ── Quick actions ── */}
         <View style={styles.quickActions}>

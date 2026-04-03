@@ -333,8 +333,8 @@ export default function StatsScreen() {
           <Text style={styles.sectionTitle}>PRACTICAL INSIGHTS</Text>
           <Text style={styles.sectionHint}>{selectedCurrency}</Text>
         </View>
-        <PremiumGuard label="INSIGHTS PRO">
-          <View style={styles.sectionCard}>
+        <PremiumGuard label="Insights Pro" size="medium" containerStyle={{ marginBottom: 22 }}>
+          <View style={[styles.sectionCard, { marginBottom: 0 }]}>
             <View style={styles.metricGrid}>
               <View style={styles.metricCell}>
                 <Text style={styles.metricLabel}>AVG DAILY BURN</Text>
@@ -360,8 +360,8 @@ export default function StatsScreen() {
           <Text style={styles.sectionTitle}>PERIOD DELTA</Text>
           <Text style={styles.sectionHint}>{selectedRange === null ? 'Unavailable for ALL' : `vs previous ${selectedRange}D`}</Text>
         </View>
-        <PremiumGuard label="COMPARISON PRO" containerStyle={{ marginBottom: 22 }}>
-          <View style={styles.sectionCard}>
+        <PremiumGuard label="Comparison Pro" size="medium" containerStyle={{ marginBottom: 22 }}>
+          <View style={[styles.sectionCard, { marginBottom: 0 }]}>
             {comparison ? (
               <View style={styles.deltaList}>
                 <View style={styles.deltaRow}>

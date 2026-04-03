@@ -41,11 +41,11 @@
 
 ## ⚡ Phase 3 — Insights Layer (Core Value)
 
-- [ ] Weekly financial summary
-- [ ] Spending alerts (e.g. “You spent 20% more this week”)
-- [ ] Runway insights (increase/decrease tracking)
-- [ ] Savings feedback (“You saved ₹X”)
-- [ ] Contextual insight cards inside dashboard
+- [x] Weekly financial summary
+- [x] Spending alerts (e.g. “You spent 20% more this week”)
+- [x] Runway insights (increase/decrease tracking)
+- [x] Savings feedback (“You saved ₹X”)
+- [x] Contextual insight cards inside dashboard
 
 ---
 
@@ -107,7 +107,7 @@
 
 1. [x] Freemium split
 2. [x] Paywall implementation
-3. [ ] Insights layer
+3. [x] Insights layer
 4. [ ] Retention features
 5. [ ] Launch & distribution
 
