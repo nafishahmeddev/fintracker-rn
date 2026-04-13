@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../../../providers/ThemeProvider';
 import { TYPOGRAPHY } from '../../../theme/typography';
+import { formatCurrency } from '../../../utils/format';
 import { DashboardInsight } from '../api/insights';
 
 interface InsightCardProps {
@@ -31,6 +32,17 @@ export function InsightCard({ insight }: InsightCardProps) {
 
   const status = getStatusColors();
 
+  const renderValue = () => {
+    switch (insight.valueType) {
+      case 'amount':
+        return formatCurrency(insight.amount, insight.currency);
+      case 'percentage':
+        return `${insight.percentage > 0 ? '+' : ''}${insight.percentage.toFixed(0)}%`;
+      case 'text':
+        return insight.text;
+    }
+  };
+
   return (
     <View style={[styles.card, { backgroundColor: colors.surface + '90', borderColor: colors.border }]}>
       <View style={styles.header}>
@@ -41,7 +53,7 @@ export function InsightCard({ insight }: InsightCardProps) {
       </View>
 
       <View style={styles.body}>
-        <Text style={[styles.value, { color: colors.text }]}>{insight.value}</Text>
+        <Text style={[styles.value, { color: colors.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>{renderValue()}</Text>
         <View style={styles.trendContainer}>
            <Text style={[styles.subtitle, { color: colors.textMuted }]} numberOfLines={1}>
              {insight.subtitle}
@@ -64,7 +76,7 @@ export function InsightCard({ insight }: InsightCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    width: 180,
+    width: 210,
     minHeight: 115,
     borderRadius: 22,
     borderWidth: 1,

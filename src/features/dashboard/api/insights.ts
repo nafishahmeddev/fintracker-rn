@@ -2,15 +2,36 @@ import { and, eq, sql } from 'drizzle-orm';
 import { db } from '../../../db/client';
 import { accounts, payments } from '../../../db/schema';
 
-export type DashboardInsight = {
+type InsightStatus = 'success' | 'danger' | 'info' | 'warning';
+type InsightTrend = 'up' | 'down' | 'neutral';
+
+type InsightBase = {
   id: string;
-  type: 'success' | 'danger' | 'info' | 'warning';
+  type: InsightStatus;
   title: string;
-  value: string;
   subtitle: string;
   icon: string;
-  trend?: 'up' | 'down' | 'neutral';
+  trend?: InsightTrend;
 };
+
+export type AmountInsight = InsightBase & {
+  valueType: 'amount';
+  amount: number;
+  currency: string;
+};
+
+export type PercentageInsight = InsightBase & {
+  valueType: 'percentage';
+  /** Signed value: positive = increase, negative = decrease */
+  percentage: number;
+};
+
+export type TextInsight = InsightBase & {
+  valueType: 'text';
+  text: string;
+};
+
+export type DashboardInsight = AmountInsight | PercentageInsight | TextInsight;
 
 /**
  * getDashboardInsights: Calculates high-level financial insights using SQLite date functions.
@@ -56,7 +77,8 @@ export const getDashboardInsights = async (currency: string): Promise<DashboardI
         id: 'weekly-spend',
         type: isIncrease ? 'danger' : 'success',
         title: 'Weekly Spending',
-        value: `${isIncrease ? '+' : '-'}${percent.toFixed(0)}%`,
+        valueType: 'percentage',
+        percentage: isIncrease ? percent : -percent,
         subtitle: isIncrease ? 'Spent more than last week' : 'Saving more than last week',
         icon: isIncrease ? 'trending-up-outline' : 'trending-down-outline',
         trend: isIncrease ? 'up' : 'down',
@@ -85,7 +107,9 @@ export const getDashboardInsights = async (currency: string): Promise<DashboardI
         id: 'monthly-net',
         type: netSavings > 0 ? 'success' : 'warning',
         title: 'Month Net',
-        value: `${currency}${Math.abs(netSavings).toLocaleString()}`,
+        valueType: 'amount',
+        amount: Math.abs(netSavings),
+        currency,
         subtitle: netSavings > 0 ? 'Positive net position' : 'Spent more than earned',
         icon: netSavings > 0 ? 'wallet-outline' : 'alert-circle-outline',
       });
@@ -116,8 +140,9 @@ export const getDashboardInsights = async (currency: string): Promise<DashboardI
         id: 'top-burn',
         type: 'info',
         title: 'Burn Sector',
-        value: topCategory[0].name,
-        subtitle: `Highest expense last 30 days`,
+        valueType: 'text',
+        text: topCategory[0].name,
+        subtitle: 'Highest expense last 30 days',
         icon: 'flame-outline',
       });
     }
