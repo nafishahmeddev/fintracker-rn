@@ -23,6 +23,7 @@ import { SectionHeader } from '../components/SectionHeader';
 import { TopExpenseCategoriesCard } from '../components/TopExpenseCategoriesCard';
 import { useDashboardStats, useTopExpenseCategories } from '../hooks/dashboard';
 import { InsightsSection } from '../components/InsightsSection';
+import { StreakBadge } from '../../reports/components/StreakBadge';
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -168,6 +169,9 @@ export function DashboardScreen() {
               <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/(main)/stats')} activeOpacity={0.85}>
                 <Ionicons name="stats-chart-outline" size={18} color={colors.text} />
               </TouchableOpacity>
+              <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/(main)/reports')} activeOpacity={0.85}>
+                <Ionicons name="newspaper-outline" size={18} color={colors.text} />
+              </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/settings')} activeOpacity={0.85}>
                 <Ionicons name="settings-outline" size={19} color={colors.text} />
               </TouchableOpacity>
@@ -193,7 +197,10 @@ export function DashboardScreen() {
             </ScrollView>
           )}
 
-          <Text style={styles.heroBadge}>TOTAL BALANCE</Text>
+           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+             <Text style={styles.heroBadge}>TOTAL BALANCE</Text>
+             <StreakBadge />
+           </View>
           <MoneyText
             amount={balancesByCurrency[selectedCurrency] || 0}
             currency={selectedCurrency}

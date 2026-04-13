@@ -49,12 +49,12 @@
 
 ---
 
-## 🔁 Phase 4 — Retention System
+## 🔁 Phase 4 — Retention System (Completed)
 
-- [ ] Weekly report view
-- [ ] Monthly summary view
-- [ ] Usage streak / consistency tracking
-- [ ] Lightweight reminders (optional)
+- [x] Weekly report view
+- [x] Monthly summary view
+- [x] Usage streak / consistency tracking
+- [x] Lightweight reminders (Settings and logic integrated)
 
 ---
 
@@ -108,7 +108,7 @@
 1. [x] Freemium split
 2. [x] Paywall implementation
 3. [x] Insights layer
-4. [ ] Retention features
+4. [x] Retention features
 5. [ ] Launch & distribution
 
 ---

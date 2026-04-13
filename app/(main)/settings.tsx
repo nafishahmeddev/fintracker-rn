@@ -176,6 +176,31 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionLabel}>NOTIFICATIONS</Text>
+          <View style={styles.card}>
+            <PreferenceRow
+              icon="notifications-outline"
+              title="Daily Reminder"
+              value={profile.reminderEnabled ? 'ON' : 'OFF'}
+              subtitle="Get notified to track your daily spend"
+              onPress={async () => {
+                await updateProfile({ reminderEnabled: !profile.reminderEnabled });
+              }}
+            />
+            <PreferenceRow
+              icon="time-outline"
+              title="Reminder Time"
+              value={profile.reminderTime}
+              subtitle="Preferred time for daily alert"
+              onPress={() => {
+                Alert.alert("Notification Service", "Local notifications require expo-notifications. Ensure it is installed and configured in your environment.");
+              }}
+              isLast
+            />
+          </View>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionLabel}>GENERAL</Text>
           <View style={styles.card}>
             <PreferenceRow

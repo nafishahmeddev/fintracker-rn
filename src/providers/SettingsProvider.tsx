@@ -7,6 +7,8 @@ export type UserProfile = {
   phone: string;
   defaultCurrency: string;
   theme: 'system' | 'light' | 'dark';
+  reminderEnabled: boolean;
+  reminderTime: string; // e.g. "20:00"
 };
 
 type SettingsContextType = {
@@ -29,6 +31,8 @@ const DEFAULT_PROFILE: UserProfile = {
   phone: '',
   defaultCurrency: 'USD',
   theme: 'system',
+  reminderEnabled: false,
+  reminderTime: '20:00',
 };
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
