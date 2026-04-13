@@ -11,7 +11,7 @@ interface InputProps extends TextInputProps {
 }
 
 export function Input({ label, error, style, variant = 'default', ...props }: InputProps) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
 
   return (

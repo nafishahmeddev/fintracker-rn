@@ -5,12 +5,14 @@ import { useTheme } from '../../../providers/ThemeProvider';
 import { ThemeColors } from '../../../theme/colors';
 import { TYPOGRAPHY } from '../../../theme/typography';
 
+import { TrendMode } from '../../../types';
+
 interface MetricCardProps {
   label: string;
   value: number;
   currency: string;
-  type?: 'CR' | 'DR' | 'neutral';
-  percentage?: number;
+  trendMode?: TrendMode;
+  changeValue?: number;
   suffix?: string;
   isAmount?: boolean;
 }
@@ -18,18 +20,38 @@ interface MetricCardProps {
 /**
  * MetricCard: A key performance indicator card for reports.
  * Used for displaying totals like "Weekly Expense" or "Savings Rate".
+ * 
+ * Primitive Logic:
+ * Internally handles trend color-coding based on trendMode.
  */
 export function MetricCard({ 
   label, 
   value, 
   currency, 
-  type = 'neutral', 
-  percentage, 
+  trendMode = 'neutral', 
+  changeValue, 
   suffix,
   isAmount = true 
 }: MetricCardProps) {
   const { colors } = useTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
+
+  const getTrendColor = () => {
+    if (changeValue === undefined || changeValue === 0 || trendMode === 'neutral') {
+      return colors.textMuted;
+    }
+
+    const isPositive = changeValue > 0;
+    
+    if (trendMode === 'high_is_good') {
+      return isPositive ? colors.success : colors.danger;
+    } else {
+      // low_is_good (e.g. expenses)
+      return isPositive ? colors.danger : colors.success;
+    }
+  };
+
+  const trendColor = getTrendColor();
 
   return (
     <View style={styles.container}>
@@ -39,7 +61,6 @@ export function MetricCard({
           <MoneyText 
             amount={value} 
             currency={currency} 
-            type={type === 'neutral' ? undefined : type} 
             style={styles.value} 
             weight="bold" 
           />
@@ -49,10 +70,10 @@ export function MetricCard({
           </Text>
         )}
       </View>
-      {percentage !== undefined && (
+      {changeValue !== undefined && (
         <View style={styles.percentageRow}>
-          <Text style={[styles.percentageText, { color: percentage >= 0 ? (type === 'CR' ? colors.success : colors.danger) : (type === 'CR' ? colors.danger : colors.success) }]}>
-            {percentage >= 0 ? '+' : ''}{percentage.toFixed(1)}% vs prev.
+          <Text style={[styles.percentageText, { color: trendColor }]}>
+            {changeValue >= 0 ? '+' : ''}{changeValue.toFixed(1)}% vs prev.
           </Text>
         </View>
       )}
@@ -69,7 +90,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     borderColor: colors.border, 
     flex: 1,
     minHeight: 100,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
   label: {
     fontFamily: TYPOGRAPHY.fonts.bold,

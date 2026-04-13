@@ -59,8 +59,8 @@ export default function WeeklyReport() {
             label="EXPENSE" 
             value={report.totalExpense} 
             currency={profile.defaultCurrency} 
-            type="DR"
-            percentage={report.comparison?.expenseChange}
+            trendMode="low_is_good"
+            changeValue={report.comparison?.expenseChange}
           />
           <MetricCard 
             label="SAVINGS RATE" 
@@ -68,8 +68,11 @@ export default function WeeklyReport() {
             currency={profile.defaultCurrency} 
             isAmount={false}
             suffix="%"
+            trendMode="high_is_good"
+            changeValue={report.comparison?.incomeChange} 
           />
         </View>
+
 
         {/* ── Category Sector Breakdown ── */}
         <View style={styles.section}>

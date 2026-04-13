@@ -3,11 +3,12 @@ import { StyleSheet, Text, TextProps } from 'react-native';
 import { formatCurrency } from '../../utils/format';
 import { useTheme } from '../../providers/ThemeProvider';
 import { TYPOGRAPHY } from '../../theme/typography';
+import { TransactionType } from '../../types';
 
 interface MoneyTextProps extends TextProps {
   amount: number;
   currency?: string;
-  type?: 'CR' | 'DR' | 'NONE';
+  type?: TransactionType | 'NONE';
   weight?: 'regular' | 'medium' | 'semibold' | 'bold';
 }
 

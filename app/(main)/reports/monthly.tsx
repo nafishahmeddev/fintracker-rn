@@ -61,13 +61,13 @@ export default function MonthlyReport() {
             label="REVENUE" 
             value={report.totalIncome} 
             currency={profile.defaultCurrency} 
-            type="CR"
+            trendMode="high_is_good"
           />
           <MetricCard 
             label="EXPENSE" 
             value={report.totalExpense} 
             currency={profile.defaultCurrency} 
-            type="DR"
+            trendMode="low_is_good"
           />
         </View>
 
@@ -76,7 +76,7 @@ export default function MonthlyReport() {
             label="NET POSITION" 
             value={report.netPosition} 
             currency={profile.defaultCurrency} 
-            type={report.netPosition >= 0 ? 'CR' : 'DR'}
+            trendMode="high_is_good"
           />
           <MetricCard 
             label="SAVINGS RATE" 
@@ -84,8 +84,10 @@ export default function MonthlyReport() {
             currency={profile.defaultCurrency} 
             isAmount={false}
             suffix="%"
+            trendMode="high_is_good"
           />
         </View>
+
 
         {/* ── Dominant Sectors ── */}
         <View style={styles.section}>

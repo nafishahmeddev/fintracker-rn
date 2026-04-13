@@ -1,13 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
+import { format } from 'date-fns';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../theme/colors';
 import { TYPOGRAPHY } from '../../theme/typography';
+import { TransactionType } from '../../types';
 import { MoneyText } from './MoneyText';
 
 type TransactionData = {
   id: number;
-  type: 'CR' | 'DR';
+  type: TransactionType;
   amount: number;
   note: string;
   datetime: string;
@@ -97,9 +99,9 @@ export const TransactionRow = React.memo(({ tx, colors, onPress, isFirst, isLast
           style={styles.amount}
         />
         <Text style={[styles.date, { color: colors.textMuted }]}>
-          {showDate 
-            ? new Date(tx.datetime).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-            : new Date(tx.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {showDate
+            ? format(new Date(tx.datetime), 'MMM d')
+            : format(new Date(tx.datetime), 'HH:mm')}
         </Text>
       </View>
     </TouchableOpacity>

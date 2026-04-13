@@ -30,7 +30,10 @@ import {
   useTransactionsCount,
 } from '../hooks/transactions';
 
-type TransactionTypeFilter = 'ALL' | 'CR' | 'DR';
+import { format } from 'date-fns';
+import { TransactionType } from '../../../types';
+
+type TransactionTypeFilter = 'ALL' | TransactionType;
 
 const SWIPE_ACTION_WIDTH = 44;
 type SwipeableInstance = React.ComponentRef<typeof Swipeable>;
@@ -44,13 +47,9 @@ const resolveParamNumber = (value: string | string[] | undefined): number | null
 };
 
 const getDateLabel = (iso: string) => {
-  const date = new Date(iso);
-  return date.toLocaleDateString(undefined, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  });
+  return format(new Date(iso), 'EEE, d MMM');
 };
+
 
 // ─── Swipeable row ───────────────────────────────────────────────────────────
 const SwipeableRow = React.memo(function SwipeableRow({

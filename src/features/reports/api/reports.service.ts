@@ -1,6 +1,8 @@
 import { and, eq, sql } from 'drizzle-orm';
 import { db } from '../../../db/client';
 import { accounts, categories, payments } from '../../../db/schema';
+import { getDaysAgoLocal, getLocalISOString, getStartOfMonthLocal } from '../../../utils/date';
+import { TransactionType } from '../../../types';
 
 export interface ReportCategory {
   id: number;
@@ -27,11 +29,23 @@ export interface ReportData {
 }
 
 /**
- * getWeeklyReport: Aggregate financial data for the current week (Mon-Sun or last 7 days).
- * Following the Editorial Brutalist style, we provide deep, clear summaries.
+ * calculatePercentageChange: Internal helper for safe percentage calculation.
+ */
+const calculatePercentageChange = (current: number, previous: number): number => {
+  if (previous === 0) {
+    return current === 0 ? 0 : 100;
+  }
+  return ((current - previous) / previous) * 100;
+};
+
+/**
+ * getWeeklyReport: Aggregate financial data for the last 7 days vs previous 7 days.
  */
 export async function getWeeklyReport(currency: string): Promise<ReportData> {
   const getTotals = async (daysBackStart: number, daysBackEnd: number) => {
+    const startStr = getDaysAgoLocal(daysBackStart);
+    const endStr = getDaysAgoLocal(daysBackEnd);
+
     const [result] = await db
       .select({
         income: sql<number>`SUM(CASE WHEN ${payments.type} = 'CR' THEN ${payments.amount} ELSE 0 END)`,
@@ -42,8 +56,8 @@ export async function getWeeklyReport(currency: string): Promise<ReportData> {
       .where(
         and(
           eq(accounts.currency, currency),
-          sql`date(${payments.datetime}) >= date('now', ${`-${daysBackStart} days`})`,
-          sql`date(${payments.datetime}) < date('now', ${`-${daysBackEnd} days`})`
+          sql`date(${payments.datetime}) >= ${startStr}`,
+          sql`date(${payments.datetime}) < ${endStr}`
         )
       );
     return {
@@ -69,15 +83,15 @@ export async function getWeeklyReport(currency: string): Promise<ReportData> {
     .where(
       and(
         eq(accounts.currency, currency),
-        eq(payments.type, 'DR'),
-        sql`date(${payments.datetime}) >= date('now', '-7 days')`
+        eq(payments.type, 'DR' as TransactionType),
+        sql`date(${payments.datetime}) >= ${getDaysAgoLocal(7)}`
       )
     )
     .groupBy(categories.id)
     .orderBy(sql`SUM(${payments.amount}) DESC`)
     .limit(5);
 
-  const totalExpense = current.expense || 1; // avoid div by zero
+  const totalExpense = current.expense || 1;
   const categoriesWithPercent: ReportCategory[] = topCats.map(cat => ({
     ...cat,
     color: `#${cat.color.toString(16).padStart(6, '0')}`,
@@ -94,11 +108,11 @@ export async function getWeeklyReport(currency: string): Promise<ReportData> {
     savingsRate,
     topCategories: categoriesWithPercent,
     periodLabel: 'LAST 7 DAYS',
-    startDate: new Date(Date.now() - 7 * 86400000).toISOString(),
-    endDate: new Date().toISOString(),
+    startDate: getDaysAgoLocal(7),
+    endDate: getLocalISOString(),
     comparison: {
-      incomeChange: previous.income > 0 ? ((current.income - previous.income) / previous.income) * 100 : 100,
-      expenseChange: previous.expense > 0 ? ((current.expense - previous.expense) / previous.expense) * 100 : 100,
+      incomeChange: calculatePercentageChange(current.income, previous.income),
+      expenseChange: calculatePercentageChange(current.expense, previous.expense),
     }
   };
 }
@@ -107,6 +121,8 @@ export async function getWeeklyReport(currency: string): Promise<ReportData> {
  * getMonthlyReport: Aggregate financial data for the current calendar month.
  */
 export async function getMonthlyReport(currency: string): Promise<ReportData> {
+  const startOfMonth = getStartOfMonthLocal();
+
   const [current] = await db
     .select({
       income: sql<number>`SUM(CASE WHEN ${payments.type} = 'CR' THEN ${payments.amount} ELSE 0 END)`,
@@ -117,8 +133,7 @@ export async function getMonthlyReport(currency: string): Promise<ReportData> {
     .where(
       and(
         eq(accounts.currency, currency),
-        sql`strftime('%m', ${payments.datetime}) = strftime('%m', 'now')`,
-        sql`strftime('%Y', ${payments.datetime}) = strftime('%Y', 'now')`
+        sql`date(${payments.datetime}) >= ${startOfMonth}`
       )
     );
 
@@ -136,9 +151,8 @@ export async function getMonthlyReport(currency: string): Promise<ReportData> {
     .where(
       and(
         eq(accounts.currency, currency),
-        eq(payments.type, 'DR'),
-        sql`strftime('%m', ${payments.datetime}) = strftime('%m', 'now')`,
-        sql`strftime('%Y', ${payments.datetime}) = strftime('%Y', 'now')`
+        eq(payments.type, 'DR' as TransactionType),
+        sql`date(${payments.datetime}) >= ${startOfMonth}`
       )
     )
     .groupBy(categories.id)
@@ -168,7 +182,7 @@ export async function getMonthlyReport(currency: string): Promise<ReportData> {
     savingsRate,
     topCategories: categoriesWithPercent,
     periodLabel: monthName,
-    startDate: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(),
-    endDate: now.toISOString(),
+    startDate: startOfMonth,
+    endDate: getLocalISOString(),
   };
 }

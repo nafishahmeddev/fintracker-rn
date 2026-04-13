@@ -1,9 +1,8 @@
 import { and, eq, sql } from 'drizzle-orm';
 import { db } from '../../../db/client';
 import { accounts, payments } from '../../../db/schema';
-
-type InsightStatus = 'success' | 'danger' | 'info' | 'warning';
-type InsightTrend = 'up' | 'down' | 'neutral';
+import { getDaysAgoLocal, getStartOfMonthLocal } from '../../../utils/date';
+import { InsightStatus, InsightTrend, TransactionType } from '../../../types';
 
 type InsightBase = {
   id: string;
@@ -22,7 +21,6 @@ export type AmountInsight = InsightBase & {
 
 export type PercentageInsight = InsightBase & {
   valueType: 'percentage';
-  /** Signed value: positive = increase, negative = decrease */
   percentage: number;
 };
 
@@ -35,17 +33,14 @@ export type DashboardInsight = AmountInsight | PercentageInsight | TextInsight;
 
 /**
  * getDashboardInsights: Calculates high-level financial insights using SQLite date functions.
- * 
- * We use 7-day windows and month-based windows to generate:
- * 1. Weekly Spending Comparison (Trend)
- * 2. Net Savings Status (Current Month)
- * 3. Daily Burn Rate Trend
  */
 export const getDashboardInsights = async (currency: string): Promise<DashboardInsight[]> => {
   const insights: DashboardInsight[] = [];
   
-  // Helper for Date windows in SQLite
-  const getPeriodSum = async (daysBackStart: number, daysBackEnd: number, type: 'CR' | 'DR') => {
+  const getPeriodSum = async (daysBackStart: number, daysBackEnd: number, type: TransactionType) => {
+    const startStr = getDaysAgoLocal(daysBackStart);
+    const endStr = getDaysAgoLocal(daysBackEnd);
+
     const [result] = await db
       .select({
         total: sql<number>`SUM(${payments.amount})`,
@@ -56,15 +51,15 @@ export const getDashboardInsights = async (currency: string): Promise<DashboardI
         and(
           eq(accounts.currency, currency),
           eq(payments.type, type),
-          sql`date(${payments.datetime}) >= date('now', ${`-${daysBackStart} days`})`,
-          sql`date(${payments.datetime}) < date('now', ${`-${daysBackEnd} days`})`
+          sql`date(${payments.datetime}) >= ${startStr}`,
+          sql`date(${payments.datetime}) < ${endStr}`
         )
       );
     return result?.total ?? 0;
   };
 
   try {
-    // 1. Weekly Spending Insight (This 7 days vs Previous 7 days)
+    // 1. Weekly Spending Insight
     const thisWeekExpense = await getPeriodSum(7, 0, 'DR');
     const lastWeekExpense = await getPeriodSum(14, 7, 'DR');
 
@@ -75,13 +70,13 @@ export const getDashboardInsights = async (currency: string): Promise<DashboardI
 
       insights.push({
         id: 'weekly-spend',
-        type: isIncrease ? 'danger' : 'success',
+        type: (isIncrease ? 'danger' : 'success') as InsightStatus,
         title: 'Weekly Spending',
         valueType: 'percentage',
         percentage: isIncrease ? percent : -percent,
         subtitle: isIncrease ? 'Spent more than last week' : 'Saving more than last week',
         icon: isIncrease ? 'trending-up-outline' : 'trending-down-outline',
-        trend: isIncrease ? 'up' : 'down',
+        trend: (isIncrease ? 'up' : 'down') as InsightTrend,
       });
     }
 
@@ -96,8 +91,7 @@ export const getDashboardInsights = async (currency: string): Promise<DashboardI
       .where(
         and(
           eq(accounts.currency, currency),
-          sql`strftime('%m', ${payments.datetime}) = strftime('%m', 'now')`,
-          sql`strftime('%Y', ${payments.datetime}) = strftime('%Y', 'now')`
+          sql`date(${payments.datetime}) >= ${getStartOfMonthLocal()}`
         )
       );
 
@@ -105,7 +99,7 @@ export const getDashboardInsights = async (currency: string): Promise<DashboardI
     if (netSavings !== 0) {
       insights.push({
         id: 'monthly-net',
-        type: netSavings > 0 ? 'success' : 'warning',
+        type: (netSavings > 0 ? 'success' : 'warning') as InsightStatus,
         title: 'Month Net',
         valueType: 'amount',
         amount: Math.abs(netSavings),
@@ -115,8 +109,7 @@ export const getDashboardInsights = async (currency: string): Promise<DashboardI
       });
     }
 
-    // 3. Category Spike (Anomaly)
-    // Find if any category has spiked vs its average (Simplified logic for now)
+    // 3. Category Spike
     const topCategory = await db
       .select({
         name: sql<string>`(SELECT name FROM categories WHERE id = ${payments.categoryId})`,
@@ -127,8 +120,8 @@ export const getDashboardInsights = async (currency: string): Promise<DashboardI
       .where(
         and(
           eq(accounts.currency, currency),
-          eq(payments.type, 'DR'),
-          sql`date(${payments.datetime}) >= date('now', '-30 days')`
+          eq(payments.type, 'DR' as TransactionType),
+          sql`date(${payments.datetime}) >= ${getDaysAgoLocal(30)}`
         )
       )
       .groupBy(payments.categoryId)
@@ -138,7 +131,7 @@ export const getDashboardInsights = async (currency: string): Promise<DashboardI
     if (topCategory && topCategory[0]) {
       insights.push({
         id: 'top-burn',
-        type: 'info',
+        type: 'info' as InsightStatus,
         title: 'Burn Sector',
         valueType: 'text',
         text: topCategory[0].name,
