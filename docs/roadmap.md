@@ -1,24 +1,12 @@
 # 🧭 Luno Roadmap
 
-## 🎯 Core Principle
-**Free = Tracking**  
-**Premium = Insights + Control**  
-**Pro = Automation & Security**
-
----
-
-## 🟢 STAGE 1: Foundation & MVP (Completed)
-*The core engine and basic tracking loop.*
-
-**Core Tracking**
+## ✅ Phase 1 — Current (Completed)
 - [x] Onboarding flow (Welcome → Profile → Account)
 - [x] 50+ pre-defined categories
 - [x] Transaction management (add/edit/delete)
 - [x] Multi-account tracking
 - [x] Dashboard (net position + recent transactions)
 - [x] Basic filtering
-
-**System Engine**
 - [x] Advanced analytics engine (metrics ready)
 - [x] Local-first storage (SQLite)
 - [x] Theme support (light/dark/system)
@@ -26,10 +14,15 @@
 
 ---
 
-## 🟢 STAGE 2: Monetization Architecture (Completed)
-*Separating free value from premium depth.*
+## 🚀 Phase 2 — Freemium Setup (Completed)
 
-**Premium Tier Value**
+### Free Tier (Core Usage)
+- [x] Transaction tracking (full access)
+- [x] Basic dashboard (totals + recent activity)
+- [x] Basic filters
+- [x] Category & account management
+
+### Premium Tier (Monetization)
 - [x] Savings rate (Stats Screen)
 - [x] Avg daily burn (Stats Screen)
 - [x] Financial runway (Dashboard & Stats)
@@ -38,7 +31,7 @@
 - [x] Category breakdown analytics
 - [x] Comparative insights (period vs period)
 
-**Paywall System**
+### Paywall System
 - [x] Feature-based locking (PremiumGuard)
 - [x] Usage-based triggers (after engagement)
 - [x] Upgrade prompts (non-intrusive Pro badges)
@@ -46,17 +39,18 @@
 
 ---
 
-## 🟡 STAGE 3: Insights & Engagement (Next Up)
-*Building stickiness through actionable, personalized feedback.*
+## ⚡ Phase 3 — Insights Layer (Core Value)
 
-**Insights Layer**
-- [ ] Contextual insight cards inside dashboard
-- [ ] Weekly financial summary
-- [ ] Spending alerts (e.g. “You spent 20% more this week”)
-- [ ] Runway insights (increase/decrease tracking)
-- [ ] Savings feedback (“You saved ₹X”)
+- [x] Weekly financial summary
+- [x] Spending alerts (e.g. “You spent 20% more this week”)
+- [x] Runway insights (increase/decrease tracking)
+- [x] Savings feedback (“You saved ₹X”)
+- [x] Contextual insight cards inside dashboard
 
-**Retention System**
+---
+
+## 🔁 Phase 4 — Retention System
+
 - [ ] Weekly report view
 - [ ] Monthly summary view
 - [ ] Usage streak / consistency tracking
@@ -64,45 +58,62 @@
 
 ---
 
-## 🔵 STAGE 4: Power Features & UX Polish (In Pipeline)
-*Refining the experience and satisfying power users.*
+## 💎 Phase 5 — Power Features (Premium Depth)
 
-**UX & Refinement**
-- [ ] Cleaner onboarding copy
-- [ ] Improved empty states (guided UX)
-- [ ] Visual refinement (spacing, hierarchy)
-- [ ] Micro-interactions (Reanimated polish)
-- [ ] Faster navigation flows
-
-**Pro Tooling**
-- [ ] Global search across transactions
-- [ ] Advanced filters (multi-select, deep filtering)
-- [ ] Bulk edit transactions
 - [ ] Export data (CSV)
 - [ ] Backup & restore (local)
+- [ ] Advanced filters (multi-select, deep filtering)
+- [ ] Bulk edit transactions
+- [ ] Global search across transactions
 
 ---
 
-## 🟣 STAGE 5: Advanced Automation & Security (Future Vision)
-*The path to becoming the ultimate personal finance app.*
+## 🎨 Phase 6 — UX & Polish
 
-**Budgets & Automation**
-- [ ] Custom budgeting limits per category
-- [ ] Recurring transactions automations (subscriptions)
-- [ ] Multi-currency manual conversion handling
+- [ ] Improved empty states (guided UX)
+- [ ] Micro-interactions (Reanimated polish)
+- [ ] Faster navigation flows
+- [ ] Cleaner onboarding copy
+- [ ] Visual refinement (spacing, hierarchy)
 
-**Security & Advanced Export**
-- [ ] Biometric app lock (Face ID / Touch ID)
-- [ ] PDF financial report generation
-- [ ] Cloud backup integrations (iCloud / Google Drive) as an opt-in
+---
+
+## 📈 Phase 7 — Growth & Launch
+
+### App Store Optimization
+- [ ] Brutalist-style screenshots
+- [ ] Demo video / GIF
+- [ ] Clear value messaging:
+  - No ads
+  - No tracking
+  - No cloud
+
+### Distribution
+- [ ] Reddit launch posts
+- [ ] Twitter/X dev logs
+- [ ] Product Hunt launch
+
+---
+
+## 💰 Phase 8 — Pricing Strategy
+
+- [x] Free tier (fully usable)
+- [x] ₹199–₹299 lifetime (early adopters)
+- [x] Gradual increase to ₹499+
 
 ---
 
 ## 🧠 Execution Order (Strict)
 
-1. [x] Foundation & MVP
-2. [x] Monetization Architecture
-3. [ ] Insights Layer
-4. [ ] Retention & Engagement
-5. [ ] Power Features & UX Polish
-6. [ ] Advanced Automation & Security
+1. [x] Freemium split
+2. [x] Paywall implementation
+3. [x] Insights layer
+4. [ ] Retention features
+5. [ ] Launch & distribution
+
+---
+
+## 🎯 Core Principle
+
+**Free = Tracking**  
+**Premium = Insights + Control**
