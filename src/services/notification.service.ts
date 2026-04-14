@@ -3,7 +3,7 @@ import { addDays } from 'date-fns';
 import { Platform } from 'react-native';
 
 const REMINDER_POOL = [
-  { title: "Financial Hygiene Check 🧼", body: "Where did that $20 go? Log your spends now to keep your dashboard accurate." },
+  { title: "Financial Hygiene Check 🧼", body: "Where did those funds go? Log your spends now to keep your dashboard accurate." },
   { title: "Your Streak is Sweating 💦", body: "Don't let your persistence drop. Log one transaction today to save your streak." },
   { title: "Luno OS: Action Required ⚠️", body: "A gap in your data detected. Ensure your financial ledger is up to date." },
   { title: "The Money Trail 👣", body: "Keeping track of every cent is the first step to freedom. Spend 30 seconds logging now." },
@@ -138,6 +138,24 @@ export const NotificationService = {
     });
 
     console.log(`[NotificationService] Reminder dismissed for today. Resuming tomorrow at ${timeStr}`);
+  },
+
+  /**
+   * triggerInstantNotification: Fires a sample notification immediately.
+   * Useful for manual QA/Dev verification of branding and behavior.
+   */
+  async triggerInstantNotification() {
+    const randomIndex = Math.floor(Math.random() * REMINDER_POOL.length);
+    const message = REMINDER_POOL[randomIndex];
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: `[TEST] ${message.title}`,
+        body: message.body,
+        sound: true,
+      },
+      trigger: null, // null means trigger immediately
+    });
   },
 
   /**

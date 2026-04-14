@@ -19,10 +19,10 @@ export function StreakBadge() {
   if (isLoading || !streak || streak === 0) return null;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.text }]}>
-      <Ionicons name="flame" size={10} color={colors.primary} />
-      <Text style={[styles.text, { color: colors.background }]}>
-        {streak} DAY STREAK
+    <View style={styles.container}>
+      <Ionicons name="flame" size={11} color={colors.primary} />
+      <Text style={[styles.text, { color: colors.text }]}>
+        {streak}D STREAK
       </Text>
     </View>
   );
@@ -30,17 +30,20 @@ export function StreakBadge() {
 
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
+    height: 24, // Matches accountCurrencyBadge exactly
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    gap: 5,
+    borderRadius: 999,
+    gap: 4,
+    backgroundColor: colors.background + '80', // Translucent dark-mode friendly bg
+    borderWidth: 1,
+    borderColor: colors.border,
     alignSelf: 'flex-start',
   },
   text: {
-    fontFamily: TYPOGRAPHY.fonts.bold,
-    fontSize: 9,
-    letterSpacing: 1.2,
+    fontFamily: TYPOGRAPHY.fonts.semibold, // Matches currency chip
+    fontSize: 10,
+    letterSpacing: 0.5,
   },
 });

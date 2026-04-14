@@ -12,6 +12,7 @@ import { TYPOGRAPHY } from '../../src/theme/typography';
 import { usePremium } from '../../src/providers/PremiumProvider';
 import { Input } from '../../src/components/ui/Input';
 import { seedDummyData } from '../../src/utils/seed';
+import { NotificationService } from '../../src/services/notification.service';
 
 export default function DeveloperScreen() {
   const { colors } = useTheme();
@@ -188,6 +189,15 @@ export default function DeveloperScreen() {
                 </View>
               ))
             )}
+            <TouchableOpacity 
+              style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border + '15' }]} 
+              onPress={() => {
+                NotificationService.triggerInstantNotification();
+                Alert.alert("Test Notification", "An instant notification has been queued.");
+              }}
+            >
+              <Text style={[styles.rowTitle, { fontSize: 13, color: colors.primary }]}>TRIGGER SAMPLE NOTIFICATION</Text>
+            </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border + '15' }]} 
               onPress={fetchScheduled}
