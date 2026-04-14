@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { NotificationService } from '../services/notification.service';
 
 export type UserProfile = {
@@ -75,6 +76,19 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     };
 
     syncNotifications();
+  }, [profile.reminderEnabled, profile.reminderTime, isLoading]);
+
+  /**
+   * Proactive Randomization: Every time the user opens the app, we refresh 
+   * the local notification with a new random message from the pool.
+   */
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (next: AppStateStatus) => {
+      if (next === 'active' && !isLoading && profile.reminderEnabled) {
+        NotificationService.scheduleDailyReminder(profile.reminderTime);
+      }
+    });
+    return () => subscription.remove();
   }, [profile.reminderEnabled, profile.reminderTime, isLoading]);
 
   const updateProfile = async (updates: Partial<UserProfile>) => {

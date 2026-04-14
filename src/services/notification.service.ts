@@ -1,6 +1,17 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
+const REMINDER_POOL = [
+  { title: "Financial Hygiene Check 🧼", body: "Where did that $20 go? Log your spends now to keep your dashboard accurate." },
+  { title: "Your Streak is Sweating 💦", body: "Don't let your persistence drop. Log one transaction today to save your streak." },
+  { title: "Luno OS: Action Required ⚠️", body: "A gap in your data detected. Ensure your financial ledger is up to date." },
+  { title: "The Money Trail 👣", body: "Keeping track of every cent is the first step to freedom. Spend 30 seconds logging now." },
+  { title: "Wallet Audit 🧐", body: "Did you buy lunch? Coffee? A small spend is still a spend. Log it in Luno." },
+  { title: "Consistency > Intensity 🔄", body: "Tiny daily tracking wins lead to massive insights. Keep going!" },
+  { title: "Don't Break the Chain ⛓️", body: "Your streak is looking strong. Keep it alive by logging today's activity." },
+  { title: "Mindful Spending 🧘", body: "Knowledge is power. Log your latest transaction to see its impact on your runway." },
+];
+
 /**
  * NotificationService: Centralized infrastructure for local device reminders.
  * 
@@ -74,11 +85,15 @@ export const NotificationService = {
       return;
     }
 
-    // 3. Schedule the new daily notification
+    // 3. Pick a random message from the pool
+    const randomIndex = Math.floor(Math.random() * REMINDER_POOL.length);
+    const message = REMINDER_POOL[randomIndex];
+
+    // 4. Schedule the new daily notification
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: "Time to track? ✍️",
-        body: "Stay on top of your habits. Log today's transactions to keep your streak alive.",
+        title: message.title,
+        body: message.body,
         sound: true,
         priority: Notifications.AndroidNotificationPriority.HIGH,
       },
