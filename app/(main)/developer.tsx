@@ -14,7 +14,7 @@ import { seedDummyData } from '../../src/utils/seed';
 
 export default function DeveloperScreen() {
   const { colors } = useTheme();
-  const { isDevForced, toggleDevOverride } = usePremium();
+  const { devOverride, setDevOverride } = usePremium();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
@@ -106,20 +106,40 @@ export default function DeveloperScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>TESTING OVERRIDES</Text>
           <View style={styles.card}>
-            <View style={styles.row}>
+            <View style={styles.overrideHeader}>
               <View style={[styles.iconBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
                 <Ionicons name="flash-outline" size={18} color="#FFD700" />
               </View>
               <View style={styles.textDetails}>
-                <Text style={styles.rowTitle}>Force Pro Status</Text>
-                <Text style={styles.rowSubtitle}>Bypass all paywalls and gating</Text>
+                 <Text style={styles.rowTitle}>PRO Entitlements</Text>
+                 <Text style={styles.rowSubtitle}>Override system purchase checks</Text>
               </View>
-              <Switch
-                value={isDevForced}
-                onValueChange={toggleDevOverride}
-                trackColor={{ false: colors.border, true: colors.primary }}
-                thumbColor={colors.background}
-              />
+            </View>
+
+            <View style={styles.tripleButtonGroup}>
+              <TouchableOpacity 
+                style={[styles.smallBtn, devOverride === 'FORCED_ON' && { backgroundColor: colors.primary }]} 
+                onPress={() => setDevOverride('FORCED_ON')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.btnLabel, devOverride === 'FORCED_ON' && { color: colors.background }]}>ON</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.smallBtn, devOverride === 'FORCED_OFF' && { backgroundColor: colors.danger }]} 
+                onPress={() => setDevOverride('FORCED_OFF')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.btnLabel, devOverride === 'FORCED_OFF' && { color: colors.background }]}>OFF</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.smallBtn, devOverride === 'DEFAULT' && { backgroundColor: colors.text }]} 
+                onPress={() => setDevOverride('DEFAULT')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.btnLabel, devOverride === 'DEFAULT' && { color: colors.background }]}>RESET</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -259,6 +279,33 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
+  },
+  overrideHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    paddingBottom: 10,
+  },
+  tripleButtonGroup: {
+    flexDirection: 'row',
+    padding: 16,
+    paddingTop: 0,
+    gap: 8,
+  },
+  smallBtn: {
+    flex: 1,
+    height: 36,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#00000010',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#00000005',
+  },
+  btnLabel: {
+    fontFamily: TYPOGRAPHY.fonts.bold,
+    fontSize: 10,
+    letterSpacing: 0.5,
   },
   iconBox: {
     width: 44,
