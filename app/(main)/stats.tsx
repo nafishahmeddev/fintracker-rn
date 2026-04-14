@@ -333,8 +333,8 @@ export default function StatsScreen() {
           <Text style={styles.sectionTitle}>PRACTICAL INSIGHTS</Text>
           <Text style={styles.sectionHint}>{selectedCurrency}</Text>
         </View>
-        <PremiumGuard label="Insights Pro" size="medium" containerStyle={{ marginBottom: 22 }}>
-          <View style={[styles.sectionCard, { marginBottom: 0 }]}>
+        <PremiumGuard label="Insights Pro" size="medium">
+          <View style={styles.sectionCard}>
             <View style={styles.metricGrid}>
               <View style={styles.metricCell}>
                 <Text style={styles.metricLabel}>AVG DAILY BURN</Text>
@@ -360,8 +360,8 @@ export default function StatsScreen() {
           <Text style={styles.sectionTitle}>PERIOD DELTA</Text>
           <Text style={styles.sectionHint}>{selectedRange === null ? 'Unavailable for ALL' : `vs previous ${selectedRange}D`}</Text>
         </View>
-        <PremiumGuard label="Comparison Pro" size="medium" containerStyle={{ marginBottom: 22 }}>
-          <View style={[styles.sectionCard, { marginBottom: 0 }]}>
+        <PremiumGuard label="Comparison Pro" size="medium">
+          <View style={styles.sectionCard}>
             {comparison ? (
               <View style={styles.deltaList}>
                 <View style={styles.deltaRow}>
@@ -757,6 +757,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 14,
     marginBottom: 12,
   },
   sectionTitle: {
