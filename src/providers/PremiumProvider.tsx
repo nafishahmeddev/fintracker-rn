@@ -25,6 +25,8 @@ export type PremiumContextType = {
   purchasePremium: () => Promise<void>;
   restorePurchase: () => Promise<void>;
   resetPremium: () => Promise<void>;
+  toggleDevOverride: () => Promise<void>;
+  isDevForced: boolean;
   showAlert: (config: { title: string; message?: string; type?: 'info' | 'success' | 'error' | 'warning'; buttons?: AlertButton[] }) => void;
 };
 
@@ -40,6 +42,7 @@ export function usePremium() {
 }
 
 const STORAGE_KEY = '@luno_premium_v7';
+const DEV_OVERRIDE_KEY = '@luno_dev_force_pro';
 const INITIAL_STATE: PremiumState = { isPremium: false };
 
 /**
@@ -48,6 +51,7 @@ const INITIAL_STATE: PremiumState = { isPremium: false };
  */
 export function PremiumProvider({ children }: { children: ReactNode }) {
   const [premiumState, setPremiumState] = useState<PremiumState>(INITIAL_STATE);
+  const [isDevForced, setIsDevForced] = useState(false);
   const [products, setProducts] = useState<IAPProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
@@ -154,8 +158,15 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     const initializeSystem = async () => {
       // 1. Storage check
       try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        if (stored && !unmounted) setPremiumState(JSON.parse(stored));
+        const [storedPremium, storedDev] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEY),
+          AsyncStorage.getItem(DEV_OVERRIDE_KEY),
+        ]);
+        
+        if (!unmounted) {
+          if (storedPremium) setPremiumState(JSON.parse(storedPremium));
+          if (storedDev) setIsDevForced(storedDev === 'true');
+        }
       } catch { }
 
       // 2. IAP Connection
@@ -260,12 +271,29 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     await savePremiumState(INITIAL_STATE);
   }, [savePremiumState]);
 
+  const toggleDevOverride = useCallback(async () => {
+    const nextValue = !isDevForced;
+    try {
+      await AsyncStorage.setItem(DEV_OVERRIDE_KEY, String(nextValue));
+      setIsDevForced(nextValue);
+    } catch { }
+  }, [isDevForced]);
+
+  /**
+   * isPremium: The final computed state.
+   * Uses real purchase state OR dev override for bypass.
+   */
+  const isPremium = useMemo(() => {
+    return premiumState.isPremium || isDevForced;
+  }, [premiumState.isPremium, isDevForced]);
+
   /**
    * Context Memoization: Stops thousands of unnecessary re-renders in Dashboard/Settings
    * by ensuring the object reference only changes when actual data updates.
    */
   const contextValue = useMemo(() => ({
-    isPremium: premiumState.isPremium,
+    isPremium,
+    isDevForced,
     products,
     isLoading,
     error,
@@ -273,8 +301,9 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     purchasePremium,
     restorePurchase,
     resetPremium,
+    toggleDevOverride,
     showAlert
-  }), [premiumState.isPremium, products, isLoading, error, hasFetched, purchasePremium, restorePurchase, resetPremium, showAlert]);
+  }), [isPremium, isDevForced, products, isLoading, error, hasFetched, purchasePremium, restorePurchase, resetPremium, toggleDevOverride, showAlert]);
 
   return (
     <PremiumContext.Provider value={contextValue}>

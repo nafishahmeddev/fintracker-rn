@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Alert, DevSettings, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, DevSettings, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
 import { ConfirmDialog } from '../../src/components/ui/ConfirmDialog';
@@ -8,10 +8,12 @@ import { Header } from '../../src/components/ui/Header';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { TYPOGRAPHY } from '../../src/theme/typography';
+import { usePremium } from '../../src/providers/PremiumProvider';
 import { seedDummyData } from '../../src/utils/seed';
 
 export default function DeveloperScreen() {
   const { colors } = useTheme();
+  const { isDevForced, toggleDevOverride } = usePremium();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   
   const [showSeedConfirm, setShowSeedConfirm] = React.useState(false);
@@ -40,6 +42,27 @@ export default function DeveloperScreen() {
       <Header title="Developer" subtitle="Secret system tools" showBack />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>TESTING OVERRIDES</Text>
+          <View style={styles.card}>
+            <View style={styles.row}>
+              <View style={[styles.iconBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                <Ionicons name="flash-outline" size={18} color="#FFD700" />
+              </View>
+              <View style={styles.textDetails}>
+                <Text style={styles.rowTitle}>Force Pro Status</Text>
+                <Text style={styles.rowSubtitle}>Bypass all paywalls and gating</Text>
+              </View>
+              <Switch
+                value={isDevForced}
+                onValueChange={toggleDevOverride}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor={colors.background}
+              />
+            </View>
+          </View>
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>DATA UTILITIES</Text>
           <View style={styles.card}>
