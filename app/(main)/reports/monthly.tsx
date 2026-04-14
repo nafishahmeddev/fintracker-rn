@@ -11,6 +11,7 @@ import { useTheme } from '../../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../../src/theme/colors';
 import { TYPOGRAPHY } from '../../../src/theme/typography';
 import { MoneyText } from '../../../src/components/ui/MoneyText';
+import { PremiumGuard } from '../../../src/components/ui/PremiumGuard';
 
 /**
  * MonthlyReport: Re-aligned with the Editorial Hero pattern.
@@ -43,82 +44,84 @@ export default function MonthlyReport() {
       />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* ── Editorial Hero ── */}
-        <View style={styles.heroSection}>
-          <Text style={styles.heroKicker}>MONTHLY AUDIT</Text>
-          <Text style={styles.heroTitle}>
-            {isHealthy ? 'Solid Accumulation.' : 'Increased Burn.'}
-          </Text>
-          <Text style={styles.heroSubtitle}>
-            Financial state for {report.periodLabel.toLowerCase()} shows a {report.savingsRate.toFixed(1)}% savings rate. 
-            {isHealthy ? ' You are building wealth efficiently.' : ' Monitor your discretionary sectors closely.'}
-          </Text>
-        </View>
-
-        {/* ── Core Month Metrics ── */}
-        <View style={styles.metricGrid}>
-          <MetricCard 
-            label="REVENUE" 
-            value={report.totalIncome} 
-            currency={profile.defaultCurrency} 
-            trendMode="high_is_good"
-          />
-          <MetricCard 
-            label="EXPENSE" 
-            value={report.totalExpense} 
-            currency={profile.defaultCurrency} 
-            trendMode="low_is_good"
-          />
-        </View>
-
-        <View style={[styles.metricGrid, { marginTop: 12 }]}>
-          <MetricCard 
-            label="NET POSITION" 
-            value={report.netPosition} 
-            currency={profile.defaultCurrency} 
-            trendMode="high_is_good"
-          />
-          <MetricCard 
-            label="SAVINGS RATE" 
-            value={report.savingsRate} 
-            currency={profile.defaultCurrency} 
-            isAmount={false}
-            suffix="%"
-            trendMode="high_is_good"
-          />
-        </View>
-
-
-        {/* ── Dominant Sectors ── */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>DOMINANT SECTORS</Text>
-          <View style={styles.settingsCard}>
-            {report.topCategories.length > 0 ? report.topCategories.map((cat, index) => (
-              <View key={cat.id} style={[styles.catRow, index === report.topCategories.length - 1 && { borderBottomWidth: 0 }]}>
-                <View style={styles.catMeta}>
-                  <View style={[styles.catIconBox, { backgroundColor: cat.color + '20' }]}>
-                    <Ionicons name={cat.icon as any || 'pricetag'} size={14} color={cat.color} />
-                  </View>
-                  <View style={styles.catText}>
-                    <Text style={styles.catName}>{cat.name}</Text>
-                    <View style={styles.progressContainer}>
-                       <View style={[styles.progressFill, { width: `${cat.percentage}%`, backgroundColor: cat.color }]} />
-                    </View>
-                  </View>
-                  <MoneyText amount={cat.amount} currency={profile.defaultCurrency} style={styles.catAmount} weight="semibold" />
-                </View>
-              </View>
-            )) : (
-              <View style={styles.emptyActivity}>
-                <Text style={styles.emptyText}>No sector data available.</Text>
-              </View>
-            )}
+        <PremiumGuard label="Unlock Monthly Ledgers" size="large">
+          {/* ── Editorial Hero ── */}
+          <View style={styles.heroSection}>
+            <Text style={styles.heroKicker}>MONTHLY AUDIT</Text>
+            <Text style={styles.heroTitle}>
+              {isHealthy ? 'Solid Accumulation.' : 'Increased Burn.'}
+            </Text>
+            <Text style={styles.heroSubtitle}>
+              Financial state for {report.periodLabel.toLowerCase()} shows a {report.savingsRate.toFixed(1)}% savings rate. 
+              {isHealthy ? ' You are building wealth efficiently.' : ' Monitor your discretionary sectors closely.'}
+            </Text>
           </View>
-        </View>
 
-        <View style={styles.brandingBox}>
-          <Text style={styles.brandingText}>LUNO / SYSTEM ARCHIVE</Text>
-        </View>
+          {/* ── Core Month Metrics ── */}
+          <View style={styles.metricGrid}>
+            <MetricCard 
+              label="REVENUE" 
+              value={report.totalIncome} 
+              currency={profile.defaultCurrency} 
+              trendMode="high_is_good"
+            />
+            <MetricCard 
+              label="EXPENSE" 
+              value={report.totalExpense} 
+              currency={profile.defaultCurrency} 
+              trendMode="low_is_good"
+            />
+          </View>
+
+          <View style={[styles.metricGrid, { marginTop: 12 }]}>
+            <MetricCard 
+              label="NET POSITION" 
+              value={report.netPosition} 
+              currency={profile.defaultCurrency} 
+              trendMode="high_is_good"
+            />
+            <MetricCard 
+              label="SAVINGS RATE" 
+              value={report.savingsRate} 
+              currency={profile.defaultCurrency} 
+              isAmount={false}
+              suffix="%"
+              trendMode="high_is_good"
+            />
+          </View>
+
+
+          {/* ── Dominant Sectors ── */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>DOMINANT SECTORS</Text>
+            <View style={styles.settingsCard}>
+              {report.topCategories.length > 0 ? report.topCategories.map((cat, index) => (
+                <View key={cat.id} style={[styles.catRow, index === report.topCategories.length - 1 && { borderBottomWidth: 0 }]}>
+                  <View style={styles.catMeta}>
+                    <View style={[styles.catIconBox, { backgroundColor: cat.color + '20' }]}>
+                      <Ionicons name={cat.icon as any || 'pricetag'} size={14} color={cat.color} />
+                    </View>
+                    <View style={styles.catText}>
+                      <Text style={styles.catName}>{cat.name}</Text>
+                      <View style={styles.progressContainer}>
+                         <View style={[styles.progressFill, { width: `${cat.percentage}%`, backgroundColor: cat.color }]} />
+                      </View>
+                    </View>
+                    <MoneyText amount={cat.amount} currency={profile.defaultCurrency} style={styles.catAmount} weight="semibold" />
+                  </View>
+                </View>
+              )) : (
+                <View style={styles.emptyActivity}>
+                  <Text style={styles.emptyText}>No sector data available.</Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          <View style={styles.brandingBox}>
+            <Text style={styles.brandingText}>LUNO / SYSTEM ARCHIVE</Text>
+          </View>
+        </PremiumGuard>
       </ScrollView>
     </SafeAreaView>
   );

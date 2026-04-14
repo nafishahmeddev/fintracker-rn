@@ -11,6 +11,7 @@ import { useTheme } from '../../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../../src/theme/colors';
 import { TYPOGRAPHY } from '../../../src/theme/typography';
 import { MoneyText } from '../../../src/components/ui/MoneyText';
+import { PremiumGuard } from '../../../src/components/ui/PremiumGuard';
 
 /**
  * WeeklyReport: Re-aligned with the Editorial Hero pattern.
@@ -41,69 +42,71 @@ export default function WeeklyReport() {
       />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* ── Editorial Hero ── */}
-        <View style={styles.heroSection}>
-          <Text style={styles.heroKicker}>WEEKLY RECAP</Text>
-          <Text style={styles.heroTitle}>
-            {report.savingsRate >= 20 ? 'Optimal Flow.' : 'Tight Margins.'}
-          </Text>
-          <Text style={styles.heroSubtitle}>
-            Your net position for this window is <MoneyText amount={Math.abs(report.netPosition)} currency={profile.defaultCurrency} style={styles.inlineMoney} />. 
-            {report.savingsRate >= 20 ? ' Excellent discipline.' : ' Caution is advised.'}
-          </Text>
-        </View>
-
-        {/* ── Core Metrics ── */}
-        <View style={styles.metricGrid}>
-          <MetricCard 
-            label="EXPENSE" 
-            value={report.totalExpense} 
-            currency={profile.defaultCurrency} 
-            trendMode="low_is_good"
-            changeValue={report.comparison?.expenseChange}
-          />
-          <MetricCard 
-            label="SAVINGS RATE" 
-            value={report.savingsRate} 
-            currency={profile.defaultCurrency} 
-            isAmount={false}
-            suffix="%"
-            trendMode="high_is_good"
-            changeValue={report.comparison?.incomeChange} 
-          />
-        </View>
-
-
-        {/* ── Category Sector Breakdown ── */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>BY SECTOR</Text>
-          <View style={styles.settingsCard}>
-            {report.topCategories.length > 0 ? report.topCategories.map((cat, index) => (
-              <View key={cat.id} style={[styles.catRow, index === report.topCategories.length - 1 && { borderBottomWidth: 0 }]}>
-                <View style={styles.catMeta}>
-                  <View style={[styles.catIconBox, { backgroundColor: cat.color + '20' }]}>
-                    <Ionicons name={cat.icon as any || 'pricetag'} size={14} color={cat.color} />
-                  </View>
-                  <View style={styles.catText}>
-                    <Text style={styles.catName}>{cat.name}</Text>
-                    <View style={styles.progressContainer}>
-                       <View style={[styles.progressFill, { width: `${cat.percentage}%`, backgroundColor: cat.color }]} />
-                    </View>
-                  </View>
-                  <MoneyText amount={cat.amount} currency={profile.defaultCurrency} style={styles.catAmount} weight="semibold" />
-                </View>
-              </View>
-            )) : (
-              <View style={styles.emptyActivity}>
-                <Text style={styles.emptyText}>No activity recorded.</Text>
-              </View>
-            )}
+        <PremiumGuard label="Unlock Weekly Journals" size="large">
+          {/* ── Editorial Hero ── */}
+          <View style={styles.heroSection}>
+            <Text style={styles.heroKicker}>WEEKLY RECAP</Text>
+            <Text style={styles.heroTitle}>
+              {report.savingsRate >= 20 ? 'Optimal Flow.' : 'Tight Margins.'}
+            </Text>
+            <Text style={styles.heroSubtitle}>
+              Your net position for this window is <MoneyText amount={Math.abs(report.netPosition)} currency={profile.defaultCurrency} style={styles.inlineMoney} />. 
+              {report.savingsRate >= 20 ? ' Excellent discipline.' : ' Caution is advised.'}
+            </Text>
           </View>
-        </View>
 
-        <View style={styles.brandingBox}>
-          <Text style={styles.brandingText}>LUNO / PRIVATE LEDGER</Text>
-        </View>
+          {/* ── Core Metrics ── */}
+          <View style={styles.metricGrid}>
+            <MetricCard 
+              label="EXPENSE" 
+              value={report.totalExpense} 
+              currency={profile.defaultCurrency} 
+              trendMode="low_is_good"
+              changeValue={report.comparison?.expenseChange}
+            />
+            <MetricCard 
+              label="SAVINGS RATE" 
+              value={report.savingsRate} 
+              currency={profile.defaultCurrency} 
+              isAmount={false}
+              suffix="%"
+              trendMode="high_is_good"
+              changeValue={report.comparison?.incomeChange} 
+            />
+          </View>
+
+
+          {/* ── Category Sector Breakdown ── */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>BY SECTOR</Text>
+            <View style={styles.settingsCard}>
+              {report.topCategories.length > 0 ? report.topCategories.map((cat, index) => (
+                <View key={cat.id} style={[styles.catRow, index === report.topCategories.length - 1 && { borderBottomWidth: 0 }]}>
+                  <View style={styles.catMeta}>
+                    <View style={[styles.catIconBox, { backgroundColor: cat.color + '20' }]}>
+                      <Ionicons name={cat.icon as any || 'pricetag'} size={14} color={cat.color} />
+                    </View>
+                    <View style={styles.catText}>
+                      <Text style={styles.catName}>{cat.name}</Text>
+                      <View style={styles.progressContainer}>
+                         <View style={[styles.progressFill, { width: `${cat.percentage}%`, backgroundColor: cat.color }]} />
+                      </View>
+                    </View>
+                    <MoneyText amount={cat.amount} currency={profile.defaultCurrency} style={styles.catAmount} weight="semibold" />
+                  </View>
+                </View>
+              )) : (
+                <View style={styles.emptyActivity}>
+                  <Text style={styles.emptyText}>No activity recorded.</Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          <View style={styles.brandingBox}>
+            <Text style={styles.brandingText}>LUNO / PRIVATE LEDGER</Text>
+          </View>
+        </PremiumGuard>
       </ScrollView>
     </SafeAreaView>
   );
