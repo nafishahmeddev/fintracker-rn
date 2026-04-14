@@ -116,41 +116,41 @@ export default function DeveloperScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>TESTING OVERRIDES</Text>
+          <Text style={styles.sectionLabel}>PRO ENTITLEMENTS</Text>
           <View style={styles.card}>
             <View style={styles.overrideHeader}>
               <View style={[styles.iconBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                <Ionicons name="flash-outline" size={18} color="#FFD700" />
+                <Ionicons name="sparkles-outline" size={18} color={colors.primary} />
               </View>
               <View style={styles.textDetails}>
-                 <Text style={styles.rowTitle}>PRO Entitlements</Text>
-                 <Text style={styles.rowSubtitle}>Override system purchase checks</Text>
+                <Text style={styles.rowTitle}>Premium Bypass</Text>
+                <Text style={styles.rowSubtitle}>Force entitlement state for testing</Text>
               </View>
             </View>
 
             <View style={styles.tripleButtonGroup}>
               <TouchableOpacity 
-                style={[styles.smallBtn, devOverride === 'FORCED_ON' && { backgroundColor: colors.primary }]} 
+                style={[styles.smallBtn, devOverride === 'FORCED_ON' && { backgroundColor: colors.text, borderColor: colors.text }]} 
                 onPress={() => setDevOverride('FORCED_ON')}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.btnLabel, devOverride === 'FORCED_ON' && { color: colors.background }]}>ON</Text>
+                <Text style={[styles.btnLabel, { color: devOverride === 'FORCED_ON' ? colors.background : colors.textMuted }]}>ON</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
-                style={[styles.smallBtn, devOverride === 'FORCED_OFF' && { backgroundColor: colors.danger }]} 
+                style={[styles.smallBtn, devOverride === 'FORCED_OFF' && { backgroundColor: colors.text, borderColor: colors.text }]} 
                 onPress={() => setDevOverride('FORCED_OFF')}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.btnLabel, devOverride === 'FORCED_OFF' && { color: colors.background }]}>OFF</Text>
+                <Text style={[styles.btnLabel, { color: devOverride === 'FORCED_OFF' ? colors.background : colors.textMuted }]}>OFF</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
-                style={[styles.smallBtn, devOverride === 'DEFAULT' && { backgroundColor: colors.text }]} 
+                style={[styles.smallBtn, devOverride === 'DEFAULT' && { backgroundColor: colors.primary, borderColor: colors.primary }]} 
                 onPress={() => setDevOverride('DEFAULT')}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.btnLabel, devOverride === 'DEFAULT' && { color: colors.background }]}>RESET</Text>
+                <Text style={[styles.btnLabel, { color: devOverride === 'DEFAULT' ? colors.background : colors.text }]}>SYSTEM</Text>
               </TouchableOpacity>
             </View>
           </View>
