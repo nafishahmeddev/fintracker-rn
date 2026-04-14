@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { NotificationService } from '../services/notification.service';
 
 export type UserProfile = {
   name: string;
@@ -55,6 +56,26 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     };
     loadSettings();
   }, []);
+
+  /**
+   * Sync logic: Automatically handles hardware scheduling when JS state changes.
+   */
+  useEffect(() => {
+    if (isLoading) return;
+
+    const syncNotifications = async () => {
+      if (profile.reminderEnabled) {
+        const hasPermission = await NotificationService.checkPermissions();
+        if (hasPermission) {
+          await NotificationService.scheduleDailyReminder(profile.reminderTime);
+        }
+      } else {
+        await NotificationService.cancelAllReminders();
+      }
+    };
+
+    syncNotifications();
+  }, [profile.reminderEnabled, profile.reminderTime, isLoading]);
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     try {

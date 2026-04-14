@@ -16,6 +16,8 @@ import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { TYPOGRAPHY } from '../../src/theme/typography';
 import { usePremium } from '@/src/providers/PremiumProvider';
+import { NotificationService } from '../../src/services/notification.service';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
@@ -26,6 +28,7 @@ export default function SettingsScreen() {
   const [showAppearanceDialog, setShowAppearanceDialog] = React.useState(false);
   const [showResetConfirmDialog, setShowResetConfirmDialog] = React.useState(false);
   const [showEditNameModal, setShowEditNameModal] = React.useState(false);
+  const [showTimePicker, setShowTimePicker] = React.useState(false);
   const [nameInput, setNameInput] = React.useState('');
   const [devClickCount, setDevClickCount] = React.useState(0);
 
@@ -62,6 +65,33 @@ export default function SettingsScreen() {
   const saveEditName = async () => {
     await updateProfile({ name: nameInput.trim() });
     setShowEditNameModal(false);
+  };
+
+  const handleToggleReminders = async () => {
+    const nextState = !profile.reminderEnabled;
+    
+    if (nextState) {
+      // If turning on, we must ensure permissions
+      const granted = await NotificationService.requestPermissions();
+      if (!granted) {
+        Alert.alert(
+          "Permission Required", 
+          "Luno needs notification access to send reminders. Please enable this in your device settings."
+        );
+        return;
+      }
+    }
+    
+    await updateProfile({ reminderEnabled: nextState });
+  };
+
+  const onTimeChange = async (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowTimePicker(false);
+    if (selectedDate && event.type === 'set') {
+      const hours = selectedDate.getHours().toString().padStart(2, '0');
+      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+      await updateProfile({ reminderTime: `${hours}:${minutes}` });
+    }
   };
 
   const handleFooterClick = () => {
@@ -183,22 +213,35 @@ export default function SettingsScreen() {
               title="Daily Reminder"
               value={profile.reminderEnabled ? 'ON' : 'OFF'}
               subtitle="Get notified to track your daily spend"
-              onPress={async () => {
-                await updateProfile({ reminderEnabled: !profile.reminderEnabled });
-              }}
+              onPress={handleToggleReminders}
             />
             <PreferenceRow
               icon="time-outline"
               title="Reminder Time"
               value={profile.reminderTime}
               subtitle="Preferred time for daily alert"
-              onPress={() => {
-                Alert.alert("Notification Service", "Local notifications require expo-notifications. Ensure it is installed and configured in your environment.");
-              }}
+              onPress={() => setShowTimePicker(true)}
               isLast
             />
           </View>
         </View>
+
+        {showTimePicker && (() => {
+          // Convert HH:mm to a Date object for the picker
+          const [h, m] = profile.reminderTime.split(':').map(Number);
+          const date = new Date();
+          date.setHours(h, m, 0, 0);
+          
+          return (
+            <DateTimePicker
+              value={date}
+              mode="time"
+              is24Hour={true}
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onTimeChange}
+            />
+          );
+        })()}
 
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>GENERAL</Text>
