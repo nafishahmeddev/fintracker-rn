@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { addDays } from 'date-fns';
 import { Platform } from 'react-native';
 
 const REMINDER_POOL = [
@@ -106,6 +107,37 @@ export const NotificationService = {
     });
 
     console.log(`[NotificationService] Daily reminder scheduled for ${timeStr}`);
+  },
+
+  /**
+   * dismissToday: Skips any pending reminders for today and resumes the cycle tomorrow.
+   * Useful when the user has already recorded their transactions for the day.
+   */
+  async dismissToday(timeStr: string) {
+    // 1. Clear existing reminders
+    await this.cancelAllReminders();
+
+    // 2. Schedule for tomorrow (this pushes the next notification to over 24h away)
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    const tomorrow = addDays(new Date(), 1);
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Stay consistent! ✍️",
+        body: "You're already doing great. Let's keep the streak alive tomorrow as well.",
+        sound: true,
+        priority: Notifications.AndroidNotificationPriority.HIGH,
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+        hour: hours,
+        minute: minutes,
+        repeats: true,
+      },
+      identifier: 'daily_reminder',
+    });
+
+    console.log(`[NotificationService] Reminder dismissed for today. Resuming tomorrow at ${timeStr}`);
   },
 
   /**

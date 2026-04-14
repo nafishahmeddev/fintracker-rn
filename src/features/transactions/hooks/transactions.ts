@@ -1,4 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSettings } from '../../../providers/SettingsProvider';
+import { NotificationService } from '../../../services/notification.service';
 import * as api from '../api/transactions';
 
 export const TRANSACTIONS_KEYS = {
@@ -46,9 +48,16 @@ export const useTransactionById = (id?: number | null) => {
 
 export const useCreateTransaction = () => {
   const queryClient = useQueryClient();
+  const { profile } = useSettings();
+
   return useMutation({
     mutationFn: api.createTransaction,
     onSuccess: () => {
+      // Smart Notification dismissal
+      if (profile.reminderEnabled) {
+        NotificationService.dismissToday(profile.reminderTime);
+      }
+
       queryClient.invalidateQueries({ queryKey: TRANSACTIONS_KEYS.all });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });

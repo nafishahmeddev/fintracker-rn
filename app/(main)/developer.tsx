@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Notifications from 'expo-notifications';
 import React from 'react';
 import { Alert, DevSettings, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,6 +23,16 @@ export default function DeveloperScreen() {
   const [error, setError] = React.useState('');
   const [showSeedConfirm, setShowSeedConfirm] = React.useState(false);
   const [isSeeding, setIsSeeding] = React.useState(false);
+  const [scheduledNotifs, setScheduledNotifs] = React.useState<Notifications.NotificationRequest[]>([]);
+
+  const fetchScheduled = React.useCallback(async () => {
+    const list = await Notifications.getAllScheduledNotificationsAsync();
+    setScheduledNotifs(list);
+  }, []);
+
+  React.useEffect(() => {
+    fetchScheduled();
+  }, [fetchScheduled]);
 
   const handlePinChange = (val: string) => {
     setPin(val);
@@ -156,6 +167,32 @@ export default function DeveloperScreen() {
                 <Text style={styles.rowSubtitle}>Generate 12 months of test history</Text>
               </View>
               <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>NOTIFICATION DEBUGGER</Text>
+          <View style={styles.card}>
+            {scheduledNotifs.length === 0 ? (
+              <View style={styles.row}>
+                <Text style={styles.rowSubtitle}>No active schedules found.</Text>
+              </View>
+            ) : (
+              scheduledNotifs.map((n, i) => (
+                <View key={n.identifier} style={[styles.infoRow, i === scheduledNotifs.length - 1 && { borderBottomWidth: 0 }]}>
+                   <View style={{ flex: 1 }}>
+                     <Text style={styles.infoLabel}>{n.content.title}</Text>
+                     <Text style={styles.rowSubtitle}>{JSON.stringify(n.trigger)}</Text>
+                   </View>
+                </View>
+              ))
+            )}
+            <TouchableOpacity 
+              style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border + '15' }]} 
+              onPress={fetchScheduled}
+            >
+              <Text style={[styles.rowTitle, { fontSize: 13, color: colors.primary }]}>REFRESH SCHEDULES</Text>
             </TouchableOpacity>
           </View>
         </View>
