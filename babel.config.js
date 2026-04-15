@@ -9,7 +9,6 @@ module.exports = function (api) {
           extensions: ['.sql'],
         },
       ],
-      ['transform-remove-console', { exclude: ['error', 'warn'] }]
     ],
   };
 };
