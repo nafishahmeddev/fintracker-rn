@@ -1,45 +1,46 @@
-Pre-launch Posts                                                                                                                                                               
+Post 1 — Subscription fatigue hook                                                                                                                                             
+  Mint died.                                                                                                                                                                     
+  YNAB is $15/month.                                                                                                                                                             
+  Copilot is $13/month.                                                                                                                                                          
                                                                                                                                                                                  
-  Post 1                                                                                                                                                                         
-  Most finance apps charge monthly and store your data on their servers.                                                                                                         
+  I got tired of paying monthly to track my own money.                                                                                                                           
                                                                                                                                                                                  
-  Luno doesn't.                                                                                                                                                                  
+  So I built Luno. One payment. No subscription. No cloud. Nothing leaves your phone.                                                                                            
                                                                                                                                                                                  
-  Local-first. One payment. No subscription.                                                                                                                                     
-  Your money stays on your phone.                                                                                                                                                
+  Dropping this week.
                                                                                                                                                                                  
-  Dropping soon.
+  ---                                                       
+  Post 2 — Data angle
+  Your finance app is free because YOU are the product.
+                                                       
+  Mint sold to Credit Karma. Every transaction you log feeds an ad profile somewhere.                                                                                            
+                                                                                     
+  I built Luno because I wanted an app that genuinely cannot see my data.                                                                                                        
+                                                                         
+  Everything stays on your phone. Always.
+                                         
+  ---
+  Post 3 — Personal / relatable                                                                                                                                                  
+  I checked my app subscriptions last year.
+                                                                                                                                                                                 
+  Finance app: $13/month                                    
+  Budgeting tool: $8/month
+  Expense tracker: $6/month
+                                                                                                                                                                                 
+  $324/year just to track money I was already losing.
+                                                                                                                                                                                 
+  Built Luno. One payment. Tracks everything. Never asks for another cent.
 
   ---
-  Post 2
-  Luno shows you what most apps won't:                                                                                                                                           
-                                      
-  → How many days your money will last                                                                                                                                           
-  → Whether your spending is accelerating                   
-  → Weekly & monthly performance reports 
-                                        
-  One-time purchase. No recurring fees.
-                                       
-  Coming soon.
-                                                                                                                                                                                 
-  ---
-  Post 3                                                                                                                                                                         
-  Luno is almost live.                                      
-                      
-  Track expenses, understand your burn rate, read your weekly reports, build the daily habit.
-                                                                                             
-  One payment. No subscription. Ever.
-                                     
-  Follow to catch the launch price.
-                                   
-  ---
-  Post-launch Post                                                                                                                                                               
+  Post-launch
+
+  I shipped it.
+
+  6 months building a finance tracker that doesn't spy on you, charge monthly, or need an internet connection.                                                                   
    
   Luno is live on iOS & Android.                                                                                                                                                 
                                                             
-  Track, analyse, report. All local. No cloud. No subscription.
-
-  One payment → permanent access.
+  One payment. Your data stays on your device. Forever.
 
   Link in bio.
 
