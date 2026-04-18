@@ -7,7 +7,17 @@ Luno aims to be a top-tier, premium financial tracker. The design system rigidly
 - **Flawless Minimalism**: No aggressive drop shadows, no soft blurry borders, just stark, flat, elegant surfaces.
 - **Micro-borders**: Heavy reliance on 1px solid borders (`colors.border`) to demarcate components and cards.
 - **Typography & Casing**: High-contrast, sophisticated typography. Action buttons and primary text elements must use **Sentence case** (e.g., "Upgrade to Pro", not "UPGRADE TO PRO") to feel mature and journalistic rather than salesy.
-- **Shape Language**: Interactive elements and buttons strictly use **12px - 16px rounded corners**. Avoid pill-shaped (999px) buttons unless they are tiny micro-badges. 
+- **Shape Language**: Interactive elements and buttons strictly use **12px - 16px rounded corners**. Avoid pill-shaped (999px) buttons unless they are tiny micro-badges.
+
+### 1.1 Design Token System
+All styling MUST use the design tokens in `/src/theme/tokens.ts`:
+- **Spacing**: `spacing('1')` through `spacing('12')` - 4px base grid
+- **Radius**: `radius('xs')` through `radius('2xl')` - Never use arbitrary values
+- **Component Sizes**: `COMPONENT_SIZES.button|card|input.{size}.{property}`
+- **Shadows**: `shadow('sm')` for cards, `shadow('md')` for elevated elements
+- **Layout**: `LAYOUT.screenPadding`, `LAYOUT.minTouchTarget`
+
+See `AGENTS.md` for complete design token reference.
 
 ## 2. Technology Stack & Rules
 - **Framework**: React Native + Expo + Expo Router (File-based navigation in `/app`).

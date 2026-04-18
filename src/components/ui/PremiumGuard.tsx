@@ -5,6 +5,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { usePremium } from '@/src/providers/PremiumProvider';
 import { useTheme } from '../../providers/ThemeProvider';
 import { TYPOGRAPHY } from '../../theme/typography';
+import { spacing, radius } from '../../theme/tokens';
 
 interface PremiumGuardProps {
   children: React.ReactNode;
@@ -14,8 +15,15 @@ interface PremiumGuardProps {
 }
 
 /**
- * A wrapper component that blurs its children if the user is not a premium subscriber.
- * Provides a call-to-action to upgrade.
+ * PremiumGuard - Editorial Brutalist Design
+ * 
+ * Sizes:
+ * - small: 56px min height, 12px padding, 12px radius (md)
+ * - medium: 76px min height, 16px padding, 16px radius (lg)
+ * - large: 90px min height, 20px padding, 20px radius (xl)
+ * 
+ * Icon box: 44px (md), 32px (sm)
+ * Action badge: 12px radius (md), 8px (sm)
  */
 export const PremiumGuard = React.memo(function PremiumGuard({
   children,
@@ -31,31 +39,49 @@ export const PremiumGuard = React.memo(function PremiumGuard({
     router.push('/premium');
   }, [router]);
 
-  const { isSmall, isMedium, containerStyles, iconBoxStyles, iconSize, actionBadgeStyles, actionText } = useMemo(() => {
+  const { isSmall, containerStyles, iconBoxStyles, iconSize, actionBadgeStyles, actionTextLabel } = useMemo(() => {
     const small = size === 'small';
     const medium = size === 'medium';
+    
+    // Size-specific values
+    const padding = small ? spacing('3') : medium ? spacing('4') : spacing('5');
+    const borderRadius = small ? radius('md') : medium ? radius('lg') : radius('xl');
+    const minHeight = small ? 56 : medium ? 76 : 90;
+    
     return {
       isSmall: small,
-      isMedium: medium,
       containerStyles: [
         styles.container,
-        { backgroundColor: colors.surface, borderColor: colors.border },
-        small && styles.containerSmall,
-        medium && styles.containerMedium,
+        { 
+          backgroundColor: colors.surface, 
+          borderColor: colors.border,
+          padding,
+          borderRadius,
+          minHeight,
+        },
         containerStyle
       ],
       iconBoxStyles: [
         styles.iconBox,
-        { backgroundColor: colors.background, borderColor: colors.border },
-        small && styles.iconBoxSmall
+        { 
+          backgroundColor: colors.background, 
+          borderColor: colors.border,
+          width: small ? 32 : 44,
+          height: small ? 32 : 44,
+          borderRadius: small ? radius('sm') : radius('md'),
+        },
       ],
       iconSize: small ? 14 : 18,
       actionBadgeStyles: [
         styles.actionBadge,
-        { backgroundColor: colors.text },
-        small && styles.actionBadgeSmall
+        { 
+          backgroundColor: colors.text,
+          paddingHorizontal: small ? spacing('2.5') : spacing('3.5'),
+          paddingVertical: small ? spacing('1.5') : spacing('2.5'),
+          borderRadius: small ? radius('sm') : radius('md'),
+        },
       ],
-      actionText: small ? 'Pro' : 'Unlock'
+      actionTextLabel: small ? 'Pro' : 'Unlock'
     };
   }, [size, colors.surface, colors.border, colors.background, colors.text, containerStyle]);
 
@@ -65,7 +91,7 @@ export const PremiumGuard = React.memo(function PremiumGuard({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.75}
       onPress={handlePress}
       style={containerStyles}
     >
@@ -99,7 +125,7 @@ export const PremiumGuard = React.memo(function PremiumGuard({
 
           <View style={actionBadgeStyles}>
              <Text style={[styles.actionText, { color: colors.background }]}>
-               {actionText}
+               {actionTextLabel}
              </Text>
           </View>
 
@@ -111,27 +137,14 @@ export const PremiumGuard = React.memo(function PremiumGuard({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
-    minHeight: 90,
     justifyContent: 'center',
-    padding: 20,
-  },
-  containerMedium: {
-    minHeight: 76,
-    padding: 16,
-    borderRadius: 18,
-  },
-  containerSmall: {
-    minHeight: 56,
-    padding: 12,
-    borderRadius: 14,
   },
   watermark: {
     position: 'absolute',
-    right: -20,
-    bottom: -30,
+    right: -spacing('5'),
+    bottom: -spacing('8'),
     transform: [{ rotate: '-15deg' }],
   },
   content: {
@@ -141,20 +154,12 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: spacing('3.5'),
   },
   iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-  },
-  iconBoxSmall: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
   },
   textDetails: {
     flex: 1,
@@ -162,7 +167,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: TYPOGRAPHY.fonts.bold,
     fontSize: 14,
-    marginBottom: 4,
+    marginBottom: spacing('1'),
   },
   titleSmall: {
     fontSize: 11,
@@ -173,16 +178,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   actionBadge: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  actionBadgeSmall: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
   },
   actionText: {
     fontFamily: TYPOGRAPHY.fonts.bold,

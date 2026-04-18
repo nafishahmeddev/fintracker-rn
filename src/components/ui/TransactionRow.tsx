@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../theme/colors';
 import { TYPOGRAPHY } from '../../theme/typography';
+import { spacing, radius } from '../../theme/tokens';
 import { TransactionType } from '../../types';
 import { MoneyText } from './MoneyText';
 
@@ -35,29 +36,53 @@ type Props = {
 
 const toHexColor = (value: number) => `#${value.toString(16).padStart(6, '0')}`;
 
-export const TransactionRow = React.memo(({ tx, colors, onPress, isFirst, isLast, showDate }: Props) => {
-  const categoryColor = toHexColor(tx.category.color);
-  const iconName: keyof typeof Ionicons.glyphMap =
+/**
+ * TransactionRow - Editorial Brutalist Design
+ * 
+ * Layout:
+ * - Card radius: 0 for middle items, 16px (lg) for first/last corners
+ * - Padding: 14px vertical
+ * - Gap: 10px between elements
+ * - Icon box: 40px, 12px radius (md)
+ */
+export const TransactionRow = React.memo(function TransactionRow({ 
+  tx, 
+  colors, 
+  onPress, 
+  isFirst, 
+  isLast, 
+  showDate 
+}: Props) {
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  
+  const categoryColor = useMemo(() => toHexColor(tx.category.color), [tx.category.color]);
+  
+  const iconName: keyof typeof Ionicons.glyphMap = useMemo(() =>
     tx.category.icon in Ionicons.glyphMap
       ? (tx.category.icon as keyof typeof Ionicons.glyphMap)
-      : 'pricetag-outline';
+      : 'pricetag-outline',
+    [tx.category.icon]
+  );
+
+  const handlePress = useCallback(() => {
+    onPress?.(tx);
+  }, [onPress, tx]);
+
+  const containerStyle = useMemo(() => ({
+    borderBottomWidth: isLast ? 0 : 1,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: isFirst ? radius('lg') : 0,
+    borderTopRightRadius: isFirst ? radius('lg') : 0,
+    borderBottomLeftRadius: isLast ? radius('lg') : 0,
+    borderBottomRightRadius: isLast ? radius('lg') : 0,
+  }), [isFirst, isLast, colors.border, colors.surface]);
 
   return (
     <TouchableOpacity
-      style={[
-        styles.container,
-        {
-          borderBottomWidth: isLast ? 0 : 1,
-          borderBottomColor: colors.border,
-          backgroundColor: colors.surface,
-          borderTopLeftRadius: isFirst ? 18 : 0,
-          borderTopRightRadius: isFirst ? 18 : 0,
-          borderBottomLeftRadius: isLast ? 18 : 0,
-          borderBottomRightRadius: isLast ? 18 : 0,
-        },
-      ]}
-      activeOpacity={0.78}
-      onPress={() => onPress?.(tx)}
+      style={[styles.container, containerStyle]}
+      activeOpacity={0.75}
+      onPress={handlePress}
     >
       <View
         style={[
@@ -110,31 +135,31 @@ export const TransactionRow = React.memo(({ tx, colors, onPress, isFirst, isLast
 
 TransactionRow.displayName = 'TransactionRow';
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingRight: 14,
-    gap: 10,
+    paddingVertical: spacing('3.5'),
+    paddingRight: spacing('3.5'),
+    gap: spacing('2.5'),
   },
   accentBar: {
     width: 3,
     alignSelf: 'stretch',
-    borderRadius: 999,
-    marginLeft: 4,
-    marginVertical: 6,
+    borderRadius: radius('full'),
+    marginLeft: spacing('1'),
+    marginVertical: spacing('1.5'),
   },
   iconBox: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: radius('md'),
     alignItems: 'center',
     justifyContent: 'center',
   },
   info: {
     flex: 1,
-    gap: 3,
+    gap: spacing('1'),
   },
   title: {
     fontFamily: TYPOGRAPHY.fonts.semibold,
@@ -143,7 +168,7 @@ const styles = StyleSheet.create({
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: spacing('1'),
   },
   dot: {
     width: 5,
@@ -156,7 +181,7 @@ const styles = StyleSheet.create({
   },
   right: {
     alignItems: 'flex-end',
-    gap: 3,
+    gap: spacing('1'),
   },
   amount: {
     fontSize: 14,

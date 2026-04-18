@@ -74,6 +74,117 @@ From `CLAUDE.md` - **cross-reference before UI changes**:
 
 Use `@/` prefix for imports: `import { useTheme } from '@/src/providers/ThemeProvider'`
 
+## Design System
+
+### Editorial Brutalist Design Language
+
+Luno uses a refined "Editorial Brutalist" aesthetic with strict design tokens:
+
+### Design Tokens
+
+**Spacing Scale (4px base grid):**
+```typescript
+import { spacing } from '@/src/theme/tokens';
+
+spacing('0')    // 0px
+spacing('0.5')  // 2px
+spacing('1')    // 4px
+spacing('2')    // 8px
+spacing('3')    // 12px
+spacing('4')    // 16px
+spacing('5')    // 20px
+spacing('6')    // 24px
+spacing('7')    // 32px
+spacing('8')    // 40px
+spacing('9')    // 48px
+```
+
+**Border Radius Scale:**
+```typescript
+import { radius } from '@/src/theme/tokens';
+
+radius('none')  // 0
+radius('xs')    // 4px
+radius('sm')    // 8px
+radius('md')    // 12px - Buttons, icon boxes
+radius('lg')    // 16px - Cards, inputs
+radius('xl')    // 20px - Large cards
+radius('2xl')   // 24px - Modals
+radius('full')  // 999px - Use sparingly (micro-badges only)
+```
+
+**Component Size Variants:**
+```typescript
+import { COMPONENT_SIZES } from '@/src/theme/tokens';
+
+// Buttons: sm (36px), md (48px), lg (56px)
+COMPONENT_SIZES.button.md.height           // 48
+COMPONENT_SIZES.button.md.paddingHorizontal // 16
+COMPONENT_SIZES.button.md.borderRadius        // 16 (lg)
+COMPONENT_SIZES.button.md.fontSize            // 16
+
+// Cards: sm (12px padding), md (16px), lg (20px)
+COMPONENT_SIZES.card.md.padding        // 16
+COMPONENT_SIZES.card.md.borderRadius   // 20 (xl)
+
+// Inputs: sm (40px), md (56px), lg (64px)
+COMPONENT_SIZES.input.md.height           // 56
+COMPONENT_SIZES.input.md.paddingHorizontal  // 16
+COMPONENT_SIZES.input.md.borderRadius       // 16 (lg)
+```
+
+**Shadows/Elevation:**
+```typescript
+import { shadow } from '@/src/theme/tokens';
+
+shadow('none')  // No shadow
+shadow('xs')    // Subtle
+shadow('sm')    // Cards default
+shadow('md')    // Elevated
+shadow('lg')    // Modals, FABs
+```
+
+**Layout Constants:**
+```typescript
+import { LAYOUT } from '@/src/theme/tokens';
+
+LAYOUT.screenPadding    // 24px - Standard screen margin
+LAYOUT.sectionGap       // 24px - Between sections
+LAYOUT.cardGap          // 12px - Between cards
+LAYOUT.elementGap       // 8px - Between elements
+LAYOUT.minTouchTarget   // 44px - Minimum touch target
+```
+
+### Design Rules
+
+1. **Borders**: Use 1px `colors.border` - no drop shadows except on elevated elements
+2. **Shape**: 
+   - Buttons: 12px-16px radius (`md` to `lg`)
+   - Cards: 16px-20px radius (`lg` to `xl`)
+   - Never use 999px (pill shapes) except for micro-badges
+3. **Text**: Sentence case everywhere ("Upgrade to Pro", not "UPGRADE TO PRO")
+4. **Spacing**: Only use token values (4, 8, 12, 16, 20, 24, 32...)
+
+### Example Usage
+```typescript
+import { spacing, radius, shadow, COMPONENT_SIZES } from '@/src/theme/tokens';
+
+// Card with proper tokens
+<View style={{
+  padding: spacing('4'),
+  borderRadius: radius('xl'),
+  backgroundColor: colors.surface,
+  ...shadow('sm'),
+}} />
+
+// Button following size variant
+<TouchableOpacity style={{
+  height: COMPONENT_SIZES.button.md.height,
+  paddingHorizontal: COMPONENT_SIZES.button.md.paddingHorizontal,
+  borderRadius: COMPONENT_SIZES.button.md.borderRadius,
+}} />
+```
+
 ## Performance Patterns (Mandatory)
 
 Following React Native best practices for 60fps UI:
