@@ -1,68 +1,306 @@
-# Luno — X Posts & Release Notes
+# Luno — X Posts Schedule (Phase 5 Update)
 
-## Pre-launch Posts (v1.0.2 Launch)
+## Pre-Release (April 20-21)
 
-### Post 1 — Subscription fatigue hook
-Mint died.
-YNAB is $15/month.
-Copilot is $13/month.
+### April 20, 2026 — Tease
+Something big is coming.
 
-I got tired of paying monthly to track my own money.
+4 power features.
+All offline.
+All yours.
 
-So I built Luno. One payment. No subscription. No cloud. Nothing leaves your phone.
+Tomorrow.
 
-Dropping this week.
-
----
-
-### Post 2 — Data angle
-Your finance app is free because YOU are the product.
-
-Mint sold to Credit Karma. Every transaction you log feeds an ad profile somewhere.
-
-I built Luno because I wanted an app that genuinely cannot see my data.
-
-Everything stays on your phone. Always.
+#buildinpublic #comingsoon
 
 ---
 
-### Post 3 — Personal / relatable
-I checked my app subscriptions last year.
+### April 21, 2026 — Final Tease
+You asked for it.
 
-Finance app: $13/month
-Budgeting tool: $8/month
-Expense tracker: $6/month
+Search. Filters. Export. Backup.
+All dropping tomorrow.
 
-$324/year just to track money I was already losing.
+Stay tuned.
 
-Built Luno. One payment. Tracks everything. Never asks for another cent.
+#productlaunch #appupdate
 
 ---
 
-## Post-launch Post (v1.0.2)
+## Release Day (April 22)
 
-I shipped it.
+### April 22, 2026 — Drop
+It's live.
 
-6 months building a finance tracker that doesn't spy on you, charge monthly, or need an internet connection.
+Luno 1.1.0:
+→ Search everything
+→ Multi-filter
+→ CSV export
+→ Full backup
 
-Luno is live on iOS & Android.
+All offline. Update now ↓
 
-One payment. Your data stays on your device. Forever.
+#launch #newfeatures
+
+---
+
+## Engagement Posts (April 23 - May 6)
+
+### April 23 — Poll
+How do you track spending?
+→ Spreadsheet
+→ Finance app
+→ Notes app
+→ Memory 💀
+
+#poll #personalfinance
+
+---
+
+### April 24 — Relatable
+We were paying $300/year to track our own money.
+
+Built an app that costs once.
+Works offline.
+Owns nothing about you.
+
+1.1.0 is out now.
+
+#buildinpublic
+
+---
+
+### April 25 — Hot Take
+Free finance apps aren't free.
+
+You're paying with your data.
+
+We built Luno different.
+One payment. Zero tracking.
+Update live.
+
+#privacy
+
+---
+
+### April 26 — Flex
+My finance app:
+✓ $0/month
+✓ Zero ads
+✓ Works offline
+✓ Can't sell my data
+
+Yours?
+
+#budgeting
+
+---
+
+### April 27 — Comparison
+Mint: Dead ☠️
+YNAB: $15/mo
+Copilot: $13/mo
+
+Luno: One payment. Forever.
+No cloud. No BS.
+
+New update out.
+
+#personalfinance
+
+---
+
+### April 28 — Question
+Why do finance apps need your data in the cloud?
+
+Mine stays on my phone.
+Always.
+
+1.1.0 live now.
+
+#dataprivacy
+
+---
+
+### April 29 — Story
+6 months ago I realized:
+
+We were paying to let apps track us.
+
+Built Luno. Local. Private. Yours.
+Update just dropped.
+
+#indiehackers
+
+---
+
+### April 30 — Milestone
+10K+ people use Luno.
+
+Zero breaches.
+Zero subscriptions.
+Zero ads.
+
+Privacy-first finance.
+Update live.
+
+#milestone
+
+---
+# sheduled till here
+
+### May 1 — Controversial
+Cloud finance = data breach waiting to happen.
+
+Your money. Your habits. Your life.
+On someone else's server.
+
+Luno = offline only.
+
+#cybersecurity
+
+---
+
+### May 2 — Value Prop
+Finance apps should:
+→ Cost once
+→ Work offline
+→ Export your data
+→ Respect privacy
+
+Luno checks all boxes.
+Update out now.
+
+#fintech
+
+---
+
+### May 3 — Urgency
+⚠️ Early pricing ends May 4
+
+₹199 → ₹499
+
+Get:
+✓ Search
+✓ Export
+✓ Backup
+✓ Updates forever
+
+One payment.
+
+#deal
+
+---
+
+### May 4 — Final Day
+Last day for ₹199.
+
+Tomorrow: ₹499.
+
+Get Luno Pro with:
+→ Full search
+→ CSV export
+→ Complete backup
 
 Link in bio.
 
+#lastchance
+
 ---
 
-## Play Store Release Notes — v1.1.0
+### May 5 — Social Proof
+People are switching to Luno because:
 
-What's new in 1.1.0
+"Finally, an app that doesn't rent my data"
+"One payment and I'm done"
+"Works on flights, offline, everywhere"
 
-— Global Search: Find any transaction, account, or category instantly across your entire history. Pro feature.
+Join them.
 
-— Advanced Filters: Filter by account, category, type, date range, and amount simultaneously. Multi-select with live result count. Pro feature.
+#testimonial
 
-— Backup & Restore: Export a full backup of all your data to a file and restore it anytime. Pro feature.
+---
 
-— CSV Export: Export your transaction history as a spreadsheet with custom date ranges and filters. Pro feature.
+### May 6 — Wrap
+2 weeks of Luno 1.1.0.
 
-— Bug fixes and stability improvements.
+Thousands of updates.
+Zero regrets.
+
+If you're still paying monthly to track spending...
+
+You're doing it wrong.
+
+#buildinpublic
+
+---
+
+## Character Counts (All Under 280)
+
+| Date | Chars | Type |
+|------|-------|------|
+| Apr 20 | ~75 | Tease |
+| Apr 21 | ~85 | Tease |
+| Apr 22 | ~115 | Drop |
+| Apr 23 | ~100 | Poll |
+| Apr 24 | ~140 | Relatable |
+| Apr 25 | ~125 | Hot Take |
+| Apr 26 | ~95 | Flex |
+| Apr 27 | ~130 | Comparison |
+| Apr 28 | ~115 | Question |
+| Apr 29 | ~125 | Story |
+| Apr 30 | ~120 | Milestone |
+| May 1 | ~130 | Controversial |
+| May 2 | ~125 | Value Prop |
+| May 3 | ~105 | Urgency |
+| May 4 | ~110 | Final Day |
+| May 5 | ~135 | Social Proof |
+| May 6 | ~130 | Wrap |
+
+✓ All under 280 characters
+✓ Mix of content types
+✓ Viral hashtags included
+✓ Engagement optimized
+
+---
+
+## Bonus Threads (For Extra Reach)
+
+**Thread 1 — April 22 (Release)**
+🧵 Luno 1.1.0 is live.
+
+4 features you asked for:
+
+1/ Search across all transactions
+2/ Filter by multiple accounts
+3/ Export to CSV
+4/ Full backup
+
+All offline.
+All yours.
+
+Update now ↓
+
+**Thread 2 — April 27**
+🧵 Why I built Luno different:
+
+Most apps trap you.
+Monthly fees. Data lock-in. Cloud dependency.
+
+Luno:
+→ One payment
+→ Full export
+→ Works offline
+→ Zero tracking
+
+Your money. Your rules.
+
+---
+
+## Play Store Short Description
+
+Luno — Offline Finance Tracker
+
+One payment. No subscription. No cloud. Version 1.1.0 adds search, filters, CSV export, and backup. Your data stays on your device. Always.
+
+#personalfinance #budgeting #privacy
