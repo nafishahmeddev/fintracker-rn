@@ -1,22 +1,24 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as IAP from 'expo-iap';
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { AlertButton, AlertModal } from '../components/ui/AlertModal';
 import { ALL_SKUS, SKU_LIFETIME } from '../constants/iap';
 import { IAPProduct, IAPService } from '../services/iap.service';
 
 /**
- * Internal state representation of the user's premium status.
+ * PremiumState: The persistent representation of user access.
  */
 export interface PremiumState {
   isPremium: boolean;
 }
 
+export type DevOverride = 'FORCED_ON' | 'FORCED_OFF' | 'DEFAULT';
+
 /**
- * Context type defining the public API for the Premium system.
+ * PremiumContextType: Standard API exposed to consumers (Dashboard, Settings, etc.).
  */
-type PremiumContextType = {
+export type PremiumContextType = {
   isPremium: boolean;
   products: IAPProduct[];
   isLoading: boolean;
@@ -25,25 +27,33 @@ type PremiumContextType = {
   purchasePremium: () => Promise<void>;
   restorePurchase: () => Promise<void>;
   resetPremium: () => Promise<void>;
+  setDevOverride: (val: DevOverride) => Promise<void>;
+  devOverride: DevOverride;
   showAlert: (config: { title: string; message?: string; type?: 'info' | 'success' | 'error' | 'warning'; buttons?: AlertButton[] }) => void;
 };
 
 export const PremiumContext = createContext<PremiumContextType | null>(null);
 
+/**
+ * usePremium: Access the Luno Pro ecosystem within any functional component.
+ */
 export function usePremium() {
   const ctx = useContext(PremiumContext);
   if (!ctx) throw new Error('usePremium must be used within PremiumProvider');
   return ctx;
 }
 
-const STORAGE_KEY = '@luno_premium_v6';
+const STORAGE_KEY = '@luno_premium_v7';
+const DEV_OVERRIDE_KEY = '@luno_dev_force_pro';
+const INITIAL_STATE: PremiumState = { isPremium: false };
 
-const INITIAL_STATE: PremiumState = {
-  isPremium: false,
-};
-
+/**
+ * PremiumProvider: The single source of truth for application entitlements.
+ * Handles storage persistence, native bridge synchronization, and purchase flows.
+ */
 export function PremiumProvider({ children }: { children: ReactNode }) {
   const [premiumState, setPremiumState] = useState<PremiumState>(INITIAL_STATE);
+  const [devOverride, setDevOverrideState] = useState<DevOverride>('DEFAULT');
   const [products, setProducts] = useState<IAPProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
@@ -51,7 +61,7 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
   const [isIapInitialized, setIsIapInitialized] = useState(false);
   const isSyncing = useRef(false);
 
-  // Custom Alert State
+  // Custom Alert Modal State
   const [alertConfig, setAlertConfig] = useState<{
     visible: boolean;
     title: string;
@@ -65,6 +75,9 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     buttons: [{ text: 'OK' }],
   });
 
+  /**
+   * Helper to display the Editorial Brutalist alert modals.
+   */
   const showAlert = useCallback((config: { title: string; message?: string; type?: 'info' | 'success' | 'error' | 'warning'; buttons?: AlertButton[] }) => {
     setAlertConfig({
       visible: true,
@@ -75,12 +88,15 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  /**
+   * Persists premium logic to local storage for offline resilience.
+   */
   const savePremiumState = useCallback(async (newState: PremiumState) => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
       setPremiumState(newState);
-    } catch (error) {
-      console.error('[Premium] Failed to persist state:', error);
+    } catch (err) {
+      console.error('[Premium] Persistence failure:', err);
     }
   }, []);
 
@@ -90,71 +106,79 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     }
   }, [savePremiumState]);
 
+  /**
+   * Synchronizes local state with verified native store entitlements.
+   */
   const syncPremiumStatus = useCallback(async () => {
     if (isSyncing.current) return;
     isSyncing.current = true;
 
     try {
-      const casted = await IAPService.getActivePurchases();
-      const hasLifetime = casted.some(p => p.productId === SKU_LIFETIME);
+      const active = await IAPService.getActivePurchases();
+      const hasLifetime = active.some(p => p.productId === SKU_LIFETIME);
       
       if (hasLifetime) {
-        await savePremiumState({ isPremium: true });
+        if (!premiumState.isPremium) await savePremiumState({ isPremium: true });
         return;
       }
 
-      // If we are currently premium but the store has no record, revoke.
-      // NOTE: For one-time purchases, this usually only happens on refunds.
-      setPremiumState(prev => {
-        if (!prev.isPremium) return prev;
-        const expiredState = { ...INITIAL_STATE };
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(expiredState)).catch(() => { });
-
+      // Reconciliation: If cached premium state is active but store has no record (e.g. refund/revocation)
+      if (premiumState.isPremium) {
+        await savePremiumState(INITIAL_STATE);
         showAlert({
-          title: 'Access Removed',
+          title: 'Access Revoked',
           message: 'Your Pro access has been revoked or was refunded. You can repurchase at any time.',
           type: 'warning',
         });
-        return expiredState;
-      });
-    } catch (err) {
-      console.log('[Premium] Store sync skipped:', err);
+      }
+    } catch {
+      // Ignore background sync errors to prevent user interruption
     } finally {
       isSyncing.current = false;
     }
-  }, [savePremiumState, showAlert]);
+  }, [premiumState.isPremium, savePremiumState, showAlert]);
 
+  // Keep internal refs updated for use in listener closures
   const syncRef = useRef(syncPremiumStatus);
   const purchaseRef = useRef(handlePurchaseSuccess);
-
   useEffect(() => {
     syncRef.current = syncPremiumStatus;
     purchaseRef.current = handlePurchaseSuccess;
   }, [syncPremiumStatus, handlePurchaseSuccess]);
 
+  /**
+   * Sequenced Initialization: 
+   * 1. Load from storage (immediate, preventing UI flicker).
+   * 2. Initialize native bridge.
+   * 3. Sync entitlements + products.
+   */
   useEffect(() => {
-    const loadState = async () => {
-      try {
-        const storedValue = await AsyncStorage.getItem(STORAGE_KEY);
-        if (storedValue) setPremiumState(JSON.parse(storedValue));
-      } catch {
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadState();
-  }, []);
-
-  useEffect(() => {
+    let unmounted = false;
     let purchaseUpdateSub: { remove: () => void } | undefined;
     let purchaseErrorSub: { remove: () => void } | undefined;
 
-    const initIAP = async () => {
+    const initializeSystem = async () => {
+      // 1. Storage check
+      try {
+        const [storedPremium, storedDev] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEY),
+          AsyncStorage.getItem(DEV_OVERRIDE_KEY),
+        ]);
+        
+        if (!unmounted) {
+          if (storedPremium) setPremiumState(JSON.parse(storedPremium));
+          if (storedDev) setDevOverrideState(storedDev as DevOverride);
+        }
+      } catch { }
+
+      // 2. IAP Connection
       try {
         const connected = await IAPService.init();
+        if (unmounted) return;
         setIsIapInitialized(connected);
 
         if (connected) {
+          // Setup Listeners
           purchaseUpdateSub = IAP.purchaseUpdatedListener(async (purchase) => {
             if (purchase.productId) {
               await purchaseRef.current(purchase);
@@ -163,117 +187,86 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
           });
 
           purchaseErrorSub = IAP.purchaseErrorListener((error) => {
-            const code = (error as { code?: string }).code;
-            if (errorMsg(code) !== 'CANCELED') {
-              setError(`IAP Error: ${code || 'Unknown error'}`);
+            if (error.code !== IAP.ErrorCode.UserCancelled) {
+              console.error('[Premium] Store error:', error);
             }
           });
 
+          // Fetch Metadata
           const fetched = await IAPService.getProducts(ALL_SKUS);
-          setProducts(fetched);
-          setHasFetched(true);
+          if (!unmounted) {
+            setProducts(fetched);
+            setHasFetched(true);
+          }
 
+          // Initial entitlement sync
           await syncRef.current();
-        } else {
-          setError('Failed to connect to App Store / Google Play.');
         }
-      } catch (err) {
-        console.error('[Premium] IAP Initialization flow failed:', err);
-        setError('Billing services currently unavailable.');
+      } catch {
+        if (!unmounted) setError('Billing interface currently unavailable.');
+      } finally {
+        if (!unmounted) setIsLoading(false);
       }
     };
 
-    initIAP();
+    initializeSystem();
 
     return () => {
+      unmounted = true;
       if (purchaseUpdateSub) purchaseUpdateSub.remove();
       if (purchaseErrorSub) purchaseErrorSub.remove();
     };
   }, []);
 
-  const errorMsg = (code?: string) => {
-    if (code === 'E_USER_CANCELLED') return 'CANCELED';
-    return code;
-  };
-
+  /**
+   * Foreground listener: Re-syncs entitlements whenever the user returns to the app.
+   */
   useEffect(() => {
     if (!isIapInitialized) return;
 
-    const handleAppStateChange = (nextAppState: AppStateStatus) => {
-      if (nextAppState === 'active' && !isSyncing.current) {
-        syncPremiumStatus().catch(() => { });
-      }
-    };
-
-    const sub = AppState.addEventListener('change', handleAppStateChange);
-    return () => sub.remove();
+    const listener = AppState.addEventListener('change', (next: AppStateStatus) => {
+      if (next === 'active') syncPremiumStatus().catch(() => { });
+    });
+    return () => listener.remove();
   }, [isIapInitialized, syncPremiumStatus]);
 
   const purchasePremium = useCallback(async () => {
     if (!isIapInitialized) {
-      showAlert({
-        title: 'Network Required',
-        message: 'An active internet connection is required to complete purchases.',
-        type: 'error',
-      });
+      showAlert({ title: 'Network Required', message: 'Please check your connection to proceed.', type: 'error' });
       return;
     }
 
     try {
       await IAP.requestPurchase({
-        request: {
-          apple: { sku: SKU_LIFETIME },
-          google: { skus: [SKU_LIFETIME] }
-        },
+        request: { apple: { sku: SKU_LIFETIME }, google: { skus: [SKU_LIFETIME] } },
         type: 'in-app'
       });
-    } catch (error) {
-      const code = (error as { code?: string }).code;
-      if (errorMsg(code) !== 'CANCELED') {
-        showAlert({
-          title: 'Purchase Error',
-          message: 'We could not process your request. Check your store account.',
-          type: 'error',
-        });
+    } catch (err) {
+      const code = (err as { code?: string })?.code;
+      if (code !== IAP.ErrorCode.UserCancelled) {
+        showAlert({ title: 'Purchase Error', message: 'We could not process your request at this time.', type: 'error' });
       }
     }
   }, [isIapInitialized, showAlert]);
 
   const restorePurchase = useCallback(async () => {
     if (!isIapInitialized) {
-      showAlert({
-        title: 'Network Required',
-        message: 'Please connect to the internet to restore your purchases.',
-        type: 'error',
-      });
+      showAlert({ title: 'Network Required', message: 'Please connect to the internet to restore access.', type: 'error' });
       return;
     }
 
     try {
-      const castedPurchases = await IAPService.getActivePurchases();
-      const hasLifetime = castedPurchases.some(p => p.productId === SKU_LIFETIME);
+      const active = await IAPService.getActivePurchases();
+      const hasLifetime = active.some(p => p.productId === SKU_LIFETIME);
 
       if (hasLifetime) {
         await savePremiumState({ isPremium: true });
-        showAlert({
-          title: 'Access Restored',
-          message: 'Your permanent Luno Pro access has been restored.',
-          type: 'success',
-        });
+        showAlert({ title: 'Access Restored', message: 'Luno Pro has been successfully re-enabled.', type: 'success' });
       } else {
-        showAlert({
-          title: 'No Access Found',
-          message: "We couldn't find any active Pro purchases for this account.",
-          type: 'info',
-        });
+        showAlert({ title: 'No Purchase Found', message: "We couldn't find an active Pro license for this account.", type: 'info' });
       }
-    } catch (error) {
-      console.error('[Premium] Restoration failed:', error);
-      showAlert({
-        title: 'Restoration Failed',
-        message: 'Restoration timed out or failed. Please try again later.',
-        type: 'error',
-      });
+    } catch {
+      showAlert({ title: 'Restoration Failed', message: 'Please try again in a few minutes.', type: 'error' });
     }
   }, [isIapInitialized, savePremiumState, showAlert]);
 
@@ -281,18 +274,46 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
     await savePremiumState(INITIAL_STATE);
   }, [savePremiumState]);
 
+  const setDevOverride = useCallback(async (val: DevOverride) => {
+    try {
+      await AsyncStorage.setItem(DEV_OVERRIDE_KEY, val);
+      setDevOverrideState(val);
+    } catch { }
+  }, []);
+
+  /**
+   * isPremium: The final computed state.
+   * Tripartite logic:
+   * 1. FORCED_ON -> true
+   * 2. FORCED_OFF -> false
+   * 3. DEFAULT -> use store state
+   */
+  const isPremium = useMemo(() => {
+    if (devOverride === 'FORCED_ON') return true;
+    if (devOverride === 'FORCED_OFF') return false;
+    return premiumState.isPremium;
+  }, [premiumState.isPremium, devOverride]);
+
+  /**
+   * Context Memoization: Stops thousands of unnecessary re-renders in Dashboard/Settings
+   * by ensuring the object reference only changes when actual data updates.
+   */
+  const contextValue = useMemo(() => ({
+    isPremium,
+    devOverride,
+    products,
+    isLoading,
+    error,
+    hasFetched,
+    purchasePremium,
+    restorePurchase,
+    resetPremium,
+    setDevOverride,
+    showAlert
+  }), [isPremium, devOverride, products, isLoading, error, hasFetched, purchasePremium, restorePurchase, resetPremium, setDevOverride, showAlert]);
+
   return (
-    <PremiumContext.Provider value={{
-      isPremium: premiumState.isPremium,
-      products,
-      isLoading: isLoading || (!hasFetched && !error),
-      error,
-      hasFetched,
-      purchasePremium,
-      restorePurchase,
-      resetPremium,
-      showAlert
-    }}>
+    <PremiumContext.Provider value={contextValue}>
       {children}
       <AlertModal
         visible={alertConfig.visible}

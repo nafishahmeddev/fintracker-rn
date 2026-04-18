@@ -32,7 +32,8 @@ import { TransactionTypePicker } from '../components/TransactionTypePicker';
 import { TransactionAccountPicker } from '../components/TransactionAccountPicker';
 import { TransactionCategoryPicker } from '../components/TransactionCategoryPicker';
 
-type TransactionType = 'CR' | 'DR';
+import { format } from 'date-fns';
+import { TransactionType } from '../../../types';
 
 type Props = {
   mode: 'create' | 'edit';
@@ -122,14 +123,15 @@ export function TransactionFormPage({ mode, transactionId }: Props) {
   );
 
   const formattedDate = React.useMemo(
-    () => transactionDateTime.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
+    () => format(transactionDateTime, 'EEE, d MMM yyyy'),
     [transactionDateTime]
   );
 
   const formattedTime = React.useMemo(
-    () => transactionDateTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
+    () => format(transactionDateTime, 'HH:mm'),
     [transactionDateTime]
   );
+
 
   const onDatePicked = (event: DateTimePickerEvent, picked?: Date) => {
     if (Platform.OS === 'android') setShowDatePicker(false);

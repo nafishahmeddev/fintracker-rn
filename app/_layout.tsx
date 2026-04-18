@@ -11,6 +11,7 @@ import { QueryProvider } from '@/src/providers/QueryProvider';
 import { SettingsProvider } from '@/src/providers/SettingsProvider';
 import { PremiumProvider } from '@/src/providers/PremiumProvider';
 import { ThemeProvider as CustomThemeProvider } from '@/src/providers/ThemeProvider';
+import { NotificationService } from '@/src/services/notification.service';
 import {
   BricolageGrotesque_400Regular,
   BricolageGrotesque_500Medium,
@@ -55,6 +56,8 @@ export default function RootLayout() {
   const fontsLoaded = bricolageLoaded && monoLoaded;
 
   if (!fontsLoaded) return null;
+
+  NotificationService.init();
 
   customizeText();
 

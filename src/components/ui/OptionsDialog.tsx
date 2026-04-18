@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
@@ -26,7 +26,7 @@ type OptionsDialogProps = {
   closeLabel?: string;
 };
 
-export function OptionsDialog({
+export const OptionsDialog = React.memo(function OptionsDialog({
   visible,
   onClose,
   title,
@@ -35,7 +35,14 @@ export function OptionsDialog({
   closeLabel = 'Close',
 }: OptionsDialogProps) {
   const { colors } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const handleOptionPress = useCallback((option: OptionsDialogOption) => {
+    if (option.closeOnPress !== false) {
+      onClose();
+    }
+    option.onPress();
+  }, [onClose]);
 
   return (
     <Modal
@@ -71,12 +78,7 @@ export function OptionsDialog({
                     option.destructive && !selected && styles.optionRowDestructive,
                   ]}
                   activeOpacity={0.9}
-                  onPress={() => {
-                    if (option.closeOnPress !== false) {
-                      onClose();
-                    }
-                    option.onPress();
-                  }}
+                  onPress={() => handleOptionPress(option)}
                 >
                   {option.icon ? (
                     <View style={[styles.optionIconWrap, selected && styles.optionIconWrapActive]}>
@@ -107,7 +109,7 @@ export function OptionsDialog({
       </View>
     </Modal>
   );
-}
+});
 
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({

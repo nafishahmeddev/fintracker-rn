@@ -49,22 +49,21 @@
 
 ---
 
-## 🔁 Phase 4 — Retention System
+## 🔁 Phase 4 — Retention System (Completed)
 
-- [ ] Weekly report view
-- [ ] Monthly summary view
-- [ ] Usage streak / consistency tracking
-- [ ] Lightweight reminders (optional)
+- [x] Weekly report view
+- [x] Monthly summary view
+- [x] Usage streak / consistency tracking
+- [x] Lightweight reminders (Settings and logic integrated)
 
 ---
 
-## 💎 Phase 5 — Power Features (Premium Depth)
+## 💎 Phase 5 — Power Features (Premium Depth) (Done)
 
-- [ ] Export data (CSV)
-- [ ] Backup & restore (local)
-- [ ] Advanced filters (multi-select, deep filtering)
-- [ ] Bulk edit transactions
-- [ ] Global search across transactions
+- [x] Export data (CSV) - Date range, account/category filters, cross-platform save
+- [x] Backup & restore (local) - JSON export/import, onboarding restore option
+- [x] Advanced filters (multi-select, deep filtering) - Multi-select accounts/categories, date range, amount range, search
+- [x] Global search across transactions - Full-text search, dedicated results screen, deep-linking to filtered results
 
 ---
 
@@ -108,8 +107,10 @@
 1. [x] Freemium split
 2. [x] Paywall implementation
 3. [x] Insights layer
-4. [ ] Retention features
-5. [ ] Launch & distribution
+4. [x] Retention features
+5. [x] Power features (Phase 5 - all 4 features complete)
+6. [ ] Polish & Growth (Phase 6 - In Progress)
+7. [ ] Launch & distribution
 
 ---
 

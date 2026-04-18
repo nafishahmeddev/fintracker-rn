@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { TYPOGRAPHY } from '../../theme/typography';
@@ -20,7 +20,7 @@ type AlertModalProps = {
   type?: 'info' | 'success' | 'error' | 'warning';
 };
 
-export function AlertModal({
+export const AlertModal = React.memo(function AlertModal({
   visible,
   title,
   message,
@@ -30,18 +30,21 @@ export function AlertModal({
 }: AlertModalProps) {
   const { colors, isDark } = useTheme();
   const { width } = useWindowDimensions();
-  const styles = React.useMemo(() => createStyles(colors, isDark, width), [colors, isDark, width]);
+  const styles = useMemo(() => createStyles(colors, isDark, width), [colors, isDark, width]);
 
-  const getIcon = () => {
+  const icon = useMemo(() => {
     switch (type) {
       case 'success': return { name: 'checkmark-circle' as const, color: colors.primary };
       case 'error': return { name: 'alert-circle' as const, color: colors.danger };
       case 'warning': return { name: 'warning' as const, color: '#FFB800' };
       default: return { name: 'information-circle' as const, color: colors.primary };
     }
-  };
+  }, [type, colors.primary, colors.danger]);
 
-  const icon = getIcon();
+  const handleButtonPress = useCallback((button: AlertButton) => {
+    if (button.onPress) button.onPress();
+    onClose();
+  }, [onClose]);
 
   return (
     <Modal
@@ -75,10 +78,7 @@ export function AlertModal({
                     isDestructive && { backgroundColor: colors.danger },
                     buttons.length > 2 ? { width: '100%' } : { flex: 1 }
                   ]}
-                  onPress={() => {
-                    if (button.onPress) button.onPress();
-                    onClose();
-                  }}
+                  onPress={() => handleButtonPress(button)}
                 >
                   <Text style={[
                     styles.buttonText,
@@ -94,7 +94,7 @@ export function AlertModal({
       </View>
     </Modal>
   );
-}
+});
 
 const createStyles = (colors: ThemeColors, isDark: boolean, width: number) =>
   StyleSheet.create({

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../theme/colors';
 import { TYPOGRAPHY } from '../../theme/typography';
+import { spacing, radius } from '../../theme/tokens';
 import { MoneyText } from './MoneyText';
 
 type KPIMetrics = {
@@ -17,27 +18,59 @@ type Props = {
   colors: ThemeColors;
 };
 
-export const KPICard = ({ currencies, selectedCurrency, onSelectCurrency, metrics, colors }: Props) => {
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+/**
+ * KPICard - Editorial Brutalist Design
+ * 
+ * Structure:
+ * - Card: 16px radius (lg), 16px padding, surface background
+ * - Currency tabs: 12px radius (md), 8px gap
+ * - Labels: Uppercase, 9-10px, letterSpacing 1.2
+ * - Values: 24px large / 14px small
+ */
+export const KPICard = React.memo(function KPICard({
+  currencies,
+  selectedCurrency,
+  onSelectCurrency,
+  metrics,
+  colors
+}: Props) {
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const handleCurrencyPress = useCallback((curr: string) => {
+    onSelectCurrency(curr);
+  }, [onSelectCurrency]);
 
   return (
     <View style={styles.kpiCard}>
       {currencies.length > 1 && (
         <View style={styles.kpiTabsWrap}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.currencyTabsRow}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={styles.currencyTabsRow}
+          >
             {currencies.map((cur) => (
               <TouchableOpacity
                 key={cur}
-                style={[styles.currencyTab, selectedCurrency === cur && styles.currencyTabActive]}
-                onPress={() => onSelectCurrency(cur)}
-                activeOpacity={0.8}
+                style={[
+                  styles.currencyTab,
+                  selectedCurrency === cur && styles.currencyTabActive,
+                ]}
+                onPress={() => handleCurrencyPress(cur)}
+                activeOpacity={0.75}
               >
-                <Text style={[styles.currencyTabText, selectedCurrency === cur && styles.currencyTabTextActive]}>{cur}</Text>
+                <Text style={[
+                  styles.currencyTabText,
+                  selectedCurrency === cur && styles.currencyTabTextActive,
+                ]}>
+                  {cur}
+                </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
       )}
+      
       <View style={styles.kpiBody}>
         {/* Top: Net Balance */}
         <View style={styles.kpiMainContent}>
@@ -82,12 +115,12 @@ export const KPICard = ({ currencies, selectedCurrency, onSelectCurrency, metric
       </View>
     </View>
   );
-};
+});
 
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     kpiCard: {
-      borderRadius: 18,
+      borderRadius: radius('lg'),
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
@@ -96,18 +129,18 @@ const createStyles = (colors: ThemeColors) =>
     kpiTabsWrap: {
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
-      paddingVertical: 8,
-      paddingLeft: 12,
+      paddingVertical: spacing('2'),
+      paddingLeft: spacing('3'),
     },
     currencyTabsRow: {
       flexDirection: 'row',
-      gap: 8,
-      paddingRight: 12,
+      gap: spacing('2'),
+      paddingRight: spacing('3'),
     },
     currencyTab: {
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 100,
+      paddingHorizontal: spacing('3'),
+      paddingVertical: spacing('2'),
+      borderRadius: radius('full'),
       backgroundColor: colors.background,
       borderWidth: 1,
       borderColor: colors.border,
@@ -126,9 +159,9 @@ const createStyles = (colors: ThemeColors) =>
       color: colors.background,
     },
     kpiBody: {
-      padding: 16,
-      paddingBottom: 14,
-      gap: 12,
+      padding: spacing('4'),
+      paddingBottom: spacing('4'),
+      gap: spacing('3'),
     },
     kpiMainContent: {
       flexDirection: 'row',
@@ -141,13 +174,13 @@ const createStyles = (colors: ThemeColors) =>
     },
     kpiCell: {
       flex: 1,
-      gap: 2,
+      gap: spacing('0.5'),
     },
     kpiVerticalSep: {
       width: 1,
       height: 24,
       backgroundColor: colors.border,
-      marginHorizontal: 16,
+      marginHorizontal: spacing('4'),
       opacity: 0.6,
     },
     kpiLabel: {
@@ -156,7 +189,7 @@ const createStyles = (colors: ThemeColors) =>
       fontSize: 9,
       letterSpacing: 1.2,
       textTransform: 'uppercase',
-      marginBottom: 2,
+      marginBottom: spacing('0.5'),
     },
     kpiLabelSmall: {
       color: colors.textMuted,

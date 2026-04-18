@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
+import { NotificationService } from '../services/notification.service';
 
 export type UserProfile = {
   name: string;
@@ -7,6 +9,8 @@ export type UserProfile = {
   phone: string;
   defaultCurrency: string;
   theme: 'system' | 'light' | 'dark';
+  reminderEnabled: boolean;
+  reminderTime: string; // e.g. "20:00"
 };
 
 type SettingsContextType = {
@@ -29,6 +33,8 @@ const DEFAULT_PROFILE: UserProfile = {
   phone: '',
   defaultCurrency: 'USD',
   theme: 'system',
+  reminderEnabled: false,
+  reminderTime: '20:00',
 };
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
@@ -51,6 +57,39 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     };
     loadSettings();
   }, []);
+
+  /**
+   * Sync logic: Automatically handles hardware scheduling when JS state changes.
+   */
+  useEffect(() => {
+    if (isLoading) return;
+
+    const syncNotifications = async () => {
+      if (profile.reminderEnabled) {
+        const hasPermission = await NotificationService.checkPermissions();
+        if (hasPermission) {
+          await NotificationService.scheduleDailyReminder(profile.reminderTime);
+        }
+      } else {
+        await NotificationService.cancelAllReminders();
+      }
+    };
+
+    syncNotifications();
+  }, [profile.reminderEnabled, profile.reminderTime, isLoading]);
+
+  /**
+   * Proactive Randomization: Every time the user opens the app, we refresh 
+   * the local notification with a new random message from the pool.
+   */
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (next: AppStateStatus) => {
+      if (next === 'active' && !isLoading && profile.reminderEnabled) {
+        NotificationService.scheduleDailyReminder(profile.reminderTime);
+      }
+    });
+    return () => subscription.remove();
+  }, [profile.reminderEnabled, profile.reminderTime, isLoading]);
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     try {

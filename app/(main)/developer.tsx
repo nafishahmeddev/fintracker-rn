@@ -1,21 +1,53 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Notifications from 'expo-notifications';
 import React from 'react';
-import { Alert, DevSettings, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, DevSettings, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
+import { toErrorMessage } from '../../src/utils/errors';
 import { ConfirmDialog } from '../../src/components/ui/ConfirmDialog';
 import { Header } from '../../src/components/ui/Header';
 import { useTheme } from '../../src/providers/ThemeProvider';
 import { ThemeColors } from '../../src/theme/colors';
 import { TYPOGRAPHY } from '../../src/theme/typography';
+import { usePremium } from '../../src/providers/PremiumProvider';
+import { Input } from '../../src/components/ui/Input';
 import { seedDummyData } from '../../src/utils/seed';
+import { NotificationService } from '../../src/services/notification.service';
 
 export default function DeveloperScreen() {
   const { colors } = useTheme();
+  const { devOverride, setDevOverride } = usePremium();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [pin, setPin] = React.useState('');
+  const [error, setError] = React.useState('');
   const [showSeedConfirm, setShowSeedConfirm] = React.useState(false);
   const [isSeeding, setIsSeeding] = React.useState(false);
+  const [scheduledNotifs, setScheduledNotifs] = React.useState<Notifications.NotificationRequest[]>([]);
+
+  const fetchScheduled = React.useCallback(async () => {
+    const list = await Notifications.getAllScheduledNotificationsAsync();
+    setScheduledNotifs(list);
+  }, []);
+
+  React.useEffect(() => {
+    fetchScheduled();
+  }, [fetchScheduled]);
+
+  const handlePinChange = (val: string) => {
+    setPin(val);
+    setError('');
+    
+    if (val === '32159') {
+      setIsAuthenticated(true);
+    } else if (val.length >= 5) {
+      setError('Invalid Access Token');
+      // Clear after a short delay for feedback
+      setTimeout(() => setPin(''), 1000);
+    }
+  };
 
   const handleRunSeed = async () => {
     try {
@@ -27,12 +59,56 @@ export default function DeveloperScreen() {
         [{ text: "OK", onPress: () => DevSettings.reload() }]
       );
       setShowSeedConfirm(false);
-    } catch (e: any) {
-      Alert.alert("Error", e.message || "Failed to generate seed data.");
+    } catch (e) {
+      Alert.alert("Error", toErrorMessage(e, "Failed to generate seed data."));
     } finally {
       setIsSeeding(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <BlurBackground />
+        <Header title="Restricted" subtitle="Authentication required" showBack />
+        
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardContent}
+        >
+          <View style={styles.lockContainer}>
+            <View style={[styles.lockIconBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Ionicons name="lock-closed" size={32} color={colors.text} />
+            </View>
+            
+            <View style={styles.lockInfo}>
+              <Text style={styles.lockTitle}>SYSTEM LOCK</Text>
+              <Text style={styles.lockSubtitle}>Enter the 5-digit authorization key to proceed.</Text>
+            </View>
+
+            <View style={styles.inputWrap}>
+              <Input
+                placeholder="•••••"
+                value={pin}
+                onChangeText={handlePinChange}
+                keyboardType="numeric"
+                maxLength={5}
+                secureTextEntry
+                textAlign="center"
+                style={styles.pinInput}
+                autoFocus
+                error={error}
+              />
+            </View>
+            
+            <View style={styles.securityBranding}>
+               <Text style={styles.securityText}>LUNO / SECURITY_LAYER_ACTIVE</Text>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -40,6 +116,47 @@ export default function DeveloperScreen() {
       <Header title="Developer" subtitle="Secret system tools" showBack />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>PRO ENTITLEMENTS</Text>
+          <View style={styles.card}>
+            <View style={styles.overrideHeader}>
+              <View style={[styles.iconBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                <Ionicons name="sparkles-outline" size={18} color={colors.primary} />
+              </View>
+              <View style={styles.textDetails}>
+                <Text style={styles.rowTitle}>Premium Bypass</Text>
+                <Text style={styles.rowSubtitle}>Force entitlement state for testing</Text>
+              </View>
+            </View>
+
+            <View style={styles.tripleButtonGroup}>
+              <TouchableOpacity 
+                style={[styles.smallBtn, devOverride === 'FORCED_ON' && { backgroundColor: colors.text, borderColor: colors.text }]} 
+                onPress={() => setDevOverride('FORCED_ON')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.btnLabel, { color: devOverride === 'FORCED_ON' ? colors.background : colors.textMuted }]}>ON</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.smallBtn, devOverride === 'FORCED_OFF' && { backgroundColor: colors.text, borderColor: colors.text }]} 
+                onPress={() => setDevOverride('FORCED_OFF')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.btnLabel, { color: devOverride === 'FORCED_OFF' ? colors.background : colors.textMuted }]}>OFF</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.smallBtn, devOverride === 'DEFAULT' && { backgroundColor: colors.primary, borderColor: colors.primary }]} 
+                onPress={() => setDevOverride('DEFAULT')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.btnLabel, { color: devOverride === 'DEFAULT' ? colors.background : colors.text }]}>SYSTEM</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>DATA UTILITIES</Text>
           <View style={styles.card}>
@@ -52,6 +169,41 @@ export default function DeveloperScreen() {
                 <Text style={styles.rowSubtitle}>Generate 12 months of test history</Text>
               </View>
               <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>NOTIFICATION DEBUGGER</Text>
+          <View style={styles.card}>
+            {scheduledNotifs.length === 0 ? (
+              <View style={styles.row}>
+                <Text style={styles.rowSubtitle}>No active schedules found.</Text>
+              </View>
+            ) : (
+              scheduledNotifs.map((n, i) => (
+                <View key={n.identifier} style={[styles.infoRow, i === scheduledNotifs.length - 1 && { borderBottomWidth: 0 }]}>
+                   <View style={{ flex: 1 }}>
+                     <Text style={styles.infoLabel}>{n.content.title}</Text>
+                     <Text style={styles.rowSubtitle}>{JSON.stringify(n.trigger)}</Text>
+                   </View>
+                </View>
+              ))
+            )}
+            <TouchableOpacity 
+              style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border + '15' }]} 
+              onPress={() => {
+                NotificationService.triggerInstantNotification();
+                Alert.alert("Test Notification", "An instant notification has been queued.");
+              }}
+            >
+              <Text style={[styles.rowTitle, { fontSize: 13, color: colors.primary }]}>TRIGGER SAMPLE NOTIFICATION</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border + '15' }]} 
+              onPress={fetchScheduled}
+            >
+              <Text style={[styles.rowTitle, { fontSize: 13, color: colors.primary }]}>REFRESH SCHEDULES</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -99,6 +251,62 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 48,
   },
+  keyboardContent: {
+    flex: 1,
+  },
+  lockContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    paddingBottom: 80,
+  },
+  lockIconBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    marginBottom: 24,
+  },
+  lockInfo: {
+    alignItems: 'center',
+    marginBottom: 32,
+    gap: 8,
+  },
+  lockTitle: {
+    fontFamily: TYPOGRAPHY.fonts.bold,
+    fontSize: 12,
+    color: colors.text,
+    letterSpacing: 4,
+  },
+  lockSubtitle: {
+    fontFamily: TYPOGRAPHY.fonts.regular,
+    fontSize: 14,
+    color: colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  inputWrap: {
+    width: '100%',
+    maxWidth: 200,
+  },
+  pinInput: {
+    fontSize: 24,
+    fontFamily: TYPOGRAPHY.fonts.bold,
+    letterSpacing: 10,
+  },
+  securityBranding: {
+    marginTop: 48,
+  },
+  securityText: {
+    fontFamily: TYPOGRAPHY.fonts.semibold,
+    fontSize: 9,
+    color: colors.textMuted,
+    letterSpacing: 1.5,
+    opacity: 0.5,
+  },
   section: {
     marginBottom: 28,
   },
@@ -119,6 +327,33 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
+  },
+  overrideHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    paddingBottom: 10,
+  },
+  tripleButtonGroup: {
+    flexDirection: 'row',
+    padding: 16,
+    paddingTop: 0,
+    gap: 8,
+  },
+  smallBtn: {
+    flex: 1,
+    height: 36,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#00000010',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#00000005',
+  },
+  btnLabel: {
+    fontFamily: TYPOGRAPHY.fonts.bold,
+    fontSize: 10,
+    letterSpacing: 0.5,
   },
   iconBox: {
     width: 44,

@@ -56,14 +56,14 @@ export default function PremiumScreen() {
              </View>
              
              <View style={styles.proHero}>
-               <Text style={styles.proKicker}>LIFETIME ACCESS</Text>
+               <Text style={styles.proKicker}>Lifetime access</Text>
                <Text style={styles.proHeading}>Luno Pro{"\n"}Unlocked.</Text>
              </View>
 
              <View style={styles.proStatusRow}>
                <View style={styles.statusPill}>
                  <View style={[styles.statusDot, { backgroundColor: colors.primary }]} />
-                 <Text style={styles.statusText}>FOREVER MEMBER</Text>
+                 <Text style={styles.statusText}>Forever member</Text>
                </View>
              </View>
 
@@ -78,7 +78,7 @@ export default function PremiumScreen() {
               onPress={() => router.back()}
               activeOpacity={0.85}
             >
-              <Text style={styles.actionBtnText}>DASHBOARD</Text>
+              <Text style={styles.actionBtnText}>Dashboard</Text>
               <Ionicons name="arrow-forward" size={18} color={colors.background} />
             </TouchableOpacity>
           </View>
@@ -107,7 +107,7 @@ export default function PremiumScreen() {
 
         {/* ── Editorial Hero ── */}
         <View style={styles.heroSection}>
-          <Text style={styles.heroKicker}>ONE-TIME UPGRADE</Text>
+          <Text style={styles.heroKicker}>One-time upgrade</Text>
           <Text style={styles.heroTitle}>Unlock peak financial clarity.</Text>
           <Text style={styles.heroSubtitle}>No subscriptions. One payment for permanent access to all professional tools.</Text>
         </View>
@@ -117,11 +117,11 @@ export default function PremiumScreen() {
           <View style={styles.lifetimeCard}>
             <View style={styles.cardHeader}>
               <View>
-                <Text style={styles.cardTitle}>LIFETIME ACCESS</Text>
+                <Text style={styles.cardTitle}>Lifetime Access</Text>
                 <Text style={styles.cardSubtitle}>Forever Pro License</Text>
               </View>
               <View style={styles.cardBadge}>
-                <Text style={styles.cardBadgeText}>BEST VALUE</Text>
+                <Text style={styles.cardBadgeText}>Best Value</Text>
               </View>
             </View>
 
@@ -134,7 +134,7 @@ export default function PremiumScreen() {
                     )}
                     <Text style={styles.priceValue}>{lifetimeProduct.displayPrice}</Text>
                   </View>
-                  <Text style={styles.priceSuffix}>ONE-TIME Only</Text>
+                  <Text style={styles.priceSuffix}>One-time only</Text>
                 </>
               ) : isLoading ? (
                 <ActivityIndicator color={colors.primary} />
@@ -160,12 +160,12 @@ export default function PremiumScreen() {
 
         {/* ── Detailed Features (Settings Pattern) ── */}
         <View style={styles.featuresSection}>
-          <Text style={styles.sectionLabel}>PRO CAPABILITIES</Text>
+          <Text style={styles.sectionLabel}>Pro Capabilities</Text>
           <View style={styles.settingsCard}>
             {FEATURES.map((feature, index) => (
               <View key={index} style={[styles.settingsRow, index === FEATURES.length - 1 && { borderBottomWidth: 0 }]}>
                 <View style={[styles.iconBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                  <Ionicons name={feature.icon as any} size={18} color={colors.text} />
+                  <Ionicons name={feature.icon} size={18} color={colors.text} />
                 </View>
                 <View style={styles.textDetails}>
                   <Text style={styles.rowTitle}>{feature.title}</Text>
@@ -181,7 +181,7 @@ export default function PremiumScreen() {
 
         {/* ── Error State ── */}
         <View style={styles.brandingBox}>
-          <Text style={styles.brandingText}>LUNO / PRO SYSTEM</Text>
+          <Text style={styles.brandingText}>Luno / Pro System</Text>
         </View>
       </ScrollView>
 
@@ -197,18 +197,18 @@ export default function PremiumScreen() {
             <ActivityIndicator color={colors.background} />
           ) : (
             <Text style={styles.buyBtnText}>
-              {isPremium ? 'PRO MEMBER' : `UPGRADE FOREVER`}
+              {isPremium ? 'Pro Member' : `Upgrade forever`}
             </Text>
           )}
         </TouchableOpacity>
 
         <View style={styles.legalRows}>
           <TouchableOpacity onPress={handleRestore} disabled={isProcessing}>
-            <Text style={styles.legalLink}>RESTORE PURCHASE</Text>
+            <Text style={styles.legalLink}>Restore purchase</Text>
           </TouchableOpacity>
           <View style={styles.legalSeparator} />
           <TouchableOpacity onPress={() => Alert.alert("Terms", "Luno Pro is a one-time purchase tied to your store account.")}>
-            <Text style={styles.legalLink}>TERMS</Text>
+            <Text style={styles.legalLink}>Terms</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -309,8 +309,8 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
   brandingText: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.text + '20', letterSpacing: 3 },
 
   footer: { padding: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 32, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.primary + '10' },
-  buyBtn: { backgroundColor: colors.primary, height: 64, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  buyBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 16, color: colors.background, letterSpacing: 1.5 },
+  buyBtn: { backgroundColor: colors.primary, height: 60, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  buyBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 16, color: colors.background, letterSpacing: 0.5 },
   legalRows: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 16 },
   legalLink: { fontFamily: TYPOGRAPHY.fonts.semibold, fontSize: 10, color: colors.textMuted, letterSpacing: 1.5 },
   legalSeparator: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.primary + '20' },
@@ -339,6 +339,6 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
 
   proDescription: { fontFamily: TYPOGRAPHY.fonts.regular, fontSize: 16, color: colors.textMuted, lineHeight: 26, maxWidth: '90%' },
   proActions: { gap: 16, marginBottom: 12 },
-  actionBtn: { height: 72, backgroundColor: colors.text, borderRadius: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 },
-  actionBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 15, color: colors.background, letterSpacing: 2 },
+  actionBtn: { height: 68, backgroundColor: colors.text, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 },
+  actionBtnText: { fontFamily: TYPOGRAPHY.fonts.bold, fontSize: 15, color: colors.background, letterSpacing: 1 },
 });
