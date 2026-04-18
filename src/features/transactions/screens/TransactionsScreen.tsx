@@ -39,6 +39,21 @@ const SWIPE_ACTION_WIDTH = 44;
 type SwipeableInstance = React.ComponentRef<typeof Swipeable>;
 let openSwipeRow: SwipeableInstance | null = null;
 
+// Pre-computed styles for swipe actions to avoid recreating on every render
+const swipeActionStyles = {
+  container: {
+    flexDirection: 'row' as const,
+    width: SWIPE_ACTION_WIDTH * 2,
+    alignItems: 'stretch' as const,
+    justifyContent: 'flex-end' as const,
+  },
+  actionBase: {
+    width: SWIPE_ACTION_WIDTH,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+};
+
 const resolveParamNumber = (value: string | string[] | undefined): number | null => {
   const raw = Array.isArray(value) ? value[0] : value;
   if (!raw) return null;
@@ -51,74 +66,132 @@ const getDateLabel = (iso: string) => {
 };
 
 
-// ─── Swipeable row ───────────────────────────────────────────────────────────
+// ─── Optimized Swipeable row ───────────────────────────────────────────────────────────
+// Separate component for action buttons to prevent unnecessary re-renders
+const SwipeActionButton = React.memo(function SwipeActionButton({
+  onPress,
+  icon,
+  color,
+  backgroundColor,
+}: {
+  onPress: () => void;
+  icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+  backgroundColor: string;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.75}
+      style={[swipeActionStyles.actionBase, { backgroundColor }]}
+    >
+      <Ionicons name={icon} size={18} color={color} />
+    </TouchableOpacity>
+  );
+});
+
+// Pre-computed action render to avoid inline function creation
+const RightActions = React.memo(function RightActions({
+  onEdit,
+  onDelete,
+  editBgColor,
+  editIconColor,
+  deleteBgColor,
+  deleteIconColor,
+}: {
+  onEdit: () => void;
+  onDelete: () => void;
+  editBgColor: string;
+  editIconColor: string;
+  deleteBgColor: string;
+  deleteIconColor: string;
+}) {
+  return (
+    <View style={swipeActionStyles.container}>
+      <SwipeActionButton
+        onPress={onEdit}
+        icon="pencil"
+        color={editIconColor}
+        backgroundColor={editBgColor}
+      />
+      <SwipeActionButton
+        onPress={onDelete}
+        icon="trash"
+        color={deleteIconColor}
+        backgroundColor={deleteBgColor}
+      />
+    </View>
+  );
+});
+
 const SwipeableRow = React.memo(function SwipeableRow({
   tx,
   isFirst,
   isLast,
-  colors,
   onEdit,
   onDelete,
 }: {
   tx: TransactionListItem;
   isFirst: boolean;
   isLast: boolean;
-  colors: ThemeColors;
   onEdit: (tx: TransactionListItem) => void;
   onDelete: (tx: TransactionListItem) => void;
 }) {
+  const { colors } = useTheme(); // Get colors from context to prevent prop-drilling re-renders
   const swipeRef = React.useRef<SwipeableInstance>(null);
+
+  // Use refs to avoid dependency issues while maintaining stable callbacks
+  const txRef = React.useRef(tx);
+  React.useEffect(() => {
+    txRef.current = tx;
+  }, [tx]);
 
   const handleEdit = React.useCallback(() => {
     swipeRef.current?.close();
-    onEdit(tx);
-  }, [onEdit, tx]);
+    onEdit(txRef.current);
+  }, [onEdit]); // Stable reference, uses ref for current tx
 
   const handleDelete = React.useCallback(() => {
     swipeRef.current?.close();
-    onDelete(tx);
-  }, [onDelete, tx]);
+    onDelete(txRef.current);
+  }, [onDelete]);
 
+  // Memoize action colors to prevent re-renders of RightActions
+  const actionColors = React.useMemo(() => ({
+    editBg: colors.primary + '1A',
+    editIcon: colors.primary,
+    deleteBg: colors.danger + '1A',
+    deleteIcon: colors.danger,
+  }), [colors.primary, colors.danger]);
+
+  // Use stable render function reference
   const renderRightActions = React.useCallback(
-    () => {
-      return (
-        <View
-          style={{
-            flexDirection: 'row',
-            width: SWIPE_ACTION_WIDTH * 2,
-            alignItems: 'stretch',
-            justifyContent: 'flex-end',
-          }}
-        >
-          <TouchableOpacity
-            onPress={handleEdit}
-            activeOpacity={0.85}
-            style={{
-              width: SWIPE_ACTION_WIDTH,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: colors.primary + '1A',
-            }}
-          >
-            <Ionicons name="pencil" size={18} color={colors.primary} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleDelete}
-            activeOpacity={0.85}
-            style={{
-              width: SWIPE_ACTION_WIDTH,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: colors.danger + '1A',
-            }}
-          >
-            <Ionicons name="trash" size={18} color={colors.danger} />
-          </TouchableOpacity>
-        </View>
-      );
-    },
-    [handleEdit, handleDelete, colors],
+    () => (
+      <RightActions
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        editBgColor={actionColors.editBg}
+        editIconColor={actionColors.editIcon}
+        deleteBgColor={actionColors.deleteBg}
+        deleteIconColor={actionColors.deleteIcon}
+      />
+    ),
+    [handleEdit, handleDelete, actionColors],
   );
+
+  // Stable swipe event handlers
+  const onSwipeableWillOpen = React.useCallback(() => {
+    if (openSwipeRow && openSwipeRow !== swipeRef.current) {
+      openSwipeRow.close();
+    }
+    openSwipeRow = swipeRef.current;
+  }, []);
+
+  const onSwipeableClose = React.useCallback(() => {
+    if (openSwipeRow === swipeRef.current) {
+      openSwipeRow = null;
+    }
+  }, []);
 
   return (
     <Swipeable
@@ -127,17 +200,9 @@ const SwipeableRow = React.memo(function SwipeableRow({
       rightThreshold={30}
       friction={1.8}
       overshootRight={false}
-      onSwipeableWillOpen={() => {
-        if (openSwipeRow && openSwipeRow !== swipeRef.current) {
-          openSwipeRow.close();
-        }
-        openSwipeRow = swipeRef.current;
-      }}
-      onSwipeableClose={() => {
-        if (openSwipeRow === swipeRef.current) {
-          openSwipeRow = null;
-        }
-      }}
+      onSwipeableWillOpen={onSwipeableWillOpen}
+      onSwipeableClose={onSwipeableClose}
+
     >
       <TransactionRow
         tx={tx}
@@ -258,18 +323,24 @@ export function TransactionsScreen() {
     [],
   );
 
+  // Optimized renderItem with minimal dependencies
+  // Colors are accessed via useTheme inside SwipeableRow to prevent re-renders
   const renderItem = React.useCallback(({ item: tx, index, section }: any) => {
     return (
       <SwipeableRow
         tx={tx}
         isFirst={index === 0}
         isLast={index === section.data.length - 1}
-        colors={colors}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
     );
-  }, [colors, handleEdit, handleDelete]);
+  }, [handleEdit, handleDelete]); // Remove colors dependency
+
+  // Stable key extractor - prevents unnecessary re-renders
+  const keyExtractor = React.useCallback((item: TransactionListItem) => 
+    item.id.toString(), []
+  );
 
   const renderSectionHeader = React.useCallback(({ section: { title, data } }: any) => {
     const dayTotal = data.reduce(
@@ -327,7 +398,7 @@ export function TransactionsScreen() {
 
       <SectionList
         sections={groupedByDate}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={keyExtractor}
         renderItem={renderItem}
         renderSectionHeader={renderSectionHeader}
         renderSectionFooter={renderSectionFooter}
@@ -335,11 +406,11 @@ export function TransactionsScreen() {
         showsVerticalScrollIndicator={false}
         onEndReached={loadMore}
         onEndReachedThreshold={0.4}
-        initialNumToRender={25}
-        maxToRenderPerBatch={10}
-        windowSize={11}
-        updateCellsBatchingPeriod={30}
-        removeClippedSubviews={false}
+        initialNumToRender={12}
+        maxToRenderPerBatch={6}
+        windowSize={5}
+        updateCellsBatchingPeriod={50}
+        removeClippedSubviews={true}
         ListHeaderComponent={(
           <View style={styles.listHeader}>
             <KPICard
