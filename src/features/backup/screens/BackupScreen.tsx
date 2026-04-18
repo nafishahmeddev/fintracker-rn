@@ -19,6 +19,7 @@ import { OptionsDialog } from '@/src/components/ui/OptionsDialog';
 import { PremiumGuard } from '@/src/components/ui/PremiumGuard';
 import { useTheme } from '@/src/providers/ThemeProvider';
 import { ThemeColors } from '@/src/theme/colors';
+import { RADIUS, SPACING } from '@/src/theme/tokens';
 import { TYPOGRAPHY } from '@/src/theme/typography';
 import { File } from 'expo-file-system';
 import { BackupService } from '../api/backup.service';
@@ -316,31 +317,33 @@ const createStyles = (colors: ThemeColors) =>
       backgroundColor: colors.background,
     },
     content: {
-      paddingHorizontal: 24,
-      paddingTop: 12,
-      paddingBottom: 48,
+      paddingHorizontal: SPACING['6'],
+      paddingTop: SPACING['3'],
+      paddingBottom: SPACING['9'],
     },
     heroCard: {
       backgroundColor: colors.surface,
-      borderRadius: 20,
-      padding: 24,
+      borderRadius: RADIUS.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: SPACING['6'],
       alignItems: 'center',
-      marginBottom: 32,
+      marginBottom: SPACING['7'],
     },
     heroIconContainer: {
       width: 64,
       height: 64,
-      borderRadius: 32,
+      borderRadius: RADIUS['2xl'],
       backgroundColor: colors.primary + '15',
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 16,
+      marginBottom: SPACING['4'],
     },
     heroTitle: {
       fontFamily: TYPOGRAPHY.fonts.heading,
       fontSize: 20,
       color: colors.text,
-      marginBottom: 8,
+      marginBottom: SPACING['2'],
     },
     heroSubtitle: {
       fontFamily: TYPOGRAPHY.fonts.regular,
@@ -350,33 +353,35 @@ const createStyles = (colors: ThemeColors) =>
       lineHeight: 20,
     },
     section: {
-      marginBottom: 24,
+      marginBottom: SPACING['6'],
     },
     sectionLabel: {
       fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 10,
       color: colors.textMuted,
       letterSpacing: 2,
-      marginBottom: 12,
-      paddingLeft: 4,
+      marginBottom: SPACING['3'],
+      paddingLeft: SPACING['1'],
     },
     card: {
       backgroundColor: colors.surface,
-      borderRadius: 20,
+      borderRadius: RADIUS.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
       overflow: 'hidden',
     },
     actionRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: 16,
+      padding: SPACING['4'],
     },
     iconBox: {
       width: 44,
       height: 44,
-      borderRadius: 12,
+      borderRadius: RADIUS.md,
       alignItems: 'center',
       justifyContent: 'center',
-      marginRight: 14,
+      marginRight: SPACING['3.5'],
     },
     actionTextContainer: {
       flex: 1,
@@ -385,7 +390,7 @@ const createStyles = (colors: ThemeColors) =>
       fontFamily: TYPOGRAPHY.fonts.semibold,
       fontSize: 16,
       color: colors.text,
-      marginBottom: 2,
+      marginBottom: SPACING['0.5'],
     },
     actionSubtitle: {
       fontFamily: TYPOGRAPHY.fonts.regular,
@@ -399,14 +404,16 @@ const createStyles = (colors: ThemeColors) =>
     },
     infoCard: {
       backgroundColor: colors.surface,
-      borderRadius: 20,
-      padding: 16,
-      gap: 12,
+      borderRadius: RADIUS.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: SPACING['4'],
+      gap: SPACING['3'],
     },
     infoRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
+      gap: SPACING['3'],
     },
     infoText: {
       fontFamily: TYPOGRAPHY.fonts.regular,
@@ -416,11 +423,13 @@ const createStyles = (colors: ThemeColors) =>
     warningCard: {
       flexDirection: 'row',
       alignItems: 'flex-start',
-      gap: 12,
+      gap: SPACING['3'],
       backgroundColor: colors.danger + '10',
-      borderRadius: 16,
-      padding: 16,
-      marginTop: 8,
+      borderRadius: RADIUS.lg,
+      borderWidth: 1,
+      borderColor: colors.danger + '25',
+      padding: SPACING['4'],
+      marginTop: SPACING['2'],
     },
     warningText: {
       flex: 1,

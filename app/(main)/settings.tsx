@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { IoniconName } from '@/src/utils/icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
@@ -97,7 +98,7 @@ export default function SettingsScreen() {
   const handleFooterClick = () => {
     const nextCount = devClickCount + 1;
     if (nextCount === 7) {
-      router.push('/developer' as any);
+      router.push('/developer');
       setDevClickCount(0);
     } else {
       setDevClickCount(nextCount);
@@ -105,7 +106,7 @@ export default function SettingsScreen() {
   };
 
   type PreferenceRowProps = {
-    icon: any;
+    icon: IoniconName;
     title: string;
     value?: string;
     subtitle?: string;
@@ -184,7 +185,7 @@ export default function SettingsScreen() {
                 isPremium ? "Enjoying full access to all features" :
                 "Unlock advanced analytics & insights"
               }
-              onPress={() => router.push('/premium' as any)}
+              onPress={() => router.push('/premium')}
               color={isPremium ? colors.primary : undefined}
               isLast
             />
@@ -270,13 +271,13 @@ export default function SettingsScreen() {
               icon="download-outline"
               title="Export CSV"
               subtitle="Download transactions as spreadsheet"
-              onPress={() => router.push('/export' as any)}
+              onPress={() => router.push('/export')}
             />
             <PreferenceRow
               icon="cloud-outline"
               title="Backup & Restore"
               subtitle="Full data backup and restore"
-              onPress={() => router.push('/backup' as any)}
+              onPress={() => router.push('/backup')}
             />
             <PreferenceRow
               icon="trash-bin-outline"

@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 import React from 'react';
-import { Alert, DevSettings, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, DevSettings, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
+import { toErrorMessage } from '../../src/utils/errors';
 import { ConfirmDialog } from '../../src/components/ui/ConfirmDialog';
 import { Header } from '../../src/components/ui/Header';
 import { useTheme } from '../../src/providers/ThemeProvider';
@@ -58,8 +59,8 @@ export default function DeveloperScreen() {
         [{ text: "OK", onPress: () => DevSettings.reload() }]
       );
       setShowSeedConfirm(false);
-    } catch (e: any) {
-      Alert.alert("Error", e.message || "Failed to generate seed data.");
+    } catch (e) {
+      Alert.alert("Error", toErrorMessage(e, "Failed to generate seed data."));
     } finally {
       setIsSeeding(false);
     }

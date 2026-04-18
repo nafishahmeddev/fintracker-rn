@@ -241,8 +241,9 @@ export function PremiumProvider({ children }: { children: ReactNode }) {
         request: { apple: { sku: SKU_LIFETIME }, google: { skus: [SKU_LIFETIME] } },
         type: 'in-app'
       });
-    } catch (err: any) {
-      if (err?.code !== IAP.ErrorCode.UserCancelled) {
+    } catch (err) {
+      const code = (err as { code?: string })?.code;
+      if (code !== IAP.ErrorCode.UserCancelled) {
         showAlert({ title: 'Purchase Error', message: 'We could not process your request at this time.', type: 'error' });
       }
     }

@@ -27,10 +27,10 @@ npm run lint           # ESLint via expo config
 ### Directory Ownership
 
 - `app/` - Expo Router screens and layouts
-- `src/features/{domain}/` - Domain-driven modules (dashboard, transactions, accounts, categories, insights, reports)
+- `src/features/{domain}/` - Domain-driven modules (dashboard, transactions, accounts, categories, insights, reports, **backup**, **export**, **filters**, **search**)
 - `src/components/ui/` - Universal components: `PremiumGuard`, `MoneyText`, `TransactionRow`, `KPICard`, etc.
 - `src/providers/` - Context providers: `ThemeProvider`, `PremiumProvider`, `QueryProvider`, `DatabaseProvider`
-- `src/theme/` - Design tokens: `colors.ts`, `typography.ts`
+- `src/theme/` - Design tokens: `colors.ts`, `typography.ts`, `tokens.ts`
 - `src/db/` - Schema and migrations (Drizzle config at root)
 
 ## Critical Patterns
@@ -257,9 +257,66 @@ const contextValue = useMemo(() => ({
 
 ## Current Phase
 
-**Phase 4 (In Progress)**: Retention System - Weekly/Monthly reports, Usage Streaks, Notifications
+**Phase 5 (Done)**: Power Features - Backup/Restore, CSV Export, Advanced Filters, Global Search.
+**Phase 6 (Next)**: Polish & Growth - App Store optimisation, onboarding improvements, widget support.
 
-Phases 1-3 are complete: Core tracking, Paywall/Freemium, Insights layer.
+### Phase 5 Features (All Shipped — Premium-gated)
+
+1. **Backup & Restore** (`src/features/backup/`)
+   - Full JSON backup: accounts, transactions, categories, settings
+   - Cross-platform export: Android (SAF folder picker), iOS (Share sheet)
+   - Located in: Settings > Data > Backup & Restore
+
+2. **CSV Export** (`src/features/export/`)
+   - Transaction export to CSV for spreadsheets/accounting
+   - Filters: Date range, accounts, categories, types
+   - Located in: Settings > Data > Export CSV
+
+3. **Advanced Filters** (`src/features/filters/`)
+   - Multi-select: Accounts, Categories, Income/Expense types
+   - Date range, amount range (min/max), full-text search, sort options
+   - Hybrid filtering strategy (server + client-side)
+   - Located in: Transactions screen > Filter button
+
+4. **Global Search** (`src/features/search/`)
+   - Cross-entity full-text search: transactions, accounts, categories
+   - Premium-gated at route level with full-screen upsell gate (`app/search.tsx`)
+   - Deep-links: account result → filtered transactions, category result → filtered transactions
+   - Located in: Dashboard header search icon / Transactions header search icon
+
+### Key Patterns
+
+**Advanced Filters Architecture:**
+```typescript
+AdvancedFilterService.toBasicFilters(advancedFilters)
+AdvancedFilterService.requiresClientSideFiltering(filters)
+AdvancedFilterService.countActiveFilters(filters)
+
+const { transactions, totalCount } = useAdvancedFilters(advancedFilters);
+```
+
+**Search Architecture:**
+```typescript
+// Query
+const { data, isFetching } = useGlobalSearch(rawQuery); // 300ms debounce, min 2 chars
+
+// Deep-link into filtered transactions
+router.push(`/transactions?accountId=${id}`);
+router.push(`/transactions?categoryId=${id}`);
+```
+
+**Premium Route Gating Pattern:**
+```typescript
+// app/some-pro-feature.tsx
+export default function Route() {
+  const { isPremium } = usePremium();
+  return isPremium ? <FeatureScreen /> : <ProGateScreen />;
+}
+```
+
+**File Export Pattern:**
+- Android: `expo-file-system/legacy` StorageAccessFramework
+- iOS: `expo-sharing` with cache file
 
 ## No Test Suite
 

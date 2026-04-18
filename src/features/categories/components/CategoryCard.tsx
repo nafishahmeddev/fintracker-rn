@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { resolveIcon } from '../../../utils/icons';
 import React, { useMemo, useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../../theme/colors';
@@ -51,7 +52,7 @@ export const CategoryCard = React.memo(function CategoryCard({
 
       <View style={styles.cardTopRow}>
         <View style={[styles.categoryIconBox, { backgroundColor: catColor + '22' }]}>
-          <Ionicons name={item.icon as any || 'grid-outline'} size={20} color={catColor} />
+          <Ionicons name={resolveIcon(item.icon, 'grid-outline')} size={20} color={catColor} />
         </View>
         <View style={[styles.typeBadge, item.type === 'DR' ? styles.typeBadgeDanger : styles.typeBadgeSuccess]}>
           <Text style={[styles.typeBadgeText, item.type === 'DR' ? styles.typeBadgeTextDanger : styles.typeBadgeTextSuccess]}>

@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { resolveIcon } from '@/src/utils/icons';
 import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -99,7 +100,7 @@ export default function MonthlyReport() {
                 <View key={cat.id} style={[styles.catRow, index === report.topCategories.length - 1 && { borderBottomWidth: 0 }]}>
                   <View style={styles.catMeta}>
                     <View style={[styles.catIconBox, { backgroundColor: cat.color + '20' }]}>
-                      <Ionicons name={cat.icon as any || 'pricetag'} size={14} color={cat.color} />
+                      <Ionicons name={resolveIcon(cat.icon, 'pricetag')} size={14} color={cat.color} />
                     </View>
                     <View style={styles.catText}>
                       <Text style={styles.catName}>{cat.name}</Text>

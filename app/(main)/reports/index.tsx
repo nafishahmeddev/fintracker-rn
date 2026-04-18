@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Href, useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -25,7 +25,7 @@ export default function ReportsHub() {
       title: 'Weekly Journal',
       subtitle: '7-day performance summary',
       icon: 'newspaper-outline' as const,
-      route: '/(main)/reports/weekly' as any,
+      route: '/(main)/reports/weekly' as Href,
       color: colors.primary,
     },
     {
@@ -33,7 +33,7 @@ export default function ReportsHub() {
       title: 'Monthly Ledger',
       subtitle: 'Full calendar month audit',
       icon: 'book-outline' as const,
-      route: '/(main)/reports/monthly' as any,
+      route: '/(main)/reports/monthly' as Href,
       color: colors.success,
       isLast: true,
     },

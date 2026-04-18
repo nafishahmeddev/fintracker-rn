@@ -58,13 +58,13 @@
 
 ---
 
-## 💎 Phase 5 — Power Features (Premium Depth)
+## 💎 Phase 5 — Power Features (Premium Depth) (In Progress)
 
-- [ ] Export data (CSV)
-- [ ] Backup & restore (local)
-- [ ] Advanced filters (multi-select, deep filtering)
-- [ ] Bulk edit transactions
-- [ ] Global search across transactions
+- [x] Export data (CSV) - Date range, account/category filters, cross-platform save
+- [x] Backup & restore (local) - JSON export/import, onboarding restore option
+- [x] Advanced filters (multi-select, deep filtering) - Multi-select accounts/categories, date range, amount range, search
+- [ ] Bulk edit transactions - Multi-select mode, batch delete/change category
+- [ ] Global search across transactions - Full-text search, dedicated results screen
 
 ---
 
@@ -109,7 +109,8 @@
 2. [x] Paywall implementation
 3. [x] Insights layer
 4. [x] Retention features
-5. [ ] Launch & distribution
+5. [ ] Power features (Phase 5 - 3/5 complete)
+6. [ ] Launch & distribution
 
 ---
 

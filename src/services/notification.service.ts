@@ -1,5 +1,4 @@
 import * as Notifications from 'expo-notifications';
-import { addDays } from 'date-fns';
 import { Platform } from 'react-native';
 
 const REMINDER_POOL = [
@@ -50,12 +49,12 @@ export const NotificationService = {
   async requestPermissions(): Promise<boolean> {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
-    
+
     if (existingStatus !== 'granted') {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
-    
+
     // On Android, we need to set up a channel for notifications
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
@@ -118,7 +117,7 @@ export const NotificationService = {
 
     // 2. Schedule for tomorrow (this pushes the next notification to over 24h away)
     const [hours, minutes] = timeStr.split(':').map(Number);
-    const tomorrow = addDays(new Date(), 1);
+    // const tomorrow = addDays(new Date(), 1);
 
     await Notifications.scheduleNotificationAsync({
       content: {

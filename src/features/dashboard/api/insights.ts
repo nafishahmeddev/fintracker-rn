@@ -3,13 +3,14 @@ import { db } from '../../../db/client';
 import { accounts, payments } from '../../../db/schema';
 import { getDaysAgoLocal, getStartOfMonthLocal } from '../../../utils/date';
 import { InsightStatus, InsightTrend, TransactionType } from '../../../types';
+import { IoniconName } from '../../../utils/icons';
 
 type InsightBase = {
   id: string;
   type: InsightStatus;
   title: string;
   subtitle: string;
-  icon: string;
+  icon: IoniconName;
   trend?: InsightTrend;
 };
 

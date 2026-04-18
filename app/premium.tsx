@@ -165,7 +165,7 @@ export default function PremiumScreen() {
             {FEATURES.map((feature, index) => (
               <View key={index} style={[styles.settingsRow, index === FEATURES.length - 1 && { borderBottomWidth: 0 }]}>
                 <View style={[styles.iconBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                  <Ionicons name={feature.icon as any} size={18} color={colors.text} />
+                  <Ionicons name={feature.icon} size={18} color={colors.text} />
                 </View>
                 <View style={styles.textDetails}>
                   <Text style={styles.rowTitle}>{feature.title}</Text>

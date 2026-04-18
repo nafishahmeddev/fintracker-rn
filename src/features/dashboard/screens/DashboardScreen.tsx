@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
@@ -105,6 +105,10 @@ export const DashboardScreen = React.memo(function DashboardScreen() {
     setSelectedCurrency(curr);
   }, []);
 
+  const navigateToSearch = useCallback(() => {
+    router.push('/search');
+  }, [router]);
+
   const navigateToStats = useCallback(() => {
     router.push('/(main)/stats');
   }, [router]);
@@ -118,7 +122,7 @@ export const DashboardScreen = React.memo(function DashboardScreen() {
   }, [router]);
 
   const navigateToPremium = useCallback(() => {
-    router.push('/premium' as any);
+    router.push('/premium');
   }, [router]);
 
   const navigateToTransactions = useCallback(() => {
@@ -215,21 +219,29 @@ export const DashboardScreen = React.memo(function DashboardScreen() {
           subtitle={`${getGreeting()}${profile.name ? `, ${profile.name.split(' ')[0]}` : ''}`}
           rightAction={(
             <View style={styles.headerActions}>
-              {!isPremium && (
-                <TouchableOpacity
-                  style={styles.proBadge}
-                  onPress={navigateToPremium}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="sparkles" size={12} color={colors.primary} />
-                  <Text style={[styles.proBadgeText, { color: colors.primary }]}>PRO</Text>
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity style={styles.iconButton} onPress={navigateToStats} activeOpacity={0.85}>
-                <Ionicons name="stats-chart-outline" size={18} color={colors.text} />
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={isPremium ? navigateToSearch : navigateToPremium}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="search-outline" size={18} color={isPremium ? colors.text : colors.textMuted} />
+                {!isPremium && <View style={[styles.proDot, { backgroundColor: colors.primary }]} />}
               </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton} onPress={navigateToReports} activeOpacity={0.85}>
-                <Ionicons name="newspaper-outline" size={18} color={colors.text} />
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={isPremium ? navigateToStats : navigateToPremium}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="stats-chart-outline" size={18} color={isPremium ? colors.text : colors.textMuted} />
+                {!isPremium && <View style={[styles.proDot, { backgroundColor: colors.primary }]} />}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={isPremium ? navigateToReports : navigateToPremium}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="newspaper-outline" size={18} color={isPremium ? colors.text : colors.textMuted} />
+                {!isPremium && <View style={[styles.proDot, { backgroundColor: colors.primary }]} />}
               </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton} onPress={navigateToSettings} activeOpacity={0.85}>
                 <Ionicons name="settings-outline" size={19} color={colors.text} />
@@ -492,6 +504,15 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
+    position: 'relative',
+  },
+  proDot: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
 
   /* ── Hero balance card ── */
@@ -827,22 +848,5 @@ const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.cr
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 6,
-  },
-  proBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    backgroundColor: colors.primary + '20',
-    borderWidth: 1,
-    borderColor: colors.primary,
-    marginRight: 4,
-  },
-  proBadgeText: {
-    fontFamily: TYPOGRAPHY.fonts.semibold,
-    fontSize: 10,
-    letterSpacing: 0.5,
   },
 });

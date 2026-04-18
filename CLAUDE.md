@@ -26,7 +26,67 @@ See `AGENTS.md` for complete design token reference.
 - **Styling**: `StyleSheet.create` relying strictly on the app's internal `useTheme()` provider. Never use hardcoded colors.
 - **Performance**: See Performance Patterns section below - mandatory React.memo, useCallback, useMemo usage.
 
-## 2.1 Performance Patterns (Mandatory)
+## 2.1 TypeScript Standards (Zero `any` Policy)
+
+**No `as any` or `: any` is permitted anywhere in the codebase.** Use these patterns instead:
+
+### Ionicons icon names
+Database stores icon strings as `string`. Use `resolveIcon()` from `src/utils/icons.ts` to narrow to `IoniconName` with a safe fallback. Never cast `name={x as any}`.
+```typescript
+import { resolveIcon, IoniconName } from '@/src/utils/icons';
+
+// In JSX:
+<Ionicons name={resolveIcon(category.icon, 'grid-outline')} />
+
+// In prop interfaces:
+icon: IoniconName;  // not: icon: string
+
+// In constant arrays:
+export const MY_ICONS = ['cash-outline', 'wallet-outline'] as const;
+```
+
+### Error handling in catch blocks
+Never annotate `catch (e: any)`. Use the `toErrorMessage()` utility from `src/utils/errors.ts`:
+```typescript
+import { toErrorMessage } from '@/src/utils/errors';
+
+try { ... } catch (e) {
+  Alert.alert("Error", toErrorMessage(e, "Default fallback message"));
+}
+```
+
+For IAP error code checks, narrow the unknown error explicitly:
+```typescript
+const code = (err as { code?: string })?.code;
+if (code !== IAP.ErrorCode.UserCancelled) { ... }
+```
+
+### Expo Router navigation
+All app routes are already typed in `.expo/types/router.d.ts`. Never use `router.push('/path' as any)` — just `router.push('/path')`. For data in REPORT_TYPES arrays, use `Href` from `expo-router`:
+```typescript
+import { Href } from 'expo-router';
+route: '/(main)/reports/weekly' as Href,
+```
+
+### SectionList typing
+Always provide both type params to avoid untyped render callbacks:
+```typescript
+import { SectionListRenderItemInfo, SectionListData } from 'react-native';
+
+type MySection = { title: string; data: MyItem[] };
+
+renderItem={({ item }: SectionListRenderItemInfo<MyItem, MySection>) => ...}
+renderSectionHeader={({ section }: { section: SectionListData<MyItem, MySection> }) => ...}
+```
+
+### Platform-specific property casts
+Define a typed interface rather than casting to `any`:
+```typescript
+interface AndroidDiscountOffer { fullPriceMicrosAndroid?: string; currency?: string; }
+const offer = (p as unknown as { discountOffers?: AndroidDiscountOffer[] }).discountOffers?.[0];
+```
+
+## 2.2 Performance Patterns (Mandatory)
 
 Following React Native best practices for 60fps UI:
 
@@ -92,7 +152,60 @@ Monetization is driven by `src/components/ui/PremiumGuard.tsx`.
 - **Phase 1 (Done)**: Core Tracking, local SQLite configuration.
 - **Phase 2 (Done)**: Paywall Integration, Freemium Split, iOS/Android Subscriptions.
 - **Phase 3 (Done)**: Insights Layer (Contextual analytics, runway tracking, categoric burn).
-- **Phase 4 (Pending - WE ARE HERE)**: Retention System (Weekly/Monthly reports, Usage Streaks, Notifications).
+- **Phase 4 (Done)**: Retention System (Weekly/Monthly reports, Usage Streaks, Notifications).
+- **Phase 5 (Done)**: Power Features (Backup/Restore, CSV Export, Advanced Filters, Global Search).
+- **Phase 6 (Next)**: Polish & Growth (App Store optimisation, onboarding improvements, widget support).
+
+### Phase 5 Features (All Complete — Premium-gated)
+
+1. **Backup & Restore** (`src/features/backup/`)
+   - Full data export to JSON (accounts, categories, transactions, settings)
+   - Cross-platform save: Android (Storage Access Framework), iOS (Share sheet)
+   - Import from backup file with validation
+
+2. **CSV Export** (`src/features/export/`)
+   - Export transactions to CSV for Excel/Google Sheets
+   - Date range presets (This Month, Last 3 Months, This Year, etc.)
+   - Multi-filter support (accounts, categories, types)
+
+3. **Advanced Filters** (`src/features/filters/`)
+   - Multi-select: Accounts, Categories, Types (Income/Expense)
+   - Date range filtering with native date pickers
+   - Amount range (min/max) filtering
+   - Full-text search in notes, categories, accounts
+   - Sort options (Date/Amount, Asc/Desc)
+   - Hybrid filtering: Server-side for single selects, client-side for multi-select
+
+4. **Global Search** (`src/features/search/`)
+   - Full-text search across transactions, accounts, and categories in one screen
+   - 300ms debounce, min 2 chars, React Query with 15s stale time
+   - Category/account results deep-link into filtered Transactions screen
+   - Premium-gated at route level (`app/search.tsx`) with a full-screen upsell gate
+
+## 6. Cross-Platform File Export Pattern
+When implementing file export features (CSV, Backup), use this pattern:
+
+```typescript
+// Android: Storage Access Framework for direct folder selection
+// iOS: Share sheet with "Save to Files" option
+static async exportFile(content: string, filename: string): Promise<void> {
+  if (Platform.OS === 'android') {
+    // Request directory permissions - opens native folder picker
+    const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync();
+    if (!permissions.granted) return;
+    
+    const fileUri = await StorageAccessFramework.createFileAsync(
+      permissions.directoryUri, filename, mimeType
+    );
+    await StorageAccessFramework.writeAsStringAsync(fileUri, content);
+  } else {
+    // iOS: Write to cache and share
+    const tempFile = new File(Paths.cache, filename);
+    await tempFile.write(content);
+    await Sharing.shareAsync(tempFile.uri, { mimeType, UTI });
+  }
+}
+```
 
 ## 6. How to Collaborate
 1. Before modifying UI, cross-reference the components against the "Editorial Brutalist" rules.

@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { resolveIcon } from '../../../utils/icons';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -202,7 +203,7 @@ export function CategoryFormModal({ visible, onClose, category }: CategoryFormMo
                       icon === item && styles.iconCellActive,
                     ]}
                   >
-                    <Ionicons name={item as any} size={18} color={icon === item ? '#000100' : colors.text} />
+                    <Ionicons name={resolveIcon(item, 'grid-outline')} size={18} color={icon === item ? '#000100' : colors.text} />
                   </TouchableOpacity>
                 ))}
               </View>

@@ -1,6 +1,11 @@
 import * as IAP from 'expo-iap';
 import { Linking, Platform } from 'react-native';
 
+interface AndroidDiscountOffer {
+  fullPriceMicrosAndroid?: string;
+  currency?: string;
+}
+
 /**
  * Standardized IAP Product interface to ensure consistency across platforms.
  */
@@ -108,7 +113,7 @@ export class IAPService {
 
           // Android provides specific discount metadata for 'strikethrough' pricing logic
           if (p.platform === 'android') {
-            const offer = (p as any).discountOffers?.[0];
+            const offer = (p as unknown as { discountOffers?: AndroidDiscountOffer[] }).discountOffers?.[0];
             if (offer?.fullPriceMicrosAndroid) {
               const fullPrice = parseFloat(offer.fullPriceMicrosAndroid) / 1000000;
               const currency = offer.currency || 'USD';

@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { resolveIcon } from '@/src/utils/icons';
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import {
   ActivityIndicator,
@@ -290,7 +291,7 @@ export function ExportScreen() {
                 >
                   <View style={styles.filterLeft}>
                     <View style={[styles.filterIconBox, { backgroundColor: toHexColor(account.color) + '20' }]}>
-                      <Ionicons name={account.icon as any} size={16} color={toHexColor(account.color)} />
+                      <Ionicons name={resolveIcon(account.icon, 'wallet-outline')} size={16} color={toHexColor(account.color)} />
                     </View>
                     <Text style={styles.filterLabel}>{account.name}</Text>
                   </View>
