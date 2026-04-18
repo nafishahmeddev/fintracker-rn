@@ -264,8 +264,20 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>SYSTEM</Text>
+          <Text style={styles.sectionLabel}>DATA</Text>
           <View style={styles.card}>
+            <PreferenceRow
+              icon="download-outline"
+              title="Export CSV"
+              subtitle="Download transactions as spreadsheet"
+              onPress={() => router.push('/export' as any)}
+            />
+            <PreferenceRow
+              icon="cloud-outline"
+              title="Backup & Restore"
+              subtitle="Full data backup and restore"
+              onPress={() => router.push('/backup' as any)}
+            />
             <PreferenceRow
               icon="trash-bin-outline"
               title="Factory Reset"
