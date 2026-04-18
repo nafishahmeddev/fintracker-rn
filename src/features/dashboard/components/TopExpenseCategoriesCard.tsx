@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MoneyText } from '../../../components/ui/MoneyText';
 import { useTheme } from '../../../providers/ThemeProvider';
@@ -30,19 +30,23 @@ const resolveIconName = (raw: string | null | undefined, fallback: IoniconName):
   return fallback;
 };
 
-export function TopExpenseCategoriesCard({
+export const TopExpenseCategoriesCard = React.memo(function TopExpenseCategoriesCard({
   currencies,
   selectedCurrency,
   onSelectCurrency,
   categories,
 }: TopExpenseCategoriesCardProps) {
   const { colors } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const maxAmount = React.useMemo(
+  const maxAmount = useMemo(
     () => categories.reduce((max, item) => (item.amount > max ? item.amount : max), 0),
     [categories]
   );
+
+  const handleCurrencyPress = useCallback((curr: string) => {
+    onSelectCurrency(curr);
+  }, [onSelectCurrency]);
 
   return (
     <View style={styles.card}>
@@ -52,7 +56,7 @@ export function TopExpenseCategoriesCard({
             <TouchableOpacity
               key={curr}
               style={[styles.tab, selectedCurrency === curr && styles.tabActive]}
-              onPress={() => onSelectCurrency(curr)}
+              onPress={() => handleCurrencyPress(curr)}
               activeOpacity={0.85}
             >
               <Text style={[styles.tabText, selectedCurrency === curr && styles.tabTextActive]}>{curr}</Text>
@@ -97,7 +101,7 @@ export function TopExpenseCategoriesCard({
       )}
     </View>
   );
-}
+});
 
 const createStyles = (colors: { [key: string]: string }) =>
   StyleSheet.create({

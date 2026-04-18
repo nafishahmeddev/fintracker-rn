@@ -1,5 +1,5 @@
 import { BlurView } from '@sbaiahmed1/react-native-blur';
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { ActivityIndicator, Platform, StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
@@ -16,7 +16,7 @@ type ButtonProps = {
   textStyle?: TextStyle;
 };
 
-export function Button({
+export const Button = React.memo(function Button({
   title,
   onPress,
   variant = 'primary',
@@ -26,58 +26,82 @@ export function Button({
   style,
   textStyle,
 }: ButtonProps) {
-
   const { colors, isDark } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const getTextColor = () => {
+  const textColor = useMemo(() => {
     if (variant === 'outline' || variant === 'secondary') return colors.text;
     return '#FFFFFF';
-  };
+  }, [variant, colors.text]);
 
-  const getHeight = () => {
+  const height = useMemo(() => {
     switch (size) {
       case 'sm': return 36;
       case 'lg': return 56;
       case 'md':
       default: return 48;
     }
-  };
+  }, [size]);
+
+  const backgroundColor = useMemo(() => {
+    if (variant === 'primary') return colors.primary;
+    if (variant === 'success') return colors.success;
+    if (variant === 'danger') return colors.danger;
+    return 'transparent';
+  }, [variant, colors.primary, colors.success, colors.danger]);
+
+  const borderColor = useMemo(() => {
+    return variant === 'outline' || variant === 'secondary' ? colors.primary + '22' : 'transparent';
+  }, [variant, colors.primary]);
+
+  const borderWidth = useMemo(() => {
+    return variant === 'outline' || variant === 'secondary' ? 1 : 0;
+  }, [variant]);
+
+  const blurStyle = useMemo(() => ({
+    backgroundColor: Platform.OS === 'android' ? colors.surface : 'transparent'
+  }), [colors.surface]);
+
+  const handlePress = useCallback(() => {
+    if (!disabled && !isLoading) {
+      onPress();
+    }
+  }, [disabled, isLoading, onPress]);
 
   return (
     <TouchableOpacity
       style={[
         styles.base,
         {
-          backgroundColor: variant === 'primary' ? colors.primary : variant === 'success' ? colors.success : variant === 'danger' ? colors.danger : 'transparent',
-          height: getHeight(),
-          borderColor: variant === 'outline' || variant === 'secondary' ? colors.primary + '22' : 'transparent',
-          borderWidth: variant === 'outline' || variant === 'secondary' ? 1 : 0,
+          backgroundColor,
+          height,
+          borderColor,
+          borderWidth,
           opacity: disabled ? 0.6 : 1,
         },
         style,
       ]}
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled || isLoading}
       activeOpacity={0.8}
     >
       {(variant === 'outline' || variant === 'secondary') && (
-        <BlurView 
-          blurAmount={Platform.OS === 'ios' ? 20 : 0} 
-          blurType={isDark ? "dark" : "light"} 
-          style={[StyleSheet.absoluteFillObject, { backgroundColor: Platform.OS === 'android' ? colors.surface : 'transparent' }]} 
+        <BlurView
+          blurAmount={Platform.OS === 'ios' ? 20 : 0}
+          blurType={isDark ? "dark" : "light"}
+          style={[StyleSheet.absoluteFillObject, blurStyle]}
         />
       )}
       {isLoading ? (
-        <ActivityIndicator color={getTextColor()} />
+        <ActivityIndicator color={textColor} />
       ) : (
-        <Text style={[styles.text, { color: getTextColor() }, textStyle]}>
+        <Text style={[styles.text, { color: textColor }, textStyle]}>
           {title}
         </Text>
       )}
     </TouchableOpacity>
   );
-}
+});
 
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   base: {

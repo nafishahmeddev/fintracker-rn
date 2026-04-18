@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { usePremium } from '@/src/providers/PremiumProvider';
 import { useTheme } from '../../providers/ThemeProvider';
@@ -17,54 +17,73 @@ interface PremiumGuardProps {
  * A wrapper component that blurs its children if the user is not a premium subscriber.
  * Provides a call-to-action to upgrade.
  */
-export function PremiumGuard({ 
-  children, 
-  label = 'Pro only', 
+export const PremiumGuard = React.memo(function PremiumGuard({
+  children,
+  label = 'Pro only',
   size = 'large',
-  containerStyle 
+  containerStyle
 }: PremiumGuardProps) {
   const { isPremium } = usePremium();
   const { colors } = useTheme();
   const router = useRouter();
 
+  const handlePress = useCallback(() => {
+    router.push('/premium');
+  }, [router]);
+
+  const { isSmall, isMedium, containerStyles, iconBoxStyles, iconSize, actionBadgeStyles, actionText } = useMemo(() => {
+    const small = size === 'small';
+    const medium = size === 'medium';
+    return {
+      isSmall: small,
+      isMedium: medium,
+      containerStyles: [
+        styles.container,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+        small && styles.containerSmall,
+        medium && styles.containerMedium,
+        containerStyle
+      ],
+      iconBoxStyles: [
+        styles.iconBox,
+        { backgroundColor: colors.background, borderColor: colors.border },
+        small && styles.iconBoxSmall
+      ],
+      iconSize: small ? 14 : 18,
+      actionBadgeStyles: [
+        styles.actionBadge,
+        { backgroundColor: colors.text },
+        small && styles.actionBadgeSmall
+      ],
+      actionText: small ? 'Pro' : 'Unlock'
+    };
+  }, [size, colors.surface, colors.border, colors.background, colors.text, containerStyle]);
+
   if (isPremium) {
     return <>{children}</>;
   }
 
-  const isSmall = size === 'small';
-  const isMedium = size === 'medium';
-
   return (
     <TouchableOpacity
       activeOpacity={0.8}
-      onPress={() => router.push('/premium')}
-      style={[
-        styles.container,
-        { backgroundColor: colors.surface, borderColor: colors.border },
-        isSmall && styles.containerSmall,
-        isMedium && styles.containerMedium,
-        containerStyle
-      ]}
+      onPress={handlePress}
+      style={containerStyles}
     >
       {/* Background Accent & Watermark */}
       <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.primary, opacity: 0.02 }]} />
-      <Ionicons 
-        name="sparkles" 
-        size={isSmall ? 60 : 120} 
-        color={colors.primary} 
-        style={[styles.watermark, { opacity: 0.05 }]} 
-        pointerEvents="none" 
+      <Ionicons
+        name="sparkles"
+        size={isSmall ? 60 : 120}
+        color={colors.primary}
+        style={[styles.watermark, { opacity: 0.05 }]}
+        pointerEvents="none"
       />
 
       <View style={styles.content}>
         <View style={styles.headerRow}>
-          
-          <View style={[
-            styles.iconBox, 
-            { backgroundColor: colors.background, borderColor: colors.border },
-            isSmall && styles.iconBoxSmall
-          ]}>
-             <Ionicons name="lock-closed" size={isSmall ? 14 : 18} color={colors.text} />
+
+          <View style={iconBoxStyles}>
+             <Ionicons name="lock-closed" size={iconSize} color={colors.text} />
           </View>
 
           <View style={styles.textDetails}>
@@ -78,21 +97,17 @@ export function PremiumGuard({
              )}
           </View>
 
-          <View style={[
-            styles.actionBadge, 
-            { backgroundColor: colors.text },
-            isSmall && styles.actionBadgeSmall
-          ]}>
+          <View style={actionBadgeStyles}>
              <Text style={[styles.actionText, { color: colors.background }]}>
-               {isSmall ? 'Pro' : 'Unlock'}
+               {actionText}
              </Text>
           </View>
-          
+
         </View>
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

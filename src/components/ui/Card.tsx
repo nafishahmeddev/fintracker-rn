@@ -1,5 +1,5 @@
 import { BlurView } from '@sbaiahmed1/react-native-blur';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, ViewStyle, Platform } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
@@ -9,20 +9,24 @@ type CardProps = {
   style?: ViewStyle;
 };
 
-export function Card({ children, style }: CardProps) {
+export const Card = React.memo(function Card({ children, style }: CardProps) {
   const { colors, isDark } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const blurStyle = useMemo(() => ({
+    backgroundColor: Platform.OS === 'android' ? colors.card : 'transparent'
+  }), [colors.card]);
 
   return (
-    <BlurView 
-      blurAmount={Platform.OS === 'ios' ? 25 : 0} 
-      blurType={isDark ? "dark" : "light"} 
-      style={[styles.card, style, { backgroundColor: Platform.OS === 'android' ? colors.card : 'transparent' }]}
+    <BlurView
+      blurAmount={Platform.OS === 'ios' ? 25 : 0}
+      blurType={isDark ? "dark" : "light"}
+      style={[styles.card, style, blurStyle]}
     >
       {children}
     </BlurView>
   );
-}
+});
 
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {

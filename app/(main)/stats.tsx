@@ -1,7 +1,7 @@
 import { usePremium } from '@/src/providers/PremiumProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurBackground } from '../../src/components/ui/BlurBackground';
@@ -47,7 +47,7 @@ const computeFlow = (items: { type: 'CR' | 'DR'; amount: number }[]) =>
     { income: 0, expense: 0 },
   );
 
-export default function StatsScreen() {
+const StatsScreen = React.memo(function StatsScreen() {
   const { colors } = useTheme();
   const { isPremium } = usePremium();
   const router = useRouter();
@@ -62,6 +62,18 @@ export default function StatsScreen() {
 
   const [selectedCurrency, setSelectedCurrency] = React.useState(currencyKeys[0]);
   const [selectedRange, setSelectedRange] = React.useState<(typeof RANGE_OPTIONS)[number]['value']>(7);
+
+  const handleCurrencySelect = useCallback((currency: string) => {
+    setSelectedCurrency(currency);
+  }, []);
+
+  const handleRangeSelect = useCallback((value: typeof selectedRange) => {
+    setSelectedRange(value);
+  }, []);
+
+  const navigateToPremium = useCallback(() => {
+    router.push('/premium');
+  }, [router]);
 
   React.useEffect(() => {
     if (!currencyKeys.includes(selectedCurrency)) {
@@ -230,6 +242,93 @@ export default function StatsScreen() {
 
   const latestTransactions = React.useMemo(() => filteredTransactions.slice(0, 5), [filteredTransactions]);
 
+  // Memoized mapped render arrays to prevent re-renders
+  const trendDaysRender = useMemo(() => trendDays.map((day) => (
+    <View key={day.date.toISOString()} style={styles.trendRow}>
+      <View style={styles.trendDayWrap}>
+        <Text style={styles.trendDay}>{WEEKDAY_FORMATTER.format(day.date)}</Text>
+        <Text style={styles.trendDate}>{DAY_FORMATTER.format(day.date)}</Text>
+      </View>
+      <View style={styles.trendBars}>
+        <View style={styles.trendBarTrack}>
+          <View style={[styles.trendBarFill, styles.trendIncomeFill, { width: `${(day.income / trendMax) * 100}%` }]} />
+        </View>
+        <View style={styles.trendBarTrack}>
+          <View style={[styles.trendBarFill, styles.trendExpenseFill, { width: `${(day.expense / trendMax) * 100}%` }]} />
+        </View>
+      </View>
+    </View>
+  )), [trendDays, trendMax, styles]);
+
+  const topCategoriesRender = useMemo(() => {
+    if (topCategories.length === 0) return null;
+    return topCategories.map((category, index) => {
+      const width = summary.expense > 0 ? (category.amount / summary.expense) * 100 : 0;
+      return (
+        <View key={category.id} style={[styles.listRow, index === topCategories.length - 1 && styles.listRowLast]}>
+          <View style={[styles.listIcon, { backgroundColor: category.color + '18' }]}>
+            <Ionicons name={(category.icon as keyof typeof Ionicons.glyphMap) || 'pricetag-outline'} size={16} color={category.color} />
+          </View>
+          <View style={styles.listBody}>
+            <View style={styles.listTopLine}>
+              <Text style={styles.listTitle}>{category.name}</Text>
+              <MoneyText amount={category.amount} currency={selectedCurrency} type="DR" style={styles.listAmount} weight="bold" />
+            </View>
+            <View style={styles.progressTrack}>
+              <View style={[styles.progressFill, { width: `${width}%`, backgroundColor: category.color }]} />
+            </View>
+            <Text style={styles.listMeta}>{category.count} transactions</Text>
+          </View>
+        </View>
+      );
+    });
+  }, [topCategories, summary.expense, selectedCurrency, styles]);
+
+  const accountBreakdownRender = useMemo(() => {
+    if (accountBreakdown.length === 0) return null;
+    return accountBreakdown.map((account, index) => (
+      <View key={account.id} style={[styles.listRow, index === accountBreakdown.length - 1 && styles.listRowLast]}>
+        <View style={[styles.listIcon, { backgroundColor: account.colorHex + '18' }]}>
+          <Ionicons name={(account.icon as keyof typeof Ionicons.glyphMap) || 'wallet-outline'} size={16} color={account.colorHex} />
+        </View>
+        <View style={styles.listBody}>
+          <View style={styles.listTopLine}>
+            <Text style={styles.listTitle}>{account.name}</Text>
+            <MoneyText amount={account.balance} currency={selectedCurrency} style={styles.listAmount} weight="bold" />
+          </View>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${account.share * 100}%`, backgroundColor: account.colorHex }]} />
+          </View>
+          <Text style={styles.listMeta}>{Math.round(account.share * 100)}% of tracked balance</Text>
+        </View>
+      </View>
+    ));
+  }, [accountBreakdown, selectedCurrency, styles]);
+
+  const latestTransactionsRender = useMemo(() => {
+    if (latestTransactions.length === 0) return null;
+    return latestTransactions.map((transaction, index) => {
+      const accentColor = transaction.category.color
+        ? `#${transaction.category.color.toString(16).padStart(6, '0')}`
+        : colors.primary;
+      return (
+        <View key={transaction.id} style={[styles.txRow, index === latestTransactions.length - 1 && styles.listRowLast]}>
+          <View style={[styles.txAccent, { backgroundColor: transaction.type === 'CR' ? colors.success : colors.danger }]} />
+          <View style={[styles.listIcon, { backgroundColor: accentColor + '18' }]}>
+            <Ionicons name={(transaction.category.icon as keyof typeof Ionicons.glyphMap) || 'swap-horizontal-outline'} size={16} color={accentColor} />
+          </View>
+          <View style={styles.listBody}>
+            <View style={styles.listTopLine}>
+              <Text style={styles.listTitle}>{transaction.note || transaction.category.name}</Text>
+              <MoneyText amount={transaction.amount} currency={selectedCurrency} type={transaction.type} style={styles.listAmount} weight="bold" />
+            </View>
+            <Text style={styles.listMeta}>{transaction.account.name} · {DAY_FORMATTER.format(new Date(transaction.datetime))}</Text>
+          </View>
+        </View>
+      );
+    });
+  }, [latestTransactions, selectedCurrency, colors.primary, colors.success, colors.danger, styles]);
+
   const comparison = React.useMemo(() => {
     if (selectedRange === null) return null;
     const deltaIncome = summary.income - previousSummary.income;
@@ -262,7 +361,7 @@ export default function StatsScreen() {
                 <TouchableOpacity
                   key={currency}
                   style={[styles.segmentPill, active && styles.segmentPillActive]}
-                  onPress={() => setSelectedCurrency(currency)}
+                  onPress={() => handleCurrencySelect(currency)}
                   activeOpacity={0.85}
                 >
                   <Text style={[styles.segmentText, active && styles.segmentTextActive]}>{currency}</Text>
@@ -277,6 +376,14 @@ export default function StatsScreen() {
               const active = option.value === selectedRange;
               const isLocked = !isPremium && option.value !== 7;
 
+              const handlePress = () => {
+                if (isLocked) {
+                  navigateToPremium();
+                } else {
+                  handleRangeSelect(option.value);
+                }
+              };
+
               return (
                 <TouchableOpacity
                   key={option.label}
@@ -285,13 +392,7 @@ export default function StatsScreen() {
                     active && styles.segmentPillActive,
                     isLocked && styles.segmentPillLocked
                   ]}
-                  onPress={() => {
-                    if (isLocked) {
-                      router.push('/premium');
-                    } else {
-                      setSelectedRange(option.value);
-                    }
-                  }}
+                  onPress={handlePress}
                   activeOpacity={0.85}
                 >
                   <Text style={[styles.segmentText, active && styles.segmentTextActive]}>{option.label}</Text>
@@ -429,22 +530,7 @@ export default function StatsScreen() {
               <Text style={styles.legendText}>Expense</Text>
             </View>
           </View>
-          {trendDays.map((day) => (
-            <View key={day.date.toISOString()} style={styles.trendRow}>
-              <View style={styles.trendDayWrap}>
-                <Text style={styles.trendDay}>{WEEKDAY_FORMATTER.format(day.date)}</Text>
-                <Text style={styles.trendDate}>{DAY_FORMATTER.format(day.date)}</Text>
-              </View>
-              <View style={styles.trendBars}>
-                <View style={styles.trendBarTrack}>
-                  <View style={[styles.trendBarFill, styles.trendIncomeFill, { width: `${(day.income / trendMax) * 100}%` }]} />
-                </View>
-                <View style={styles.trendBarTrack}>
-                  <View style={[styles.trendBarFill, styles.trendExpenseFill, { width: `${(day.expense / trendMax) * 100}%` }]} />
-                </View>
-              </View>
-            </View>
-          ))}
+          {trendDaysRender}
         </View>
 
         <View style={styles.sectionHeader}>
@@ -452,26 +538,7 @@ export default function StatsScreen() {
           <Text style={styles.sectionHint}>{topCategories.length} groups</Text>
         </View>
         <View style={styles.sectionCard}>
-          {topCategories.length > 0 ? topCategories.map((category, index) => {
-            const width = summary.expense > 0 ? (category.amount / summary.expense) * 100 : 0;
-            return (
-              <View key={category.id} style={[styles.listRow, index === topCategories.length - 1 && styles.listRowLast]}>
-                <View style={[styles.listIcon, { backgroundColor: category.color + '18' }]}>
-                  <Ionicons name={(category.icon as keyof typeof Ionicons.glyphMap) || 'pricetag-outline'} size={16} color={category.color} />
-                </View>
-                <View style={styles.listBody}>
-                  <View style={styles.listTopLine}>
-                    <Text style={styles.listTitle}>{category.name}</Text>
-                    <MoneyText amount={category.amount} currency={selectedCurrency} type="DR" style={styles.listAmount} weight="bold" />
-                  </View>
-                  <View style={styles.progressTrack}>
-                    <View style={[styles.progressFill, { width: `${width}%`, backgroundColor: category.color }]} />
-                  </View>
-                  <Text style={styles.listMeta}>{category.count} transactions</Text>
-                </View>
-              </View>
-            );
-          }) : (
+          {topCategoriesRender || (
             <View style={styles.emptyState}>
               <Ionicons name="analytics-outline" size={26} color={colors.textMuted} />
               <Text style={styles.emptyTitle}>No spending data</Text>
@@ -485,23 +552,7 @@ export default function StatsScreen() {
           <Text style={styles.sectionHint}>{currencyAccounts.length} accounts</Text>
         </View>
         <View style={styles.sectionCard}>
-          {accountBreakdown.length > 0 ? accountBreakdown.map((account, index) => (
-            <View key={account.id} style={[styles.listRow, index === accountBreakdown.length - 1 && styles.listRowLast]}>
-              <View style={[styles.listIcon, { backgroundColor: account.colorHex + '18' }]}>
-                <Ionicons name={(account.icon as keyof typeof Ionicons.glyphMap) || 'wallet-outline'} size={16} color={account.colorHex} />
-              </View>
-              <View style={styles.listBody}>
-                <View style={styles.listTopLine}>
-                  <Text style={styles.listTitle}>{account.name}</Text>
-                  <MoneyText amount={account.balance} currency={selectedCurrency} style={styles.listAmount} weight="bold" />
-                </View>
-                <View style={styles.progressTrack}>
-                  <View style={[styles.progressFill, { width: `${account.share * 100}%`, backgroundColor: account.colorHex }]} />
-                </View>
-                <Text style={styles.listMeta}>{Math.round(account.share * 100)}% of tracked balance</Text>
-              </View>
-            </View>
-          )) : (
+          {accountBreakdownRender || (
             <View style={styles.emptyState}>
               <Ionicons name="wallet-outline" size={26} color={colors.textMuted} />
               <Text style={styles.emptyTitle}>No accounts in this currency</Text>
@@ -515,26 +566,7 @@ export default function StatsScreen() {
           <Text style={styles.sectionHint}>{summary.count} items</Text>
         </View>
         <View style={styles.sectionCard}>
-          {latestTransactions.length > 0 ? latestTransactions.map((transaction, index) => {
-            const accentColor = transaction.category.color
-              ? `#${transaction.category.color.toString(16).padStart(6, '0')}`
-              : colors.primary;
-            return (
-              <View key={transaction.id} style={[styles.txRow, index === latestTransactions.length - 1 && styles.listRowLast]}>
-                <View style={[styles.txAccent, { backgroundColor: transaction.type === 'CR' ? colors.success : colors.danger }]} />
-                <View style={[styles.listIcon, { backgroundColor: accentColor + '18' }]}>
-                  <Ionicons name={(transaction.category.icon as keyof typeof Ionicons.glyphMap) || 'swap-horizontal-outline'} size={16} color={accentColor} />
-                </View>
-                <View style={styles.listBody}>
-                  <View style={styles.listTopLine}>
-                    <Text style={styles.listTitle}>{transaction.note || transaction.category.name}</Text>
-                    <MoneyText amount={transaction.amount} currency={selectedCurrency} type={transaction.type} style={styles.listAmount} weight="bold" />
-                  </View>
-                  <Text style={styles.listMeta}>{transaction.account.name} · {DAY_FORMATTER.format(new Date(transaction.datetime))}</Text>
-                </View>
-              </View>
-            );
-          }) : (
+          {latestTransactionsRender || (
             <View style={styles.emptyState}>
               <Ionicons name="receipt-outline" size={26} color={colors.textMuted} />
               <Text style={styles.emptyTitle}>No transactions in range</Text>
@@ -584,7 +616,9 @@ export default function StatsScreen() {
       </ScrollView>
     </SafeAreaView>
   );
-}
+});
+
+export default StatsScreen;
 
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {

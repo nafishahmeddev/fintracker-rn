@@ -14,7 +14,57 @@ Luno aims to be a top-tier, premium financial tracker. The design system rigidly
 - **Language**: Strict TypeScript. Always define clear interfaces for props and API returns.
 - **State & Data**: Local-first storage using **SQLite**. Async orchestration managed via **React Query** hooks (to handle threading and caching cleanly).
 - **Styling**: `StyleSheet.create` relying strictly on the app's internal `useTheme()` provider. Never use hardcoded colors.
-- **Performance**: High-density lists *must* use `SectionList` or highly optimized `FlatList` native properties (`initialNumToRender`, `maxToRenderPerBatch`, `windowSize`) with memoized items to prevent JS thread lockups.
+- **Performance**: See Performance Patterns section below - mandatory React.memo, useCallback, useMemo usage.
+
+## 2.1 Performance Patterns (Mandatory)
+
+Following React Native best practices for 60fps UI:
+
+### React.memo for All Components
+**Every** component must be wrapped with `React.memo`:
+```typescript
+export const MyComponent = React.memo(function MyComponent(props: Props) {
+  // component body
+});
+```
+
+### useCallback for All Event Handlers
+All event handlers must use `useCallback`:
+```typescript
+const handlePress = useCallback(() => {
+  onPress(item);
+}, [onPress, item]);
+
+<TouchableOpacity onPress={handlePress} />
+```
+
+### useMemo for Expensive Computations
+Always memoize:
+- Style objects from `createStyles(colors)`
+- Color/formatting calculations
+- Mapped arrays for rendering
+- Derived state
+- Context values
+```typescript
+const styles = useMemo(() => createStyles(colors), [colors]);
+
+const contextValue = useMemo(() => ({ colors, isDark }), [colors, isDark]);
+```
+
+### List Optimization
+All FlatList/SectionList must have:
+```typescript
+<FlatList
+  data={data}
+  renderItem={renderItem}        // memoized callback
+  keyExtractor={keyExtractor}     // memoized callback
+  getItemLayout={getItemLayout}   // for fixed height items
+  initialNumToRender={10}
+  maxToRenderPerBatch={10}
+  windowSize={5}
+  removeClippedSubviews={true}
+/>
+```
 
 ## 3. Directory Structure (Domain-Driven)
 - `app/` - Expo Router configuration and Screen definitions.

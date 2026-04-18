@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
@@ -13,16 +13,20 @@ export type HeaderProps = {
   rightAction?: React.ReactNode;
 };
 
-export function Header({ title, subtitle, showBack, rightAction }: HeaderProps) {
+export const Header = React.memo(function Header({ title, subtitle, showBack, rightAction }: HeaderProps) {
   const router = useRouter();
   const { colors } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const handleBack = useCallback(() => {
+    router.back();
+  }, [router]);
 
   return (
     <View style={styles.container}>
       <View style={styles.left}>
         {showBack && (
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
+          <TouchableOpacity onPress={handleBack} style={styles.backBtn} activeOpacity={0.7}>
             <Ionicons name="arrow-back" size={20} color={colors.text} />
           </TouchableOpacity>
         )}
@@ -37,7 +41,7 @@ export function Header({ title, subtitle, showBack, rightAction }: HeaderProps) 
       ) : null}
     </View>
   );
-}
+});
 
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {

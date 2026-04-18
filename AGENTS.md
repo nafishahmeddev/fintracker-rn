@@ -74,6 +74,76 @@ From `CLAUDE.md` - **cross-reference before UI changes**:
 
 Use `@/` prefix for imports: `import { useTheme } from '@/src/providers/ThemeProvider'`
 
+## Performance Patterns (Mandatory)
+
+Following React Native best practices for 60fps UI:
+
+### React.memo for All Components
+
+**Every** component must be wrapped with `React.memo`:
+
+```typescript
+export const MyComponent = React.memo(function MyComponent(props: Props) {
+  // component body
+});
+```
+
+### useCallback for All Event Handlers
+
+All event handlers must use `useCallback`:
+
+```typescript
+const handlePress = useCallback(() => {
+  onPress(item);
+}, [onPress, item]);
+
+<TouchableOpacity onPress={handlePress} />
+```
+
+### useMemo for Expensive Computations
+
+Always memoize:
+- Style objects from `createStyles(colors)`
+- Color/formatting calculations
+- Mapped arrays for rendering
+- Derived state
+
+```typescript
+const styles = useMemo(() => createStyles(colors), [colors]);
+
+const displayValue = useMemo(() => {
+  return formatCurrency(amount, currency);
+}, [amount, currency]);
+```
+
+### List Optimization
+
+All FlatList/SectionList must have:
+
+```typescript
+<FlatList
+  data={data}
+  renderItem={renderItem}        // memoized callback
+  keyExtractor={keyExtractor}     // memoized callback
+  getItemLayout={getItemLayout}   // for fixed height items
+  initialNumToRender={10}
+  maxToRenderPerBatch={10}
+  windowSize={5}
+  removeClippedSubviews={true}
+/>
+```
+
+### Context Value Memoization
+
+Always memoize context values:
+
+```typescript
+const contextValue = useMemo(() => ({ 
+  colors, 
+  isDark 
+}), [colors, isDark]);
+```
+
 ## Current Phase
 
 **Phase 4 (In Progress)**: Retention System - Weekly/Monthly reports, Usage Streaks, Notifications

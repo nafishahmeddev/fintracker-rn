@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { ActivityIndicator, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
@@ -16,7 +16,7 @@ type ConfirmDialogProps = {
   isLoading?: boolean;
 };
 
-export function ConfirmDialog({
+export const ConfirmDialog = React.memo(function ConfirmDialog({
   visible,
   onClose,
   title,
@@ -28,12 +28,12 @@ export function ConfirmDialog({
   isLoading = false,
 }: ConfirmDialogProps) {
   const { colors } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     onClose();
     onConfirm();
-  };
+  }, [onClose, onConfirm]);
 
   return (
     <Modal
@@ -73,7 +73,7 @@ export function ConfirmDialog({
       </View>
     </Modal>
   );
-}
+});
 
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({

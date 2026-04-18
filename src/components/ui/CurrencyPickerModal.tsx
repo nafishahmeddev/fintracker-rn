@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
     FlatList,
     KeyboardAvoidingView,
@@ -24,7 +24,14 @@ export type CurrencyPickerModalProps = {
   onChange: (code: string) => void;
 };
 
-export function CurrencyPickerModal({ visible, onClose, value, onChange }: CurrencyPickerModalProps) {
+const ITEM_HEIGHT = 54; // Height of each currency row
+
+export const CurrencyPickerModal = React.memo(function CurrencyPickerModal({
+  visible,
+  onClose,
+  value,
+  onChange
+}: CurrencyPickerModalProps) {
   const { colors, isDark } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [query, setQuery] = useState('');
@@ -37,15 +44,50 @@ export function CurrencyPickerModal({ visible, onClose, value, onChange }: Curre
     );
   }, [query]);
 
-  const handleSelect = (code: string) => {
+  const handleSelect = useCallback((code: string) => {
     onChange(code);
     onClose();
-  };
+  }, [onChange, onClose]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setQuery('');
     onClose();
-  };
+  }, [onClose]);
+
+  const handleClearQuery = useCallback(() => {
+    setQuery('');
+  }, []);
+
+  const renderItem = useCallback(({ item }: { item: typeof CURRENCIES[0] }) => {
+    const selected = item.code === value;
+    return (
+      <TouchableOpacity
+        style={[styles.row, selected && styles.rowSelected]}
+        onPress={() => handleSelect(item.code)}
+        activeOpacity={0.85}
+      >
+        <View style={[styles.codeWrap, selected && styles.codeWrapSelected]}>
+          <Text style={[styles.code, selected && styles.codeSelected]}>{item.code}</Text>
+        </View>
+        <Text style={[styles.name, selected && styles.nameSelected]} numberOfLines={1}>
+          {item.name}
+        </Text>
+        {selected && (
+          <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+        )}
+      </TouchableOpacity>
+    );
+  }, [value, handleSelect, styles, colors.primary]);
+
+  const getItemLayout = useCallback((data: ArrayLike<typeof CURRENCIES[0]> | null | undefined, index: number) => ({
+    length: ITEM_HEIGHT,
+    offset: ITEM_HEIGHT * index,
+    index,
+  }), []);
+
+  const keyExtractor = useCallback((item: typeof CURRENCIES[0]) => item.code, []);
+
+  const ItemSeparatorComponent = useCallback(() => <View style={styles.separator} />, [styles.separator]);
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
@@ -100,7 +142,7 @@ export function CurrencyPickerModal({ visible, onClose, value, onChange }: Curre
               returnKeyType="search"
             />
             {query.length > 0 && (
-              <TouchableOpacity onPress={() => setQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <TouchableOpacity onPress={handleClearQuery} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <Ionicons name="close-circle" size={16} color={colors.textMuted} />
               </TouchableOpacity>
             )}
@@ -109,31 +151,17 @@ export function CurrencyPickerModal({ visible, onClose, value, onChange }: Curre
           {/* List */}
           <FlatList
             data={filtered}
-            keyExtractor={(item) => item.code}
+            keyExtractor={keyExtractor}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContent}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-            renderItem={({ item }) => {
-              const selected = item.code === value;
-              return (
-                <TouchableOpacity
-                  style={[styles.row, selected && styles.rowSelected]}
-                  onPress={() => handleSelect(item.code)}
-                  activeOpacity={0.85}
-                >
-                  <View style={[styles.codeWrap, selected && styles.codeWrapSelected]}>
-                    <Text style={[styles.code, selected && styles.codeSelected]}>{item.code}</Text>
-                  </View>
-                  <Text style={[styles.name, selected && styles.nameSelected]} numberOfLines={1}>
-                    {item.name}
-                  </Text>
-                  {selected && (
-                    <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                  )}
-                </TouchableOpacity>
-              );
-            }}
+            ItemSeparatorComponent={ItemSeparatorComponent}
+            renderItem={renderItem}
+            getItemLayout={getItemLayout}
+            initialNumToRender={15}
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            removeClippedSubviews={true}
             ListEmptyComponent={
               <View style={styles.emptyWrap}>
                 <Text style={styles.emptyText}>No currencies match &ldquo;{query}&rdquo;</Text>
@@ -144,7 +172,7 @@ export function CurrencyPickerModal({ visible, onClose, value, onChange }: Curre
       </KeyboardAvoidingView>
     </Modal>
   );
-}
+});
 
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({

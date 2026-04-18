@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
 import { useTheme } from '../../providers/ThemeProvider';
 import { ThemeColors } from '../../theme/colors';
@@ -10,9 +10,9 @@ interface InputProps extends TextInputProps {
   variant?: 'default' | 'minimal';
 }
 
-export function Input({ label, error, style, variant = 'default', ...props }: InputProps) {
+export const Input = React.memo(function Input({ label, error, style, variant = 'default', ...props }: InputProps) {
   const { colors } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.container}>
@@ -33,7 +33,7 @@ export function Input({ label, error, style, variant = 'default', ...props }: In
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
-}
+});
 
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {

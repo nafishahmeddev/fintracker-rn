@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../../theme/colors';
 import { TYPOGRAPHY } from '../../../theme/typography';
@@ -13,24 +13,37 @@ interface CategoryCardProps {
   onLongPress: (item: Category) => void;
 }
 
-export const CategoryCard: React.FC<CategoryCardProps> = ({
+export const CategoryCard = React.memo(function CategoryCard({
   item,
   index,
   colors,
   onPress,
   onLongPress,
-}) => {
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
-  const catColor = item.color ? '#' + item.color.toString(16).padStart(6, '0') : colors.primary;
+}: CategoryCardProps) {
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const catColor = useMemo(() =>
+    item.color ? '#' + item.color.toString(16).padStart(6, '0') : colors.primary,
+    [item.color, colors.primary]
+  );
+
+  const handlePress = useCallback(() => {
+    onPress(item);
+  }, [onPress, item]);
+
+  const handleLongPress = useCallback(() => {
+    onLongPress(item);
+  }, [onLongPress, item]);
+
+  const cardStyle = useMemo(() => [
+    styles.categoryCard,
+    index % 2 === 0 ? styles.categoryCardLeft : styles.categoryCardRight,
+  ], [styles, index]);
 
   return (
     <TouchableOpacity
-      style={[
-        styles.categoryCard,
-        index % 2 === 0 ? styles.categoryCardLeft : styles.categoryCardRight,
-      ]}
-      onPress={() => onPress(item)}
-      onLongPress={() => onLongPress(item)}
+      style={cardStyle}
+      onPress={handlePress}
+      onLongPress={handleLongPress}
       delayLongPress={280}
       activeOpacity={0.92}
     >
@@ -60,7 +73,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   categoryCard: {

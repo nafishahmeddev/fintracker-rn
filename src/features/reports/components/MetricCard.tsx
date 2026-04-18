@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { MoneyText } from '../../../components/ui/MoneyText';
 import { useTheme } from '../../../providers/ThemeProvider';
@@ -20,38 +20,36 @@ interface MetricCardProps {
 /**
  * MetricCard: A key performance indicator card for reports.
  * Used for displaying totals like "Weekly Expense" or "Savings Rate".
- * 
+ *
  * Primitive Logic:
  * Internally handles trend color-coding based on trendMode.
  */
-export function MetricCard({ 
-  label, 
-  value, 
-  currency, 
-  trendMode = 'neutral', 
-  changeValue, 
+export const MetricCard = React.memo(function MetricCard({
+  label,
+  value,
+  currency,
+  trendMode = 'neutral',
+  changeValue,
   suffix,
-  isAmount = true 
+  isAmount = true
 }: MetricCardProps) {
   const { colors } = useTheme();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const getTrendColor = () => {
+  const trendColor = useMemo(() => {
     if (changeValue === undefined || changeValue === 0 || trendMode === 'neutral') {
       return colors.textMuted;
     }
 
     const isPositive = changeValue > 0;
-    
+
     if (trendMode === 'high_is_good') {
       return isPositive ? colors.success : colors.danger;
     } else {
       // low_is_good (e.g. expenses)
       return isPositive ? colors.danger : colors.success;
     }
-  };
-
-  const trendColor = getTrendColor();
+  }, [changeValue, trendMode, colors.textMuted, colors.success, colors.danger]);
 
   return (
     <View style={styles.container}>
@@ -79,7 +77,7 @@ export function MetricCard({
       )}
     </View>
   );
-}
+});
 
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {

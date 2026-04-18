@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../../../providers/ThemeProvider';
 import { TYPOGRAPHY } from '../../../theme/typography';
@@ -17,10 +17,10 @@ interface InsightCardProps {
  * 2. Bold Typography: High-contrast headings and value indicators.
  * 3. Icon Branding: Thematic icons based on insight type.
  */
-export function InsightCard({ insight }: InsightCardProps) {
+export const InsightCard = React.memo(function InsightCard({ insight }: InsightCardProps) {
   const { colors } = useTheme();
 
-  const getStatusColors = () => {
+  const status = useMemo(() => {
     switch (insight.type) {
       case 'success': return { bg: colors.success + '15', text: colors.success };
       case 'danger': return { bg: colors.danger + '15', text: colors.danger };
@@ -28,11 +28,9 @@ export function InsightCard({ insight }: InsightCardProps) {
       case 'info': return { bg: colors.primary + '15', text: colors.primary };
       default: return { bg: colors.surface, text: colors.text };
     }
-  };
+  }, [insight.type, colors.success, colors.danger, colors.warning, colors.primary, colors.surface, colors.text]);
 
-  const status = getStatusColors();
-
-  const renderValue = () => {
+  const displayValue = useMemo(() => {
     switch (insight.valueType) {
       case 'amount':
         return formatCurrency(insight.amount, insight.currency);
@@ -41,7 +39,7 @@ export function InsightCard({ insight }: InsightCardProps) {
       case 'text':
         return insight.text;
     }
-  };
+  }, [insight]);
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface + '90', borderColor: colors.border }]}>
@@ -53,7 +51,7 @@ export function InsightCard({ insight }: InsightCardProps) {
       </View>
 
       <View style={styles.body}>
-        <Text style={[styles.value, { color: colors.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>{renderValue()}</Text>
+        <Text style={[styles.value, { color: colors.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>{displayValue}</Text>
         <View style={styles.trendContainer}>
            <Text style={[styles.subtitle, { color: colors.textMuted }]} numberOfLines={1}>
              {insight.subtitle}
@@ -72,7 +70,7 @@ export function InsightCard({ insight }: InsightCardProps) {
       <View style={[styles.accentLine, { backgroundColor: status.text }]} />
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { LIGHT_THEME, DARK_THEME, ThemeColors } from '../theme/colors';
 import { useSettings } from './SettingsProvider';
@@ -15,19 +15,21 @@ const ThemeContext = createContext<ThemeContextType>({
 
 export const useTheme = () => useContext(ThemeContext);
 
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+export const ThemeProvider = React.memo(function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { profile } = useSettings();
   const systemColorScheme = useColorScheme();
-  
-  const isDark = profile.theme === 'system' 
-    ? systemColorScheme === 'dark' 
+
+  const isDark = profile.theme === 'system'
+    ? systemColorScheme === 'dark'
     : profile.theme === 'dark';
-    
-  const colors = isDark ? DARK_THEME : LIGHT_THEME;
+
+  const colors = useMemo(() => isDark ? DARK_THEME : LIGHT_THEME, [isDark]);
+
+  const contextValue = useMemo(() => ({ colors, isDark }), [colors, isDark]);
 
   return (
-    <ThemeContext.Provider value={{ colors, isDark }}>
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );
-};
+});

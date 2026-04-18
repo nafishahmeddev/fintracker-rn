@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
@@ -43,7 +43,7 @@ const resolveIconName = (raw: string | null | undefined, fallback: IoniconName):
   return fallback;
 };
 
-export function DashboardScreen() {
+export const DashboardScreen = React.memo(function DashboardScreen() {
   const { colors, isDark } = useTheme();
   const { isPremium } = usePremium();
   const { profile } = useSettings();
@@ -96,10 +96,69 @@ export function DashboardScreen() {
     setSelectedTopCategoryCurrency(selectedCurrency);
   }, [selectedCurrency]);
 
-  const handleAccountLongPress = (acc: Account) => {
+  const handleAccountLongPress = useCallback((acc: Account) => {
     setActiveAccount(acc);
     setShowAccountOptionsDialog(true);
-  };
+  }, []);
+
+  const handleCurrencySelect = useCallback((curr: string) => {
+    setSelectedCurrency(curr);
+  }, []);
+
+  const navigateToStats = useCallback(() => {
+    router.push('/(main)/stats');
+  }, [router]);
+
+  const navigateToReports = useCallback(() => {
+    router.push('/(main)/reports');
+  }, [router]);
+
+  const navigateToSettings = useCallback(() => {
+    router.push('/settings');
+  }, [router]);
+
+  const navigateToPremium = useCallback(() => {
+    router.push('/premium' as any);
+  }, [router]);
+
+  const navigateToTransactions = useCallback(() => {
+    router.push('/transactions');
+  }, [router]);
+
+  const navigateToCreateTransaction = useCallback(() => {
+    router.push('/transactions/create');
+  }, [router]);
+
+  const navigateToAccountTransactions = useCallback((accountId: number) => {
+    router.push(`/transactions?accountId=${accountId}`);
+  }, [router]);
+
+  const navigateToEditTransaction = useCallback((txId: number) => {
+    router.push(`/transactions/edit/${txId}`);
+  }, [router]);
+
+  const openAccountForm = useCallback(() => {
+    setEditingAccount(undefined);
+    setShowAccountForm(true);
+  }, []);
+
+  const closeAccountForm = useCallback(() => {
+    setShowAccountForm(false);
+  }, []);
+
+  const closeOptionsDialog = useCallback(() => {
+    setShowAccountOptionsDialog(false);
+  }, []);
+
+  const closeDeleteDialog = useCallback(() => {
+    setShowDeleteAccountDialog(false);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (!activeAccount) return;
+    deleteAccount(activeAccount.id);
+    setActiveAccount(undefined);
+  }, [activeAccount, deleteAccount]);
 
   const accountOptions = React.useMemo(() => {
     if (!activeAccount) return [];
@@ -157,22 +216,22 @@ export function DashboardScreen() {
           rightAction={(
             <View style={styles.headerActions}>
               {!isPremium && (
-                <TouchableOpacity 
-                  style={styles.proBadge} 
-                  onPress={() => router.push('/premium' as any)}
+                <TouchableOpacity
+                  style={styles.proBadge}
+                  onPress={navigateToPremium}
                   activeOpacity={0.7}
                 >
                   <Ionicons name="sparkles" size={12} color={colors.primary} />
                   <Text style={[styles.proBadgeText, { color: colors.primary }]}>PRO</Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/(main)/stats')} activeOpacity={0.85}>
+              <TouchableOpacity style={styles.iconButton} onPress={navigateToStats} activeOpacity={0.85}>
                 <Ionicons name="stats-chart-outline" size={18} color={colors.text} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/(main)/reports')} activeOpacity={0.85}>
+              <TouchableOpacity style={styles.iconButton} onPress={navigateToReports} activeOpacity={0.85}>
                 <Ionicons name="newspaper-outline" size={18} color={colors.text} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/settings')} activeOpacity={0.85}>
+              <TouchableOpacity style={styles.iconButton} onPress={navigateToSettings} activeOpacity={0.85}>
                 <Ionicons name="settings-outline" size={19} color={colors.text} />
               </TouchableOpacity>
             </View>
@@ -188,7 +247,7 @@ export function DashboardScreen() {
                 <TouchableOpacity
                   key={curr}
                   style={[styles.currencyTab, selectedCurrency === curr && styles.currencyTabActive]}
-                  onPress={() => setSelectedCurrency(curr)}
+                  onPress={() => handleCurrencySelect(curr)}
                   activeOpacity={0.8}
                 >
                   <Text style={[styles.currencyTabText, selectedCurrency === curr && styles.currencyTabTextActive]}>{curr}</Text>
@@ -235,11 +294,11 @@ export function DashboardScreen() {
 
         {/* ── Quick actions ── */}
         <View style={styles.quickActions}>
-          <TouchableOpacity style={styles.quickActionPrimary} onPress={() => router.push('/transactions/create')} activeOpacity={0.85}>
+          <TouchableOpacity style={styles.quickActionPrimary} onPress={navigateToCreateTransaction} activeOpacity={0.85}>
             <Ionicons name="add" size={20} color={colors.background} />
             <Text style={styles.quickActionPrimaryText}>Add Transaction</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.quickActionSecondary} onPress={() => router.push('/transactions')} activeOpacity={0.85}>
+          <TouchableOpacity style={styles.quickActionSecondary} onPress={navigateToTransactions} activeOpacity={0.85}>
             <Ionicons name="list-outline" size={18} color={colors.text} />
             <Text style={styles.quickActionSecondaryText}>All Transactions</Text>
           </TouchableOpacity>
@@ -249,7 +308,7 @@ export function DashboardScreen() {
         <SectionHeader
           title="ACCOUNTS"
           rightText="New"
-          onPressRight={() => { setEditingAccount(undefined); setShowAccountForm(true); }}
+          onPressRight={openAccountForm}
         />
 
         <ScrollView
@@ -264,7 +323,7 @@ export function DashboardScreen() {
               <TouchableOpacity
                 key={acc.id}
                 style={styles.accountCard}
-                onPress={() => router.push(`/transactions?accountId=${acc.id}`)}
+                onPress={() => navigateToAccountTransactions(acc.id)}
                 onLongPress={() => handleAccountLongPress(acc)}
                 delayLongPress={250}
                 activeOpacity={0.88}
@@ -312,10 +371,7 @@ export function DashboardScreen() {
 
           <TouchableOpacity
             style={styles.accountPlaceholderCard}
-            onPress={() => {
-              setEditingAccount(undefined);
-              setShowAccountForm(true);
-            }}
+            onPress={openAccountForm}
             activeOpacity={0.88}
           >
             <View style={styles.accountPlaceholderInner}>
@@ -338,7 +394,7 @@ export function DashboardScreen() {
         />
 
         {/* ── Recent activity ── */}
-        <SectionHeader title="RECENT" rightText="See all" onPressRight={() => router.push('/transactions')} />
+        <SectionHeader title="RECENT" rightText="See all" onPressRight={navigateToTransactions} />
 
         <View style={styles.activityCard}>
           {transactions && transactions.length > 0 ? (
@@ -352,7 +408,7 @@ export function DashboardScreen() {
                   isFirst={idx === 0}
                   isLast={isLast}
                   showDate
-                  onPress={() => router.push(`/transactions/edit/${tx.id}`)}
+                  onPress={() => navigateToEditTransaction(tx.id)}
                 />
               );
             })
@@ -360,7 +416,7 @@ export function DashboardScreen() {
             <View style={styles.emptyActivity}>
               <Ionicons name="receipt-outline" size={28} color={colors.textMuted} />
               <Text style={styles.emptyActivityText}>No transactions yet</Text>
-              <TouchableOpacity style={styles.emptyActivityAction} onPress={() => router.push('/transactions/create')}>
+              <TouchableOpacity style={styles.emptyActivityAction} onPress={navigateToCreateTransaction}>
                 <Text style={styles.emptyActivityActionText}>Add one now</Text>
                 <Ionicons name="arrow-forward" size={12} color={colors.background} />
               </TouchableOpacity>
@@ -371,19 +427,19 @@ export function DashboardScreen() {
       </ScrollView>
 
       {/* FAB */}
-      <TouchableOpacity style={styles.fab} onPress={() => router.push('/transactions/create')} activeOpacity={0.9}>
+      <TouchableOpacity style={styles.fab} onPress={navigateToCreateTransaction} activeOpacity={0.9}>
         <Ionicons name="add" size={28} color={colors.background} />
       </TouchableOpacity>
 
       <AccountFormModal
         visible={showAccountForm}
-        onClose={() => setShowAccountForm(false)}
+        onClose={closeAccountForm}
         account={editingAccount}
       />
 
       <OptionsDialog
         visible={showAccountOptionsDialog}
-        onClose={() => setShowAccountOptionsDialog(false)}
+        onClose={closeOptionsDialog}
         title="Manage Account"
         subtitle={activeAccount?.name}
         options={accountOptions}
@@ -391,19 +447,15 @@ export function DashboardScreen() {
 
       <ConfirmDialog
         visible={showDeleteAccountDialog}
-        onClose={() => setShowDeleteAccountDialog(false)}
+        onClose={closeDeleteDialog}
         title="Delete Account"
         message={activeAccount ? `Delete ${activeAccount.name}? This action cannot be undone.` : undefined}
         confirmLabel="Delete"
-        onConfirm={() => {
-          if (!activeAccount) return;
-          deleteAccount(activeAccount.id);
-          setActiveAccount(undefined);
-        }}
+        onConfirm={handleDeleteConfirm}
       />
     </SafeAreaView>
   );
-}
+});
 
 const createStyles = (colors: ThemeColors, screenWidth: number) => StyleSheet.create({
   container: {

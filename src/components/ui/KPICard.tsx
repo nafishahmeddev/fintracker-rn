@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../../theme/colors';
 import { TYPOGRAPHY } from '../../theme/typography';
@@ -17,8 +17,18 @@ type Props = {
   colors: ThemeColors;
 };
 
-export const KPICard = ({ currencies, selectedCurrency, onSelectCurrency, metrics, colors }: Props) => {
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+export const KPICard = React.memo(function KPICard({
+  currencies,
+  selectedCurrency,
+  onSelectCurrency,
+  metrics,
+  colors
+}: Props) {
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const handleCurrencyPress = useCallback((curr: string) => {
+    onSelectCurrency(curr);
+  }, [onSelectCurrency]);
 
   return (
     <View style={styles.kpiCard}>
@@ -29,7 +39,7 @@ export const KPICard = ({ currencies, selectedCurrency, onSelectCurrency, metric
               <TouchableOpacity
                 key={cur}
                 style={[styles.currencyTab, selectedCurrency === cur && styles.currencyTabActive]}
-                onPress={() => onSelectCurrency(cur)}
+                onPress={() => handleCurrencyPress(cur)}
                 activeOpacity={0.8}
               >
                 <Text style={[styles.currencyTabText, selectedCurrency === cur && styles.currencyTabTextActive]}>{cur}</Text>
@@ -82,7 +92,7 @@ export const KPICard = ({ currencies, selectedCurrency, onSelectCurrency, metric
       </View>
     </View>
   );
-};
+});
 
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
